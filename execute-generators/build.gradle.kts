@@ -1,7 +1,11 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URI
 
-group = "de.itemis.mps"
+buildscript {
+    configurations.classpath {
+        resolutionStrategy.activateDependencyLocking()
+    }
+}
 
 plugins {
     kotlin("jvm")

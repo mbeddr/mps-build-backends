@@ -1,11 +1,15 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+buildscript {
+    configurations.classpath {
+        resolutionStrategy.activateDependencyLocking()
+    }
+}
+
 plugins {
     kotlin("jvm")
     `maven-publish`
 }
-
-group = "de.itemis.mps"
 
 val mpsVersion: String by project
 val kotlinArgParserVersion: String by project
