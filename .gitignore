@@ -1,0 +1,8 @@
+# IDEA stuff
+/.idea/
+*.iml
+**/out/
+
+# Gradle stuff
+.gradle/
+build/

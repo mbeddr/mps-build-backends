@@ -1,4 +1,3 @@
-import de.itemis.mps.gradle.GitBasedVersioning
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -16,16 +15,6 @@ val kotlinVersion: String by project
 val nexusUsername: String? by project
 val nexusPassword: String? by project
 val fastXmlJacksonVersion: String by project
-
-val pluginVersion = "1"
-
-version = if (project.hasProperty("forceCI") || project.hasProperty("teamcity")) {
-    // maintenance builds for specific MPS versions should be published without branch prefix, so that they can be
-    // resolved as dependency from the gradle plugin using version spec "de.itemis.mps:modelcheck:$mpsVersion+"
-    GitBasedVersioning.getVersionWithoutMaintenancePrefix(mpsVersion, pluginVersion)
-} else {
-    "$mpsVersion.$pluginVersion-SNAPSHOT"
-}
 
 repositories {
     mavenCentral()
