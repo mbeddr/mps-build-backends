@@ -13,13 +13,6 @@ plugins {
     `maven-publish`
 }
 
-repositories {
-    mavenCentral()
-    maven {
-        url = URI("https://projects.itemis.de/nexus/content/repositories/mbeddr")
-    }
-}
-
 val nexusUsername: String? by project
 val nexusPassword: String? by project
 
@@ -42,14 +35,9 @@ dependencies {
     compileOnly("com.jetbrains:mps-project-check:$mpsVersion")
     compileOnly("com.jetbrains:mps-platform:$mpsVersion")
     compileOnly("com.jetbrains:platform-api:$mpsVersion")
-    //compileOnly("com.jetbrains:extensions:$mpsVersion")
     compileOnly("com.jetbrains:util:$mpsVersion")
     compileOnly("log4j:log4j:1.2.17")
     implementation(project(":project-loader"))
-}
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
 }
 
 publishing {

@@ -20,13 +20,6 @@ val nexusUsername: String? by project
 val nexusPassword: String? by project
 val fastXmlJacksonVersion: String by project
 
-repositories {
-    mavenCentral()
-    maven {
-        url = uri("https://projects.itemis.de/nexus/content/repositories/mbeddr")
-    }
-}
-
 dependencies {
     implementation(kotlin("stdlib-jdk8", version = kotlinVersion))
     implementation("com.xenomachina:kotlin-argparser:$kotlinArgParserVersion")
@@ -43,8 +36,6 @@ dependencies {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
-    kotlinOptions.apiVersion = kotlinApiVersion
     kotlinOptions.allWarningsAsErrors = true
 }
 

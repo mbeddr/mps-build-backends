@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 buildscript {
     configurations.classpath {
         resolutionStrategy.activateDependencyLocking()
@@ -8,8 +10,7 @@ plugins {
     kotlin("jvm") version "1.6.10" apply false
 }
 
-val kotlinApiVersion by extra { "1.6" }
-val kotlinVersion by extra { "$kotlinApiVersion.10" }
+val kotlinVersion by extra { "1.6.10" }
 
 val kotlinArgParserVersion by extra { "2.0.7" }
 val mpsVersion by extra { "2021.2.3" }
