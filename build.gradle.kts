@@ -41,4 +41,30 @@ subprojects {
             allWarningsAsErrors = true
         }
     }
+
+    apply<MavenPublishPlugin>()
+    extensions.configure(PublishingExtension::class.java) {
+        repositories {
+            maven {
+                name = "itemis"
+                url = uri("https://projects.itemis.de/nexus/content/repositories/mbeddr")
+                if (project.hasProperty("nexusUsername")) {
+                    credentials {
+                        username = project.findProperty("nexusUsername") as String?
+                        password = project.findProperty("nexusPassword") as String?
+                    }
+                }
+            }
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/mbeddr/mps-gradle-plugin")
+                if (project.hasProperty("gpr.token")) {
+                    credentials {
+                        username = project.findProperty("gpr.user") as String?
+                        password = project.findProperty("gpr.token") as String?
+                    }
+                }
+            }
+        }
+    }
 }
