@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.nio.charset.Charset
 
 buildscript {
     configurations.classpath {
@@ -23,10 +24,24 @@ allprojects {
     dependencyLocking.lockAllConfigurations()
 }
 
-subprojects {
-    group = "de.itemis.mps.build-backends"
-    version = "1.0.0"
+val versionMajor = 1
+val versionMinor = 0
 
+val suffix = run {
+    val buildNumberStr = System.getenv("BUILD_NUMBER")
+    if (buildNumberStr.isNullOrEmpty()) {
+        return@run "-SNAPSHOT"
+    } else {
+        return@run ".$buildNumberStr"
+    }
+}
+
+allprojects {
+    group = "de.itemis.mps.build-backends"
+    version = "${versionMajor}.${versionMinor}${suffix}"
+}
+
+subprojects {
     repositories {
         mavenCentral()
         maven {
@@ -65,6 +80,14 @@ subprojects {
                     }
                 }
             }
+        }
+    }
+}
+
+tasks {
+    register("setTeamCityBuildNumber") {
+        doLast {
+            println("##teamcity[buildNumber '$version']")
         }
     }
 }
