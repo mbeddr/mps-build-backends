@@ -1,5 +1,5 @@
+import de.itemis.mps.buildbackends.getCommandOutput
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.nio.charset.Charset
 
 buildscript {
     configurations.classpath {
@@ -32,7 +32,8 @@ val suffix = run {
     if (buildNumberStr.isNullOrEmpty()) {
         return@run "-SNAPSHOT"
     } else {
-        return@run ".$buildNumberStr"
+        val gitCommitHash = getCommandOutput("git", "rev-parse", "--short=7", "HEAD")
+        return@run ".$buildNumberStr.$gitCommitHash"
     }
 }
 
