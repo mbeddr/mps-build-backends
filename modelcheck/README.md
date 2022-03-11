@@ -18,7 +18,9 @@ The simplest way to run it is by using Gradle's `JavaExec` task. See below for a
 usage: modelcheck [-h] [--plugin PLUGIN]... [--macro MACRO]...
                   [--plugin-location PLUGIN_LOCATION]
                   [--build-number BUILD_NUMBER] --project PROJECT [--test-mode]
-                  [--model MODEL]... [--module MODULE]... [--warning-as-error]
+                  [--model MODEL]... [--module MODULE]...
+                  [--exclude-model EXCLUDE_MODEL]...
+                  [--exclude-module EXCLUDE_MODULE]... [--warning-as-error]
                   [--error-no-fail] [--result-file RESULT_FILE]
                   [--result-format RESULT_FORMAT]
 
@@ -42,9 +44,15 @@ optional arguments:
 
   --test-mode                         run in test mode
 
-  --model MODEL                       list of models to check
+  --model MODEL                       list of models to check (regexes)
 
-  --module MODULE                     list of modules to check
+  --module MODULE                     list of modules to check (regexes)
+
+  --exclude-model EXCLUDE_MODEL       list of models to exclude from check
+                                      (regexes)
+
+  --exclude-module EXCLUDE_MODULE     list of modules to exclude from check
+                                      (regexes)
 
   --warning-as-error                  treat model checker warning as errors
 
@@ -58,7 +66,9 @@ optional arguments:
 The `--result-format` option takes one of two values: `model` produces one test per tested model (the default),
 `message` produces one test for each model checker message.
 
-If no models (`--model`) nor modules (`--module`) are given, the entire project will be checked.
+If no models (`--model`) nor modules (`--module`) are given, the entire project will be checked. Models or modules can
+be excluded from checking via `--exclude-model` or `--exclude-module` options. All options accept regular expressions
+that will be matched against the model or module name (excluding model stereotypes).
 
 All checkers that are registered in the `CheckerRegistry` of MPS will be run.
 

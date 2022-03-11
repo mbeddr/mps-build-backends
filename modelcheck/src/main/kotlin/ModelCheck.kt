@@ -19,6 +19,8 @@ import jetbrains.mps.smodel.SModelStereotype
 import jetbrains.mps.util.CollectConsumer
 import org.apache.log4j.Logger
 import org.jetbrains.mps.openapi.model.SModel
+import org.jetbrains.mps.openapi.model.SModelName
+import org.jetbrains.mps.openapi.module.SModule
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -209,7 +211,7 @@ private fun oneTestCasePerModel(models: Iterable<SModel>, errorsPerModel: Map<SM
             }
         }
 
-        val accumulatedFailure = errors.fold(Failure(message = "",  type = "model checking"), ::reportItemToContent)
+        val accumulatedFailure = errors.fold(Failure(message = "", type = "model checking"), ::reportItemToContent)
 
         Testcase(
             name = it.name.simpleName,
@@ -220,8 +222,64 @@ private fun oneTestCasePerModel(models: Iterable<SModel>, errorsPerModel: Map<SM
     }
 }
 
-fun modelCheckProject(args: ModelCheckArgs, project: Project): Boolean {
+fun regexFromAlternativesOrNull(strings: Collection<String>): Regex? {
+    if (strings.isEmpty()) return null
+    return strings.joinToString(prefix = "(?:", separator = "|", postfix = ")").toRegex()
+}
 
+class ModuleAndModelMatcher(args: ModelCheckArgs) {
+    private val includeStubs = false
+    private val includeModuleRegex: Regex? = regexFromAlternativesOrNull(args.modules)
+    private val excludeModuleRegex: Regex? = regexFromAlternativesOrNull(args.excludeModules)
+    private val includeModelRegex: Regex? = regexFromAlternativesOrNull(args.models)
+    private val excludeModelRegex: Regex? = regexFromAlternativesOrNull(args.excludeModels)
+
+    /**
+     * Whether the model should be included, according to include/exclude rules. Does NOT check module inclusion rules.
+     */
+    fun isModelIncluded(model: SModel): Boolean {
+        return !SModelStereotype.isDescriptorModel(model)
+                && (if (includeStubs) true else !SModelStereotype.isStubModel(model))
+                && isModelNameIncluded(model.name)
+    }
+
+    /**
+     * Whether the model should be included, according to include/exclude rules. Does NOT check module inclusion rules.
+     */
+    fun isModelNameIncluded(modelName: SModelName): Boolean {
+        val name = modelName.longName
+        if (includeModelRegex != null && !includeModelRegex.matches(name)) {
+            return false
+        }
+
+        if (excludeModelRegex != null && excludeModelRegex.matches(name)) {
+            return false
+        }
+
+        return true
+    }
+
+    fun isModelAndModuleIncluded(model: SModel): Boolean {
+        return isModelIncluded(model) && isModuleIncluded(model.module)
+    }
+
+    fun isModuleIncluded(module: SModule): Boolean = isModuleNameIncluded(module.moduleName!!)
+
+    private fun isModuleNameIncluded(name: String): Boolean {
+        if (includeModuleRegex != null && !includeModuleRegex.matches(name)) {
+            return false
+        }
+
+        if (excludeModuleRegex != null && excludeModuleRegex.matches(name)) {
+            return false
+        }
+
+        return true
+    }
+
+}
+
+fun modelCheckProject(args: ModelCheckArgs, project: Project): Boolean {
     val componentHost = ApplicationManager.getApplication().getComponent(MPSCoreComponents::class.java).platform
 
     val checkers = componentHost.findComponent(CheckerRegistry::class.java)!!.checkers
@@ -233,23 +291,33 @@ fun modelCheckProject(args: ModelCheckArgs, project: Project): Boolean {
     // We don't use ModelCheckerIssueFinder because it has strange dependency on the ModelCheckerSettings which we
     // want to avoid when running in headless mode
     val errorCollector = CollectConsumer<IssueKindReportItem>()
-    val checker = ModelCheckerBuilder(false).createChecker(checkers)
+
+    val moduleAndModelMatcher = ModuleAndModelMatcher(args)
+
+    val modelExtractor = object : ModelCheckerBuilder.ModelsExtractorImpl() {
+        override fun includeModel(model: SModel): Boolean {
+            return moduleAndModelMatcher.isModelIncluded(model)
+        }
+    }
+    modelExtractor.includeStubs(false)
+    val checker = ModelCheckerBuilder(modelExtractor).createChecker(checkers)
 
     val itemsToCheck = ModelCheckerBuilder.ItemsToCheck()
 
     project.modelAccess.runReadAction {
-        if (args.models.isNotEmpty()) {
-            itemsToCheck.models.addAll(project.projectModulesWithGenerators
-                .flatMap { module -> module.models.filter { !SModelStereotype.isDescriptorModel(it) && !SModelStereotype.isStubModel(it) } }
-                .filter { m -> args.models.any { it.toRegex().matches(m.name.longName) } })
+        if (args.models.isNotEmpty() || args.excludeModels.isNotEmpty()) {
+            itemsToCheck.models.addAll(
+                project.projectModulesWithGenerators
+                    .filter(moduleAndModelMatcher::isModuleIncluded)
+                    .flatMap { module -> module.models }
+                    .filter(moduleAndModelMatcher::isModelIncluded))
+        } else {
+            itemsToCheck.modules.addAll(
+                project.projectModulesWithGenerators
+                    .filter(moduleAndModelMatcher::isModuleIncluded)
+            )
         }
-        if (args.modules.isNotEmpty()) {
-            itemsToCheck.modules.addAll(project.projectModulesWithGenerators
-                .filter { m -> args.modules.any { it.toRegex().matches(m.moduleName as CharSequence) } })
-        }
-        if (args.models.isEmpty() && args.modules.isEmpty()) {
-            itemsToCheck.modules.addAll(project.projectModulesWithGenerators)
-        }
+
         checker.check(itemsToCheck, project.repository, errorCollector, EmptyProgressMonitor())
 
         // We need read access here to resolve the node pointers in the report items
@@ -263,9 +331,6 @@ fun modelCheckProject(args: ModelCheckArgs, project: Project): Boolean {
         }
     }
 
-    return if (args.warningAsError) {
-        errorCollector.result.any { it.severity >= MessageStatus.WARNING }
-    } else {
-        errorCollector.result.any { it.severity == MessageStatus.ERROR }
-    }
+    val minSeverity = if (args.warningAsError) MessageStatus.WARNING else MessageStatus.ERROR
+    return errorCollector.result.any { it.severity >= minSeverity }
 }

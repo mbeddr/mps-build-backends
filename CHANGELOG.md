@@ -9,7 +9,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- modelcheck: support for blacklist.
+- modelcheck: can now exclude models or modules from checking.
+
+### Fixed
+
+- If `--warning-as-error` was enabled, success would be erroneously reported there were no warnings, only errors. 
 
 ## [1.0]
 

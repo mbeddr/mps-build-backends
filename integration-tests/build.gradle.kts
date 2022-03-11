@@ -23,7 +23,18 @@ val GENERATION_TESTS = listOf(
     GenerationTest("generate-simple", listOf()))
 
 val MODELCHECK_TESTS = listOf(
-    ModelCheckTest("modelcheck", listOf("--module", "my.solution.with.errors"))
+    ModelCheckTest("modelcheckSimple",
+        project = "modelcheck",
+        args = listOf("--module", "my.solution.with.errors"),
+        expectSuccess = false),
+    ModelCheckTest("modelcheckExcludeModule",
+        project = "modelcheck",
+        args = listOf("--exclude-module", "my.solution.with.errors")
+    ),
+    ModelCheckTest("modelcheckExcludeModel",
+        project = "modelcheck",
+        args = listOf("--exclude-model", "my.solution.with.errors.java")
+    )
 )
 
 /**
@@ -39,10 +50,11 @@ data class GenerationTest(val project: String, val args: List<Any>) {
 /**
  * Describes a project to check with the supported MPS versions
  *
+ * @param name test name
  * @param project project folder name (in `projects/`)
  * @param args additional arguments to the command
  */
-data class ModelCheckTest(val project: String, val args: List<Any>) {
+data class ModelCheckTest(val name: String, val project: String, val args: List<Any>, val expectSuccess: Boolean = true) {
     val projectDir = file("projects/$project")
 }
 
@@ -61,8 +73,8 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
         into(mpsHome)
     }
 
-    val generateTasks = GENERATION_TESTS.map {
-        tasks.register("generate${it.project.capitalize()}WithMps$mpsVersion", JavaExec::class) {
+    val generateTasks = GENERATION_TESTS.map { testCase ->
+        tasks.register("generate${testCase.project.capitalize()}WithMps$mpsVersion", JavaExec::class) {
             dependsOn(unpackTask)
             group = LifecycleBasePlugin.VERIFICATION_GROUP
             classpath(executeGenerators)
@@ -76,12 +88,12 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
 
             mainClass.set("de.itemis.mps.gradle.generate.MainKt")
 
-            args("--project", it.projectDir)
-            args(it.args)
+            args("--project", testCase.projectDir)
+            args(testCase.args)
 
             doFirst {
-                println("Deleting generated sources in ${it.projectDir}")
-                delete(fileTree(it.projectDir) {
+                println("Deleting generated sources in ${testCase.projectDir}")
+                delete(fileTree(testCase.projectDir) {
                     include("**/source_gen/**")
                     include("**/source_gen.caches/**")
                     include("**/classes_gen/**")
@@ -90,8 +102,8 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
         }
     }
 
-    val modelcheckTasks = MODELCHECK_TESTS.map {
-        tasks.register("modelcheck${it.project.capitalize()}WithMps$mpsVersion", JavaExec::class) {
+    val modelcheckTasks = MODELCHECK_TESTS.map { testCase ->
+        tasks.register("modelcheckTest${testCase.name.capitalize()}WithMps$mpsVersion", JavaExec::class) {
             dependsOn(unpackTask)
             group = LifecycleBasePlugin.VERIFICATION_GROUP
             classpath(modelcheck)
@@ -107,11 +119,22 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
 
             mainClass.set("de.itemis.mps.gradle.modelcheck.MainKt")
 
-            args("--project", it.projectDir)
-            args("--result-file", file("$buildDir/TEST-${it.project}-mps-${mpsVersion}-results.xml"))
-            args("--error-no-fail")
+            args("--project", testCase.projectDir)
+            args("--result-file", file("$buildDir/TEST-${testCase.name}-mps-${mpsVersion}-results.xml"))
 
-            args(it.args)
+            args(testCase.args)
+
+            // Check exit value manually
+            isIgnoreExitValue = true
+            doLast {
+                val actualExitValue = executionResult.get().exitValue
+                val actualSuccess = actualExitValue == 0
+                if (actualSuccess != testCase.expectSuccess) {
+                    throw GradleException(
+                        "Modelcheck outcome: expected success: ${testCase.expectSuccess}, but was: $actualSuccess" +
+                                " (actual exit value $actualExitValue)")
+                }
+            }
         }
     }
 
