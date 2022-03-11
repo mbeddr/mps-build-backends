@@ -264,7 +264,7 @@ fun modelCheckProject(args: ModelCheckArgs, project: Project): Boolean {
     }
 
     return if (args.warningAsError) {
-        errorCollector.result.any { it.severity == MessageStatus.WARNING }
+        errorCollector.result.any { it.severity >= MessageStatus.WARNING }
     } else {
         errorCollector.result.any { it.severity == MessageStatus.ERROR }
     }
