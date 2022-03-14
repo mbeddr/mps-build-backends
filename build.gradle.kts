@@ -73,7 +73,7 @@ subprojects {
             }
             maven {
                 name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/mbeddr/mps-gradle-plugin")
+                url = uri("https://maven.pkg.github.com/mbeddr/mps-build-backends")
                 if (project.hasProperty("gpr.token")) {
                     credentials {
                         username = project.findProperty("gpr.user") as String?
