@@ -1,8 +1,7 @@
-package de.itemis.mps.gradle.modelcheck.de.itemis.mps.gradle.modelcheck
+package de.itemis.mps.gradle.modelcheck
 
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
-import de.itemis.mps.gradle.modelcheck.ReportFormat
 import de.itemis.mps.gradle.project.loader.Args
 import kotlin.test.fail
 

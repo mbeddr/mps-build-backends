@@ -2,7 +2,6 @@ package de.itemis.mps.gradle.modelcheck
 
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.mainBody
-import de.itemis.mps.gradle.modelcheck.de.itemis.mps.gradle.modelcheck.ModelCheckArgs
 import de.itemis.mps.gradle.project.loader.executeWithProject
 
 fun main(args: Array<String>) = mainBody("modelcheck") {
