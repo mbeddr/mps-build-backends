@@ -35,10 +35,6 @@ dependencies {
     testImplementation("org.xmlunit:xmlunit-core:2.6.+")
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.allWarningsAsErrors = true
-}
-
 publishing {
     publications {
         create<MavenPublication>("projectLoader") {
