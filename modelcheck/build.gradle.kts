@@ -1,7 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-import java.net.URI
-
 buildscript {
     configurations.classpath {
         resolutionStrategy.activateDependencyLocking()
@@ -38,6 +36,12 @@ dependencies {
     compileOnly("com.jetbrains:util:$mpsVersion")
     compileOnly("log4j:log4j:1.2.17")
     implementation(project(":project-loader"))
+
+    testImplementation(kotlin("test", version = kotlinVersion))
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 publishing {
