@@ -6,11 +6,9 @@ import org.xmlunit.validation.Languages
 import org.xmlunit.validation.Validator
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.net.InetAddress
 import java.net.URL
-import java.text.DateFormat
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
 import javax.xml.transform.stream.StreamSource
 
 
