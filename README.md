@@ -26,4 +26,4 @@ semantic versioning instead.
 
 ## Supported MPS versions
 
-Version 1.0.x supports (and is tested on) MPS 2020.3.+, 2021.1.+, and 2021.2.+.
+Version 1.1.x supports (and is tested on) MPS 2020.3.+, 2021.1.+, 2021.2.+, and 2021.3.+.
