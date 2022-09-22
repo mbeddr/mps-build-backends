@@ -1,7 +1,6 @@
 package de.itemis.mps.gradle.modelcheck
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
-import com.intellij.openapi.application.ApplicationManager
 import de.itemis.mps.gradle.junit.Failure
 import de.itemis.mps.gradle.junit.Testcase
 import de.itemis.mps.gradle.junit.Testsuite
@@ -10,11 +9,12 @@ import jetbrains.mps.checkers.ModelCheckerBuilder
 import jetbrains.mps.errors.CheckerRegistry
 import jetbrains.mps.errors.MessageStatus
 import jetbrains.mps.errors.item.IssueKindReportItem
-import jetbrains.mps.ide.MPSCoreComponents
 import jetbrains.mps.ide.httpsupport.runtime.base.HttpSupportUtil
 import jetbrains.mps.progress.EmptyProgressMonitor
 import jetbrains.mps.project.Project
+import jetbrains.mps.smodel.NodeReadAccessCasterInEditor
 import jetbrains.mps.smodel.SModelStereotype
+import jetbrains.mps.tool.environment.Environment
 import jetbrains.mps.util.CollectConsumer
 import org.apache.log4j.Logger
 import org.jetbrains.mps.openapi.model.SModel
@@ -219,10 +219,8 @@ private fun oneTestCasePerModel(models: Iterable<SModel>, errorsPerModel: Map<SM
     }
 }
 
-fun modelCheckProject(args: ModelCheckArgs, project: Project): Boolean {
-    val componentHost = ApplicationManager.getApplication().getComponent(MPSCoreComponents::class.java).platform
-
-    val checkers = componentHost.findComponent(CheckerRegistry::class.java)!!.checkers
+fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: Project): Boolean {
+    val checkers = environment.platform.findComponent(CheckerRegistry::class.java)!!.checkers
 
     if (logger.isInfoEnabled) {
         logger.info(checkers.joinToString(prefix = "Found the following checkers in CheckerRegistry: "))

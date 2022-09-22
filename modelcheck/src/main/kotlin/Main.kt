@@ -2,14 +2,14 @@ package de.itemis.mps.gradle.modelcheck
 
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.mainBody
-import de.itemis.mps.gradle.project.loader.executeWithProject
+import de.itemis.mps.gradle.project.loader.executeWithEnvironmentAndProject
 
 fun main(args: Array<String>) = mainBody("modelcheck") {
 
     val parsed = ArgParser(args).parseInto(::ModelCheckArgs)
     var hasErrors = true
     try {
-        hasErrors = executeWithProject(parsed) { project -> modelCheckProject(parsed, project) }
+        hasErrors = executeWithEnvironmentAndProject(parsed) { environment, project -> modelCheckProject(parsed, environment, project) }
     } catch (ex: java.lang.Exception) {
         logger.fatal("error model checking", ex)
     } catch (t: Throwable) {

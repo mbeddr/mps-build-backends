@@ -26,6 +26,7 @@ dependencies {
     implementation(kotlin("test", version = kotlinVersion))
     implementation("com.xenomachina:kotlin-argparser:$kotlinArgParserVersion")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$fastXmlJacksonVersion")
+    compileOnly("com.jetbrains:mps-environment:$mpsVersion")
     compileOnly("com.jetbrains:mps-openapi:$mpsVersion")
     compileOnly("com.jetbrains:mps-core:$mpsVersion")
     compileOnly("com.jetbrains:mps-modelchecker:$mpsVersion")

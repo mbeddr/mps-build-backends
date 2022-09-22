@@ -19,17 +19,27 @@ dependencies {
 val SUPPORTED_MPS_VERSIONS = arrayOf("2021.1.4", "2021.2.5", "2021.3.1")
 
 val GENERATION_TESTS = listOf(
-    GenerationTest("generate-build-solution", listOf("--model", "my.build.script")),
-    GenerationTest("generate-simple", listOf()))
+    GenerationTest("generateBuildSolution", "generate-build-solution", listOf("--model", "my.build.script")),
+    GenerationTest("generateSimple", "generate-simple", listOf()),
+    GenerationTest("generateBuildSolutionWithMpsEnvironment",
+        "generate-build-solution", listOf("--model", "my.build.script", "--environment", "MPS")))
 
 val MODELCHECK_TESTS = listOf(
     ModelCheckTest("modelcheckSimple",
         project = "modelcheck",
         args = listOf("--module", "my.solution.with.errors"),
         expectSuccess = false),
+    ModelCheckTest("modelcheckSimpleWithMpsEnvironment",
+        project = "modelcheck",
+        args = listOf("--module", "my.solution.with.errors", "--environment", "MPS"),
+        expectSuccess = false),
     ModelCheckTest("modelcheckExcludeModule",
         project = "modelcheck",
         args = listOf("--exclude-module", "my.solution.with.errors")
+    ),
+    ModelCheckTest("modelcheckExcludeModuleWithMpsEnvironment",
+        project = "modelcheck",
+        args = listOf("--exclude-module", "my.solution.with.errors", "--environment", "MPS")
     ),
     ModelCheckTest("modelcheckExcludeModel",
         project = "modelcheck",
@@ -43,7 +53,7 @@ val MODELCHECK_TESTS = listOf(
  * @param project project folder name (in `projects/`)
  * @param args additional arguments to the command
  */
-data class GenerationTest(val project: String, val args: List<Any>) {
+data class GenerationTest(val name: String, val project: String, val args: List<Any>) {
     val projectDir = file("projects/$project")
 }
 
@@ -74,7 +84,7 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
     }
 
     val generateTasks = GENERATION_TESTS.map { testCase ->
-        tasks.register("generate${testCase.project.capitalize()}WithMps$mpsVersion", JavaExec::class) {
+        tasks.register("generate${testCase.name.capitalize()}WithMps$mpsVersion", JavaExec::class) {
             dependsOn(unpackTask)
             group = LifecycleBasePlugin.VERIFICATION_GROUP
             classpath(executeGenerators)

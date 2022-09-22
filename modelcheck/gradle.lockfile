@@ -8,6 +8,7 @@ com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.4=compileClasspath,
 com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.11.4=compileClasspath,implementationDependenciesMetadata,runtimeClasspath,testCompileClasspath,testImplementationDependenciesMetadata,testRuntimeClasspath
 com.fasterxml.woodstox:woodstox-core:6.2.3=compileClasspath,implementationDependenciesMetadata,runtimeClasspath,testCompileClasspath,testImplementationDependenciesMetadata,testRuntimeClasspath
 com.jetbrains:mps-core:2021.2.5=compileClasspath,compileOnlyDependenciesMetadata
+com.jetbrains:mps-environment:2021.2.5=compileClasspath,compileOnlyDependenciesMetadata
 com.jetbrains:mps-httpsupport-runtime:2021.2.5=compileClasspath,compileOnlyDependenciesMetadata
 com.jetbrains:mps-modelchecker:2021.2.5=compileClasspath,compileOnlyDependenciesMetadata
 com.jetbrains:mps-openapi:2021.2.5=compileClasspath,compileOnlyDependenciesMetadata

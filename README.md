@@ -5,7 +5,7 @@ Command-line utilities used e.g. by Gradle plugins to generate or check models.
 This project contains the following subprojects:
 
 * `project-loader` – a library for command-line utilities providing a function to load MPS with specified plugins and
-  macros, open a project, and execute code in the context of the project.
+  macros, and execute code in the context of a running MPS instance, optionally with a particular project open.
 * `execute-generators` – a command line tool to execute the MPS generator on given models.
 * `modelcheck` – a command line tool to check given models or modules for errors.
 * `integration-tests` – tests that exercise `execute-generators` and `modelcheck` on sample projects.
