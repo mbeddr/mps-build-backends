@@ -16,7 +16,7 @@ dependencies {
     modelcheck(project(":modelcheck"))
 }
 
-val SUPPORTED_MPS_VERSIONS = arrayOf("2020.3.6", "2021.1.4", "2021.2.5", "2021.3.1")
+val SUPPORTED_MPS_VERSIONS = arrayOf("2021.1.4", "2021.2.5", "2021.3.1")
 
 val GENERATION_TESTS = listOf(
     GenerationTest("generate-build-solution", listOf("--model", "my.build.script")),
