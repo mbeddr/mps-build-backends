@@ -13,7 +13,8 @@ is by using Gradle's `JavaExec` task. See below for an example.
 usage: execute-generators [-h] [--plugin PLUGIN]... [--macro MACRO]...
                           [--plugin-location PLUGIN_LOCATION]
                           [--build-number BUILD_NUMBER] --project PROJECT
-                          [--test-mode] [--model MODEL]...
+                          [--test-mode] [--environment ENVIRONMENT]
+                          [--model MODEL]...
 
 required arguments:
   --project PROJECT                   project to generate from
@@ -34,6 +35,10 @@ optional arguments:
                                       plugins are compatible
 
   --test-mode                         run in test mode
+
+  --environment ENVIRONMENT           kind of environment to initialize,
+                                      supported values are 'idea' (default),
+                                      'mps'
 
   --model MODEL                       list of models to generate
 ```
