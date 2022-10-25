@@ -43,7 +43,12 @@ val MODELCHECK_TESTS = listOf(
     ),
     ModelCheckTest("modelcheckExcludeModel",
         project = "modelcheck",
-        args = listOf("--exclude-model", "my.solution.with.errors.java")
+        args = listOf("--exclude-model", "my.solution.with.errors.java", "--exclude-model", "my.solution.with.errors.brokenref")
+    ),
+    ModelCheckTest("modelcheckBrokenrefs",
+        project = "modelcheck",
+        args = listOf("--model", "my.solution.with.errors.brokenref"),
+        expectSuccess = false
     )
 )
 
@@ -121,6 +126,7 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
                 include("lib/**/*.jar")
                 // modelcheck uses HttpSupportUtil#getURL()
                 include("plugins/mps-httpsupport/**/*.jar")
+                include("plugins/mps-modelchecker/**/*.jar")
             })
 
             // MPS creates logs under its working directory so start it from the MPS home directory, to avoid polluting

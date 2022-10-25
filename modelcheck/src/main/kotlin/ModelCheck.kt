@@ -10,9 +10,9 @@ import jetbrains.mps.errors.CheckerRegistry
 import jetbrains.mps.errors.MessageStatus
 import jetbrains.mps.errors.item.IssueKindReportItem
 import jetbrains.mps.ide.httpsupport.runtime.base.HttpSupportUtil
+import jetbrains.mps.ide.modelchecker.platform.actions.UnresolvedReferencesChecker
 import jetbrains.mps.progress.EmptyProgressMonitor
 import jetbrains.mps.project.Project
-import jetbrains.mps.smodel.NodeReadAccessCasterInEditor
 import jetbrains.mps.smodel.SModelStereotype
 import jetbrains.mps.tool.environment.Environment
 import jetbrains.mps.util.CollectConsumer
@@ -221,6 +221,9 @@ private fun oneTestCasePerModel(models: Iterable<SModel>, errorsPerModel: Map<SM
 
 fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: Project): Boolean {
     val checkers = environment.platform.findComponent(CheckerRegistry::class.java)!!.checkers
+    if (checkers.all { it !is UnresolvedReferencesChecker }) {
+        checkers.add(UnresolvedReferencesChecker())
+    }
 
     if (logger.isInfoEnabled) {
         logger.info(checkers.joinToString(prefix = "Found the following checkers in CheckerRegistry: "))
