@@ -67,7 +67,7 @@ optional arguments:
   --result-format RESULT_FORMAT       reporting format for the JUnit file
 ```
 
-The `--result-format` option takes one of two values: `model` produces one test per tested model (the default),
+The `--result-format` option takes one of three values: `model` produces one test per tested model (the default), `module-and-model` produces one test per module and tested model,
 `message` produces one test for each model checker message.
 
 If no models (`--model`) nor modules (`--module`) are given, the entire project will be checked. Models or modules can

@@ -5,6 +5,7 @@ import com.xenomachina.argparser.default
 import de.itemis.mps.gradle.project.loader.Args
 import kotlin.test.fail
 
+@Suppress("DEPRECATION")
 class ModelCheckArgs(parser: ArgParser) : Args(parser) {
     val models by parser.adding("--model",
         help = "list of models to check (regexes)")
@@ -18,6 +19,7 @@ class ModelCheckArgs(parser: ArgParser) : Args(parser) {
     val xmlReportFormat by parser.storing("--result-format", help = "reporting format for the JUnit file") {
         when (this) {
             "model" -> ReportFormat.ONE_TEST_PER_MODEL
+            "module-and-model" -> ReportFormat.ONE_TEST_PER_MODULE_AND_MODEL
             "message" -> ReportFormat.ONE_TEST_PER_FAILED_MESSAGE
             else -> fail("unsupported result format")
         }
