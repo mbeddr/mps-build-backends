@@ -67,8 +67,12 @@ optional arguments:
   --result-format RESULT_FORMAT       reporting format for the JUnit file
 ```
 
-The `--result-format` option takes one of three values: `model` produces one test per tested model (the default), `module-and-model` produces one test per module and tested model,
-`message` produces one test for each model checker message.
+The `--result-format` option takes one of three values: `model` produces one test per tested model (the default,
+deprecated and buggy, see below), `module-and-model` produces one test per module and tested model, `message`
+produces one test for each model checker message.
+
+Option `--result-format=model` is deprecated because the resulting XML report does not contain module-level errors.
+It is however kept as default for backwards compatibility.
 
 If no models (`--model`) nor modules (`--module`) are given, the entire project will be checked. Models or modules can
 be excluded from checking via `--exclude-model` or `--exclude-module` options. All options accept regular expressions
