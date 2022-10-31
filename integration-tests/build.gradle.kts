@@ -29,17 +29,21 @@ val MODELCHECK_TESTS = listOf(
         project = "modelcheck",
         args = listOf("--module", "my.solution.with.errors"),
         expectSuccess = false),
+    ModelCheckTest("modelcheckModule",
+        project = "modelcheck",
+        args = listOf("--module", "my.solution.with.module.errors", "--result-format", "module-and-model"),
+        expectSuccess = false),
     ModelCheckTest("modelcheckSimpleWithMpsEnvironment",
         project = "modelcheck",
         args = listOf("--module", "my.solution.with.errors", "--environment", "MPS"),
         expectSuccess = false),
     ModelCheckTest("modelcheckExcludeModule",
         project = "modelcheck",
-        args = listOf("--exclude-module", "my.solution.with.errors")
+        args = listOf("--exclude-module", "my.solution.with.*")
     ),
     ModelCheckTest("modelcheckExcludeModuleWithMpsEnvironment",
         project = "modelcheck",
-        args = listOf("--exclude-module", "my.solution.with.errors", "--environment", "MPS")
+        args = listOf("--exclude-module", "my.solution.with.*", "--environment", "MPS")
     ),
     ModelCheckTest("modelcheckExcludeModel",
         project = "modelcheck",

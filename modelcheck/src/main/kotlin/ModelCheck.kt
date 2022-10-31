@@ -18,6 +18,7 @@ import jetbrains.mps.tool.environment.Environment
 import jetbrains.mps.util.CollectConsumer
 import org.apache.log4j.Logger
 import org.jetbrains.mps.openapi.model.SModel
+import org.jetbrains.mps.openapi.module.SModule
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -27,7 +28,12 @@ import kotlin.test.fail
 val logger = Logger.getLogger("de.itemis.mps.gradle.modelcheck")
 
 enum class ReportFormat {
+    @Deprecated(
+        message = "Please use ONE_TEST_PER_MODULE_AND_MODEL instead, this doesn't report errors on modules.",
+        replaceWith = ReplaceWith("ONE_TEST_PER_MODULE_AND_MODEL")
+    )
     ONE_TEST_PER_MODEL,
+    ONE_TEST_PER_MODULE_AND_MODEL,
     ONE_TEST_PER_FAILED_MESSAGE
 }
 
@@ -87,7 +93,8 @@ fun printResult(item: IssueKindReportItem, project: Project, args: ModelCheckArg
 }
 
 
-fun writeJunitXml(models: Iterable<SModel>,
+fun writeJunitXml(modules: Iterable<SModule>,
+                  models: Iterable<SModel>,
                   results: Iterable<IssueKindReportItem>,
                   project: Project,
                   warnAsErrors: Boolean,
@@ -98,6 +105,21 @@ fun writeJunitXml(models: Iterable<SModel>,
     val allErrors = results.filter {
         it.severity == MessageStatus.ERROR || (warnAsErrors && it.severity == MessageStatus.WARNING)
     }
+
+    val errorsPerModule = allErrors
+        .filter {
+            val path = IssueKindReportItem.PATH_OBJECT.get(it)
+            path is IssueKindReportItem.PathObject.ModulePathObject
+        }.groupBy {
+            when (val path = IssueKindReportItem.PATH_OBJECT.get(it)) {
+                is IssueKindReportItem.PathObject.ModulePathObject -> {
+                    path.resolve(project.repository)!!
+                }
+
+                else -> fail("unexpected item type")
+            }
+        }
+
     val errorsPerModel = allErrors
         .filter {
             val path = IssueKindReportItem.PATH_OBJECT.get(it)
@@ -117,13 +139,31 @@ fun writeJunitXml(models: Iterable<SModel>,
 
     val xmlMapper = XmlMapper()
 
+    @Suppress("DEPRECATION")
     when (format) {
         ReportFormat.ONE_TEST_PER_MODEL -> {
+            val message = "The option `--result-format model` is deprecated as it doesn't report module level errors, " +
+                    "please use `--result-format module-and-model` instead."
+            printError(message)
+            System.err.println(message)
+
             val testcases = oneTestCasePerModel(models, errorsPerModel, project)
             val testsuite = Testsuite(name = "model checking",
                 failures = allErrors.size,
                 testcases = testcases,
                 tests = models.count(),
+                timestamp = getCurrentTimeStamp())
+            xmlMapper.writeValue(file, testsuite)
+        }
+
+        ReportFormat.ONE_TEST_PER_MODULE_AND_MODEL -> {
+            val moduleTestcases = oneTestCasePerModule(modules, errorsPerModule, project)
+            val modelTestcases = oneTestCasePerModel(models, errorsPerModel, project)
+            val testcases = moduleTestcases + modelTestcases
+            val testsuite = Testsuite(name = "model checking",
+                failures = allErrors.size,
+                testcases = testcases,
+                tests = modules.count() + models.count(),
                 timestamp = getCurrentTimeStamp())
             xmlMapper.writeValue(file, testsuite)
         }
@@ -219,6 +259,34 @@ private fun oneTestCasePerModel(models: Iterable<SModel>, errorsPerModel: Map<SM
     }
 }
 
+private fun oneTestCasePerModule(modules: Iterable<SModule>, errorsPerModule: Map<SModule, List<IssueKindReportItem>>, project: Project): List<Testcase> {
+    return modules.map {
+        val errors = errorsPerModule.getOrDefault(it, emptyList())
+        fun reportItemToContent(s: Failure, item: IssueKindReportItem): Failure {
+            return when (val path = IssueKindReportItem.PATH_OBJECT.get(item)) {
+                is IssueKindReportItem.PathObject.ModulePathObject -> {
+                    val module = path.resolve(project.repository)!!
+                    val message = "${item.message} [${module.moduleName}]"
+                    Failure(
+                        message = "${s.message}\n $message",
+                        type = s.type
+                    )
+                }
+                else -> fail("unexpected issue kind")
+            }
+        }
+
+        val accumulatedFailure = errors.fold(Failure(message = "", type = "model checking"), ::reportItemToContent)
+
+        Testcase(
+            name = "module ${it.moduleName!!}",
+            classname = it.moduleName!!,
+            failure = if (errors.isEmpty()) null else accumulatedFailure,
+            time = 0
+        )
+    }
+}
+
 fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: Project): Boolean {
     val checkers = environment.platform.findComponent(CheckerRegistry::class.java)!!.checkers
     if (checkers.all { it !is UnresolvedReferencesChecker }) {
@@ -265,10 +333,11 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
         errorCollector.result.map { printResult(it, project, args) }
 
         if (args.xmlFile != null) {
+            val allCheckedModules = itemsToCheck.modules
             val allCheckedModels = itemsToCheck.modules.flatMap { module ->
                 module.models.filter { !SModelStereotype.isDescriptorModel(it) }
             }.union(itemsToCheck.models)
-            writeJunitXml(allCheckedModels, errorCollector.result, project, args.warningAsError, args.xmlReportFormat, File(args.xmlFile!!))
+            writeJunitXml(allCheckedModules, allCheckedModels, errorCollector.result, project, args.warningAsError, args.xmlReportFormat, File(args.xmlFile!!))
         }
     }
 
