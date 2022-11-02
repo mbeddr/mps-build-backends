@@ -9,8 +9,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- New option added to `--result-format` to report on both module and model failures with the option `module-and-model`.
-  The default option `model` is kept for backward compatibility, but a warning is emitted with a hint for migration.
+- modelcheck: added `--result-format=module-and-model` to report on both module and model failures. The default option
+  `model` is kept for backward compatibility, but a warning is emitted with a hint for migration.
+
+### Changed
+
+- generate: IDEA IconLoader is now activated when run in IDEA environment. This is useful when generating cell
+  screenshots using mbeddr documentation language from the command line. If the loader is not activated, any icons are
+  replaced by a single black pixel.
 
 ## [1.2.6.903d328]
 

@@ -1,6 +1,8 @@
 package de.itemis.mps.gradle.generate
 
 
+import com.intellij.openapi.util.IconLoader
+import de.itemis.mps.gradle.project.loader.EnvironmentKind
 import jetbrains.mps.make.MakeSession
 import jetbrains.mps.make.facet.FacetRegistry
 import jetbrains.mps.make.facet.IFacet
@@ -128,6 +130,11 @@ fun generateProject(parsed: GenerateArgs, project: Project): Boolean {
     if (modelsToGenerate == null) {
         logger.error("failed to fetch modelsToGenerate")
         return false
+    }
+
+    if (parsed.environmentKind == EnvironmentKind.IDEA) {
+        // Activate IconLoader to load icons.
+        IconLoader.activate()
     }
 
     return makeModels(project, modelsToGenerate)
