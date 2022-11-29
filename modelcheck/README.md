@@ -18,8 +18,9 @@ The simplest way to run it is by using Gradle's `JavaExec` task. See below for a
 usage: modelcheck [-h] [--plugin PLUGIN]... [--macro MACRO]...
                   [--plugin-location PLUGIN_LOCATION]
                   [--build-number BUILD_NUMBER] --project PROJECT [--test-mode]
-                  [--environment ENVIRONMENT] [--model MODEL]...
-                  [--module MODULE]... [--exclude-model EXCLUDE_MODEL]...
+                  [--environment ENVIRONMENT] [--log-level LOG_LEVEL]
+                  [--model MODEL]... [--module MODULE]...
+                  [--exclude-model EXCLUDE_MODEL]...
                   [--exclude-module EXCLUDE_MODULE]... [--warning-as-error]
                   [--error-no-fail] [--result-file RESULT_FILE]
                   [--result-format RESULT_FORMAT]
@@ -47,6 +48,9 @@ optional arguments:
   --environment ENVIRONMENT           kind of environment to initialize,
                                       supported values are 'idea' (default),
                                       'mps'
+
+  --log-level LOG_LEVEL               console log level. Supported values:
+                                      info, warn, error, off. Default: warn.
 
   --model MODEL                       list of models to check (regexes)
 

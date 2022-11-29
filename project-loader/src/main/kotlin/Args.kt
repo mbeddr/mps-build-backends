@@ -1,5 +1,6 @@
 package de.itemis.mps.gradle.project.loader
 
+import LogLevel
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
 import java.io.File
@@ -49,4 +50,8 @@ open class Args(parser: ArgParser) {
             help = "kind of environment to initialize, supported values are 'idea' (default), 'mps'") {
         EnvironmentKind.valueOf(uppercase())
     }.default(EnvironmentKind.IDEA)
+
+    val logLevel by parser.storing("--log-level", help = "console log level. Supported values: info, warn, error, off. Default: warn.") {
+        LogLevel.valueOf(uppercase())
+    }.default(LogLevel.WARN)
 }

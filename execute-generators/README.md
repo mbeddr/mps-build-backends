@@ -14,7 +14,7 @@ usage: execute-generators [-h] [--plugin PLUGIN]... [--macro MACRO]...
                           [--plugin-location PLUGIN_LOCATION]
                           [--build-number BUILD_NUMBER] --project PROJECT
                           [--test-mode] [--environment ENVIRONMENT]
-                          [--model MODEL]...
+                          [--log-level LOG_LEVEL] [--model MODEL]...
 
 required arguments:
   --project PROJECT                   project to generate from
@@ -39,6 +39,9 @@ optional arguments:
   --environment ENVIRONMENT           kind of environment to initialize,
                                       supported values are 'idea' (default),
                                       'mps'
+
+  --log-level LOG_LEVEL               console log level. Supported values:
+                                      info, warn, error, off. Default: warn.
 
   --model MODEL                       list of models to generate
 ```
