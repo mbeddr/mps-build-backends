@@ -59,30 +59,49 @@ private fun createScript(proj: Project, models: List<SModel>): IScript {
     val facetRegistry = proj.getComponent(FacetRegistry::class.java)
     val scb = ScriptBuilder (facetRegistry)
 
+    // Map of facet name to source, for logging
+    val allFacets = DEFAULT_FACETS.toMutableList()
+    if (logger.isInfoEnabled) {
+        logger.info("Default make facets: $DEFAULT_FACETS")
+    }
+
     when {
         allUsedLanguages == null -> logger.error("failed to retrieve used languages")
         allUsedLanguages.isEmpty() -> logger.warn("no used language is given")
         else -> {
-            scb.withFacetNames(allUsedLanguages
-                    .mapNotNull { registry.getLanguage(it) }
-                    .mapNotNull { it.getAspect(MakeAspectDescriptor::class.java) }
-                    .flatMap { it.manifest.facets() }
-                    .map { it.name }
-            )
+            if (logger.isInfoEnabled) {
+                logger.info("All languages used by the models: $allUsedLanguages")
+            }
 
+            val facetNamesFromMakeAspect = allUsedLanguages
+                .mapNotNull { registry.getLanguage(it) }
+                .mapNotNull { it.getAspect(MakeAspectDescriptor::class.java) }
+                .flatMap { it.manifest.facets() }
+                .map { it.name }
 
-            scb.withFacetNames(allUsedLanguages
-                    .flatMap { facetRegistry.getFacetsForLanguage(it.qualifiedName) }
-                    .map { it.name }
-            )
+            if (logger.isInfoEnabled) {
+                logger.info("Additional facets found in make aspects of used languages: $facetNamesFromMakeAspect")
+            }
+            allFacets.addAll(facetNamesFromMakeAspect)
+
+            val facetNamesFromRegistry = allUsedLanguages
+                .flatMap { facetRegistry.getFacetsForLanguage(it.qualifiedName) }
+                .map { it.name }
+
+            if (logger.isInfoEnabled) {
+                logger.info("Additional facets found in FacetRegistry for used languages: $facetNamesFromRegistry")
+            }
+
+            allFacets.addAll(facetNamesFromRegistry)
         }
     }
+
 
     // For some reason MPS doesn't explicitly stat that there is a dependency on Generate, TextGen and Make, so we have
     // to make sure they are always included in the set of facets even if for MPS there is no dependency on them.
 
     // todo: not sure if we really need the final target to be Make.make all the time. The code was taken fom #BuildMakeService.defaultMakeScript
-    return scb.withFacetNames(DEFAULT_FACETS).withFinalTarget(ITarget.Name("jetbrains.mps.make.facets.Make.make")).toScript()
+    return scb.withFacetNames(allFacets).withFinalTarget(ITarget.Name("jetbrains.mps.make.facets.Make.make")).toScript()
 }
 
 private fun makeModels(proj: Project, models: List<SModel>): Boolean {
