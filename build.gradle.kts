@@ -50,6 +50,14 @@ subprojects {
         }
     }
 
+    plugins.withType<JavaBasePlugin> {
+        project.afterEvaluate {
+            extensions.configure(JavaPluginExtension::class.java) {
+                withSourcesJar()
+            }
+        }
+    }
+
     tasks.withType<KotlinCompile> {
         kotlinOptions {
             jvmTarget = "11"
