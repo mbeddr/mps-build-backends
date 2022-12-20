@@ -9,13 +9,9 @@ plugins {
     `maven-publish`
 }
 
-val kotlinArgParserVersion: String by project
 val mpsVersion: String by project
-val kotlinVersion: String   by project
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8", version = kotlinVersion))
-    implementation("com.xenomachina:kotlin-argparser:$kotlinArgParserVersion")
     compileOnly("com.jetbrains:mps-openapi:$mpsVersion")
     compileOnly("com.jetbrains:mps-core:$mpsVersion")
     compileOnly("com.jetbrains:mps-tool:$mpsVersion")

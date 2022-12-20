@@ -25,7 +25,7 @@ allprojects {
 }
 
 val versionMajor = 1
-val versionMinor = 4
+val versionMinor = 5
 
 val suffix = run {
     val buildNumberStr = System.getenv("BUILD_NUMBER")
