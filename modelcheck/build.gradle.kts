@@ -27,6 +27,7 @@ dependencies {
     implementation(project(":project-loader"))
 
     implementation(kotlin("test"))
+    testImplementation(kotlin("test"))
 }
 
 tasks.test {
