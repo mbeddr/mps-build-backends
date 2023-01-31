@@ -106,20 +106,6 @@ fun writeJunitXml(modules: Iterable<SModule>,
         it.severity == MessageStatus.ERROR || (warnAsErrors && it.severity == MessageStatus.WARNING)
     }
 
-    val errorsPerModule = allErrors
-        .filter {
-            val path = IssueKindReportItem.PATH_OBJECT.get(it)
-            path is IssueKindReportItem.PathObject.ModulePathObject
-        }.groupBy {
-            when (val path = IssueKindReportItem.PATH_OBJECT.get(it)) {
-                is IssueKindReportItem.PathObject.ModulePathObject -> {
-                    path.resolve(project.repository)!!
-                }
-
-                else -> fail("unexpected item type")
-            }
-        }
-
     val errorsPerModel = allErrors
         .filter {
             val path = IssueKindReportItem.PATH_OBJECT.get(it)
@@ -147,16 +133,29 @@ fun writeJunitXml(modules: Iterable<SModule>,
             printError(message)
             System.err.println(message)
 
-            val testcases = oneTestCasePerModel(models, errorsPerModel, project)
             val testsuite = Testsuite(name = "model checking",
-                failures = allErrors.size,
-                testcases = testcases,
-                tests = models.count(),
-                timestamp = getCurrentTimeStamp())
+                    failures = errorsPerModel.values.sumOf { it.size },
+                    testcases = oneTestCasePerModel(models, errorsPerModel, project),
+                    tests = models.count(),
+                    timestamp = getCurrentTimeStamp())
             xmlMapper.writeValue(file, testsuite)
         }
 
         ReportFormat.ONE_TEST_PER_MODULE_AND_MODEL -> {
+            val errorsPerModule = allErrors
+                    .filter {
+                        val path = IssueKindReportItem.PATH_OBJECT.get(it)
+                        path is IssueKindReportItem.PathObject.ModulePathObject
+                    }.groupBy {
+                        when (val path = IssueKindReportItem.PATH_OBJECT.get(it)) {
+                            is IssueKindReportItem.PathObject.ModulePathObject -> {
+                                path.resolve(project.repository)!!
+                            }
+
+                            else -> fail("unexpected item type")
+                        }
+                    }
+
             val moduleTestcases = oneTestCasePerModule(modules, errorsPerModule, project)
             val modelTestcases = oneTestCasePerModel(models, errorsPerModel, project)
             val testcases = moduleTestcases + modelTestcases
