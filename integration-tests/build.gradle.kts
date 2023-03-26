@@ -169,8 +169,15 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
     return generateTasks + modelcheckTasks
 }
 
-val allTestTasks = SUPPORTED_MPS_VERSIONS.flatMap(::tasksForMpsVersion)
+val testTasksByVersion = SUPPORTED_MPS_VERSIONS.map { mpsVersion ->
+    val tasksForThisVersion = tasksForMpsVersion(mpsVersion)
+    tasks.register("checkMps${mpsVersion}") {
+        description = "Runs all tests using MPS $mpsVersion"
+        group = LifecycleBasePlugin.VERIFICATION_GROUP
+        dependsOn(tasksForThisVersion)
+    }
+}
 
 tasks.named("check") {
-    dependsOn(allTestTasks)
+    dependsOn(testTasksByVersion)
 }
