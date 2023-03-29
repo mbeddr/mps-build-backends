@@ -1,6 +1,8 @@
 package de.itemis.mps.gradle.generate
 
 
+import GenerateArgs
+import ModuleAndModelMatcher
 import com.intellij.openapi.util.IconLoader
 import de.itemis.mps.gradle.project.loader.EnvironmentKind
 import jetbrains.mps.make.MakeSession
@@ -14,6 +16,7 @@ import jetbrains.mps.messages.IMessageHandler
 import jetbrains.mps.messages.MessageKind
 import jetbrains.mps.project.Project
 import jetbrains.mps.smodel.SLanguageHierarchy
+import jetbrains.mps.smodel.SModelStereotype
 import jetbrains.mps.smodel.language.LanguageRegistry
 import jetbrains.mps.smodel.resources.ModelsToResources
 import jetbrains.mps.smodel.runtime.MakeAspectDescriptor
@@ -22,14 +25,15 @@ import org.apache.log4j.Logger
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.mps.openapi.language.SLanguage
 import org.jetbrains.mps.openapi.model.SModel
+import org.jetbrains.mps.openapi.module.SModule
 
 private val logger = Logger.getLogger("de.itemis.mps.gradle.generate")
 
 private val DEFAULT_FACETS = listOf(
-        IFacet.Name("jetbrains.mps.lang.core.Generate"),
-        IFacet.Name("jetbrains.mps.lang.core.TextGen"),
-        IFacet.Name("jetbrains.mps.make.facets.Make"),
-        IFacet.Name("jetbrains.mps.lang.makeup.Makeup"))
+    IFacet.Name("jetbrains.mps.lang.core.Generate"),
+    IFacet.Name("jetbrains.mps.lang.core.TextGen"),
+    IFacet.Name("jetbrains.mps.make.facets.Make"),
+    IFacet.Name("jetbrains.mps.lang.makeup.Makeup"))
 
 private class MsgHandler : IMessageHandler {
     val logger = Logger.getLogger("de.itemis.mps.gradle.generate.messages")
@@ -135,15 +139,35 @@ private fun makeModels(proj: Project, models: List<SModel>): Boolean {
 
 fun generateProject(parsed: GenerateArgs, project: Project): Boolean {
     val ftr = AsyncPromise<List<SModel>>()
+    val modelsList = ArrayList<SModel>()
+    val modulesList = ArrayList<SModule>()
+    val moduleAndModelMatcher = ModuleAndModelMatcher(parsed)
+    //val itemsToCheck = ModelCheckerBuilder.ItemsToCheck()
 
     project.modelAccess.runReadAction {
-        var modelsToGenerate = project.projectModels
-        if (parsed.models.isNotEmpty()) {
-            modelsToGenerate = modelsToGenerate.filter { parsed.models.contains(it.name.longName) }
+        //var modelsToGenerate = project.projectModels
+        if (parsed.models.isNotEmpty() || parsed.excludeModels.isNotEmpty()) {
+            modelsList.addAll(
+                project.projectModulesWithGenerators
+                    .filter(moduleAndModelMatcher::isModuleIncluded)
+                    .flatMap { module -> module.models }
+                    .filter(moduleAndModelMatcher::isModelIncluded))
+        } else {
+            modulesList.addAll(
+                project.projectModulesWithGenerators
+                    .filter(moduleAndModelMatcher::isModuleIncluded)
+            )
         }
-        ftr.setResult(modelsToGenerate.toList())
     }
 
+    val allCheckedModels = modulesList.flatMap { module ->
+        module.models.filter { !SModelStereotype.isDescriptorModel(it) }
+    }.union(modelsList).toList()
+    ftr.setResult(allCheckedModels)
+    //ftr2.setResult(itemsToCheck.modules.toList())
+
+
+    //ftr.setResult(modelsToGenerate.toList())
     val modelsToGenerate = ftr.get()
 
     if (modelsToGenerate == null) {
