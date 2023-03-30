@@ -49,7 +49,7 @@ class ModuleAndModelMatcher {
 
     fun isModuleIncluded(module: SModule): Boolean = isModuleNameIncluded(module.moduleName!!)
 
-    private fun isModuleNameIncluded(name: String): Boolean {
+    fun isModuleNameIncluded(name: String): Boolean {
         if (includeModuleRegex != null && !includeModuleRegex.matches(name)) {
             return false
         }
