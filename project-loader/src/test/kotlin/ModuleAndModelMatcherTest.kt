@@ -1,9 +1,7 @@
-package de.itemis.mps.gradle.modelcheck
-
 import de.itemis.mps.gradle.project.loader.ModuleAndModelMatcher
-import kotlin.test.Test
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import junit.framework.TestCase.assertFalse
+import junit.framework.TestCase.assertTrue
+import org.junit.Test
 
 class ModuleAndModelMatcherTest {
 
