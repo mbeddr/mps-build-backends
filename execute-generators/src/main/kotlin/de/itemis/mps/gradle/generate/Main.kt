@@ -1,11 +1,11 @@
 package de.itemis.mps.gradle.generate
 
-import GenerateArgs
+
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.SystemExitException
 import com.xenomachina.argparser.mainBody
 import configureLogging
-import de.itemis.mps.gradle.project.loader.Args
+import de.itemis.mps.gradle.project.loader.GenerateArgs
 import de.itemis.mps.gradle.project.loader.executeWithProject
 import org.apache.log4j.Logger
 

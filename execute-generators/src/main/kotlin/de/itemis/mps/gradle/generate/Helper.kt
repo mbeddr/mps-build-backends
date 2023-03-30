@@ -1,10 +1,9 @@
 package de.itemis.mps.gradle.generate
 
-
-import GenerateArgs
-import ModuleAndModelMatcher
 import com.intellij.openapi.util.IconLoader
 import de.itemis.mps.gradle.project.loader.EnvironmentKind
+import de.itemis.mps.gradle.project.loader.GenerateArgs
+import de.itemis.mps.gradle.project.loader.ModuleAndModelMatcher
 import jetbrains.mps.make.MakeSession
 import jetbrains.mps.make.facet.FacetRegistry
 import jetbrains.mps.make.facet.IFacet
@@ -136,16 +135,16 @@ private fun makeModels(proj: Project, models: List<SModel>): Boolean {
     return false
 }
 
+fun createMatcher(args: GenerateArgs) = ModuleAndModelMatcher(args.modules,args.excludeModules,args.models,args.excludeModules)
+
 
 fun generateProject(parsed: GenerateArgs, project: Project): Boolean {
     val ftr = AsyncPromise<List<SModel>>()
     val modelsList = ArrayList<SModel>()
     val modulesList = ArrayList<SModule>()
-    val moduleAndModelMatcher = ModuleAndModelMatcher(parsed)
-    //val itemsToCheck = ModelCheckerBuilder.ItemsToCheck()
+    val moduleAndModelMatcher = createMatcher(parsed)
 
     project.modelAccess.runReadAction {
-        //var modelsToGenerate = project.projectModels
         if (parsed.models.isNotEmpty() || parsed.excludeModels.isNotEmpty()) {
             modelsList.addAll(
                 project.projectModulesWithGenerators
@@ -158,16 +157,14 @@ fun generateProject(parsed: GenerateArgs, project: Project): Boolean {
                     .filter(moduleAndModelMatcher::isModuleIncluded)
             )
         }
+
+        val allCheckedModels = modulesList.flatMap { module ->
+            module.models.filter { !SModelStereotype.isDescriptorModel(it) }
+        }.union(modelsList).toList()
+        ftr.setResult(allCheckedModels)
+
     }
 
-    val allCheckedModels = modulesList.flatMap { module ->
-        module.models.filter { !SModelStereotype.isDescriptorModel(it) }
-    }.union(modelsList).toList()
-    ftr.setResult(allCheckedModels)
-    //ftr2.setResult(itemsToCheck.modules.toList())
-
-
-    //ftr.setResult(modelsToGenerate.toList())
     val modelsToGenerate = ftr.get()
 
     if (modelsToGenerate == null) {

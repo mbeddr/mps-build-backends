@@ -1,3 +1,6 @@
+package de.itemis.mps.gradle.project.loader
+
+
 import jetbrains.mps.smodel.SModelStereotype
 import org.jetbrains.mps.openapi.model.SModel
 import org.jetbrains.mps.openapi.model.SModelName
@@ -12,11 +15,17 @@ class ModuleAndModelMatcher {
         this.excludeModelRegex = regexFromAlternativesOrNull(excludeModels)
     }
 
-    constructor(args: GenerateArgs) : this(
-        modules = args.modules,
+    constructor(args:GenerateArgs) : this(
+
+        modules = args.models,
         excludeModules = args.excludeModules,
         models = args.models,
-        excludeModels = args.excludeModels)
+        excludeModels = args.excludeModels
+
+    )
+
+
+
 
     private val includeModuleRegex: Regex?
     private val excludeModuleRegex: Regex?

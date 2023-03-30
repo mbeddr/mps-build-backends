@@ -24,13 +24,13 @@ val GENERATION_TESTS = listOf(
     GenerationTest("generateBuildSolutionWithMpsEnvironment",
         "generate-build-solution", listOf("--model", "my.build.script", "--environment", "MPS")),
     GenerationTest("generateSimpleTestSolution",
-        "generate-simple", listOf("--exclude-module", "my.solution.with.errors"),expectSuccess = false),
+        "generate-simple", listOf("--exclude-module", "my.solution.with.errors")),
     GenerationTest("generateSimpleBuildTestSolution",
-        "generate-build-solution", listOf("--exclude-module", "my.solution.with.errors"),expectSuccess = false),
+        "generate-build-solution", listOf("--exclude-module", "my.solution.with.errors")),
     GenerationTest("generateExcludeModuleTestSolution",
-        "generate-simple", listOf("--exclude-module", "my.solution.with.*"),expectSuccess = false),
+        "generate-simple", listOf("--exclude-module", "my.solution.with.*")),
     GenerationTest("generateBuildExcludeModuleTestSolution",
-        "generate-simple", listOf("--exclude-module", "my.solution.with.*"),expectSuccess = false))
+        "generate-build-solution", listOf("--exclude-module", "my.solution.with.*")))
 
 
 
@@ -72,7 +72,7 @@ val MODELCHECK_TESTS = listOf(
  * @param project project folder name (in `projects/`)
  * @param args additional arguments to the command
  */
-data class GenerationTest(val name: String, val project: String, val args: List<Any>, val expectSuccess: Boolean = true) {
+data class GenerationTest(val name: String, val project: String, val args: List<Any>) {
     val projectDir = file("projects/$project")
 }
 
@@ -128,17 +128,7 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
                     include("**/classes_gen/**")
                 })
             }
-            isIgnoreExitValue = true
-            doLast {
-                val actualExitValue = executionResult.get().exitValue
-                val actualSuccess = actualExitValue == 0
-                if (actualSuccess != testCase.expectSuccess) {
-                    throw GradleException(
-                        "Generatecheck outcome: expected success: ${testCase.expectSuccess}, but was: $actualSuccess" +
-                                " (actual exit value $actualExitValue)"
-                    )
-                }
-            }
+
         }
     }
 
