@@ -1,6 +1,5 @@
 package de.itemis.mps.gradle.project.loader
 
-
 import com.xenomachina.argparser.ArgParser
 
 class GenerateArgs(parser: ArgParser) : Args(parser) {

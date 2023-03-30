@@ -32,8 +32,6 @@ val GENERATION_TESTS = listOf(
     GenerationTest("generateBuildExcludeModuleTestSolution",
         "generate-build-solution", listOf("--exclude-module", "my.solution.with.*")))
 
-
-
 val MODELCHECK_TESTS = listOf(
     ModelCheckTest("modelcheckSimple",
         project = "modelcheck",
