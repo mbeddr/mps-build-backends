@@ -136,6 +136,7 @@ private fun makeModels(proj: Project, models: List<SModel>): Boolean {
 }
 
 fun createMatcher(args: GenerateArgs) = ModuleAndModelMatcher(args.modules,args.excludeModules,args.models,args.excludeModules)
+
 fun generateProject(parsed: GenerateArgs, project: Project): Boolean {
     val ftr = AsyncPromise<List<SModel>>()
     val modelsList = ArrayList<SModel>()
@@ -143,24 +144,20 @@ fun generateProject(parsed: GenerateArgs, project: Project): Boolean {
     val moduleAndModelMatcher = createMatcher(parsed)
 
     project.modelAccess.runReadAction {
-        if (parsed.models.isNotEmpty() || parsed.excludeModels.isNotEmpty()) {
             modelsList.addAll(
                 project.projectModulesWithGenerators
                     .filter(moduleAndModelMatcher::isModuleIncluded)
                     .flatMap { module -> module.models }
                     .filter(moduleAndModelMatcher::isModelIncluded))
-        } else {
+
             modulesList.addAll(
                 project.projectModulesWithGenerators
                     .filter(moduleAndModelMatcher::isModuleIncluded)
             )
-        }
-
         val allCheckedModels = modulesList.flatMap { module ->
             module.models.filter { !SModelStereotype.isDescriptorModel(it) }
         }.union(modelsList).toList()
         ftr.setResult(allCheckedModels)
-
     }
 
     val modelsToGenerate = ftr.get()
