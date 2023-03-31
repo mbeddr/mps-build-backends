@@ -146,8 +146,10 @@ fun generateProject(parsed: GenerateArgs, project: Project): Boolean {
     project.modelAccess.runReadAction {
         if (parsed.models.isNotEmpty() || parsed.excludeModels.isNotEmpty()){
             modelsList.addAll(
-                project.projectModels
-                    .filter { parsed.models.contains(it.name.longName) })
+                project.projectModulesWithGenerators
+                    .filter(moduleAndModelMatcher::isModuleIncluded)
+                    .flatMap { module -> module.models }
+                    .filter(moduleAndModelMatcher::isModelIncluded))
                 } else {
                     modulesList.addAll(
                         project.projectModulesWithGenerators
@@ -157,11 +159,9 @@ fun generateProject(parsed: GenerateArgs, project: Project): Boolean {
         val allCheckedModels = modulesList.flatMap { module ->
             module.models.filter { !SModelStereotype.isDescriptorModel(it) }
         }.union(modelsList).toList()
-        ftr.setResult(allCheckedModels)
         print("ALL CHECKED MODELS: $allCheckedModels")
+        ftr.setResult(allCheckedModels)
     }
-
-
 
     val modelsToGenerate = ftr.get()
 
