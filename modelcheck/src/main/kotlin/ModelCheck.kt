@@ -287,7 +287,7 @@ private fun oneTestCasePerModule(modules: Iterable<SModule>, errorsPerModule: Ma
     }
 }
 
-fun createMatcher(args: ModelCheckArgs) = ModuleAndModelMatcher(args.modules,args.excludeModules,args.models,args.excludeModules)
+fun createMatcher(args: ModelCheckArgs) = ModuleAndModelMatcher(args.modules,args.excludeModules,args.models,args.excludeModels)
 
 fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: Project): Boolean {
     val checkers = environment.platform.findComponent(CheckerRegistry::class.java)!!.checkers

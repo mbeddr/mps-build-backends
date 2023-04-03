@@ -135,7 +135,7 @@ private fun makeModels(proj: Project, models: List<SModel>): Boolean {
     return false
 }
 
-fun createMatcher(args: GenerateArgs) = ModuleAndModelMatcher(args.modules,args.excludeModules,args.models,args.excludeModules)
+fun createMatcher(args: GenerateArgs) = ModuleAndModelMatcher(args.modules,args.excludeModules,args.models,args.excludeModels)
 
 fun generateProject(parsed: GenerateArgs, project: Project): Boolean {
     val ftr = AsyncPromise<List<SModel>>()
