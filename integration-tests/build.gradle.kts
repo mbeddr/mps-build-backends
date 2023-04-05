@@ -22,7 +22,15 @@ val GENERATION_TESTS = listOf(
     GenerationTest("generateBuildSolution", "generate-build-solution", listOf("--model", "my.build.script")),
     GenerationTest("generateSimple", "generate-simple", listOf()),
     GenerationTest("generateBuildSolutionWithMpsEnvironment",
-        "generate-build-solution", listOf("--model", "my.build.script", "--environment", "MPS")))
+        "generate-build-solution", listOf("--model", "my.build.script", "--environment", "MPS")),
+    GenerationTest("generateSimpleTestSolution",
+        "generate-simple", listOf("--exclude-module", "my.solution.with.errors")),
+    GenerationTest("generateSimpleBuildTestSolution",
+        "generate-build-solution", listOf("--exclude-module", "my.solution.with.errors")),
+    GenerationTest("generateExcludeModuleTestSolution",
+        "generate-simple", listOf("--exclude-module", "my.solution.with.*")),
+    GenerationTest("generateBuildExcludeModuleTestSolution",
+        "generate-build-solution", listOf("--exclude-module", "my.solution.with.*")))
 
 val MODELCHECK_TESTS = listOf(
     ModelCheckTest("modelcheckSimple",

@@ -44,6 +44,12 @@ optional arguments:
                                       info, warn, error, off. Default: warn.
 
   --model MODEL                       list of models to generate
+
+  --module MODULE                     list of modules to generate
+
+  --exclude-model EXCLUDE_MODEL       list of models to exclude from generate
+
+  --exclude-module EXCLUDE_MODULE     list of modules to exclude from generate
 ```
 
 ## Gradle example (Kotlin syntax)
