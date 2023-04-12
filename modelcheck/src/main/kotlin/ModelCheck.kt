@@ -5,6 +5,7 @@ import de.itemis.mps.gradle.junit.Failure
 import de.itemis.mps.gradle.junit.Testcase
 import de.itemis.mps.gradle.junit.Testsuite
 import de.itemis.mps.gradle.junit.Testsuites
+import de.itemis.mps.gradle.project.loader.ModuleAndModelMatcher
 import jetbrains.mps.checkers.ModelCheckerBuilder
 import jetbrains.mps.errors.CheckerRegistry
 import jetbrains.mps.errors.MessageStatus
@@ -300,7 +301,7 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
     // want to avoid when running in headless mode
     val errorCollector = CollectConsumer<IssueKindReportItem>()
 
-    val moduleAndModelMatcher = ModuleAndModelMatcher(args)
+    val moduleAndModelMatcher = ModuleAndModelMatcher(args.modules, args.excludeModules, args.models, args.excludeModels)
 
     val modelExtractor = object : ModelCheckerBuilder.ModelsExtractorImpl() {
         override fun includeModel(model: SModel): Boolean {

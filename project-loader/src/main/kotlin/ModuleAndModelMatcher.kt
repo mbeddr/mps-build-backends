@@ -1,4 +1,4 @@
-package de.itemis.mps.gradle.modelcheck
+package de.itemis.mps.gradle.project.loader
 
 import jetbrains.mps.smodel.SModelStereotype
 import org.jetbrains.mps.openapi.model.SModel
@@ -12,12 +12,6 @@ class ModuleAndModelMatcher {
         this.includeModelRegex = regexFromAlternativesOrNull(models)
         this.excludeModelRegex = regexFromAlternativesOrNull(excludeModels)
     }
-
-    constructor(args: ModelCheckArgs) : this(
-        modules = args.modules,
-        excludeModules = args.excludeModules,
-        models = args.models,
-        excludeModels = args.excludeModels)
 
     private val includeModuleRegex: Regex?
     private val excludeModuleRegex: Regex?
