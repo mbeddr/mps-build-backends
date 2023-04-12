@@ -87,9 +87,8 @@ private fun createScript(proj: Project, models: List<SModel>): IScript {
             }
             allFacets.addAll(facetNamesFromMakeAspect)
 
-            val facetNamesFromRegistry = allUsedLanguages
-                .flatMap { facetRegistry.getFacetsForLanguage(it.qualifiedName) }
-                .map { it.name }
+            val facetsFromRegistry = getFacetsForLanguages(facetRegistry, allUsedLanguages)
+            val facetNamesFromRegistry = facetsFromRegistry.map { it.name }
 
             if (logger.isInfoEnabled) {
                 logger.info("Additional facets found in FacetRegistry for used languages: $facetNamesFromRegistry")
@@ -106,6 +105,17 @@ private fun createScript(proj: Project, models: List<SModel>): IScript {
     // todo: not sure if we really need the final target to be Make.make all the time. The code was taken fom #BuildMakeService.defaultMakeScript
     return scb.withFacetNames(allFacets).withFinalTarget(ITarget.Name("jetbrains.mps.make.facets.Make.make")).toScript()
 }
+
+private fun getFacetsForLanguages(facetRegistry: FacetRegistry, allUsedLanguages: Set<SLanguage>) =
+    try {
+        getFacetsForLanguagesMps20213(facetRegistry, allUsedLanguages)
+    } catch (e: NoSuchMethodException) {
+        allUsedLanguages.flatMap { facetRegistry.getFacetsForLanguage(it.qualifiedName) }
+    }
+
+@Suppress("UNCHECKED_CAST")
+private fun getFacetsForLanguagesMps20213(facetRegistry: FacetRegistry, allUsedLanguages: Set<SLanguage>): Iterable<IFacet> =
+    facetRegistry.javaClass.getMethod("getFacetsForLanguages", java.lang.Iterable::class.java).invoke(facetRegistry, allUsedLanguages) as Iterable<IFacet>
 
 private fun makeModels(proj: Project, models: List<SModel>): Boolean {
     val session = MakeSession(proj, MsgHandler(), true)
