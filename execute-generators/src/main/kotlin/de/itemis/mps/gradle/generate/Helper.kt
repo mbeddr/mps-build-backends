@@ -14,17 +14,17 @@ import jetbrains.mps.messages.IMessage
 import jetbrains.mps.messages.IMessageHandler
 import jetbrains.mps.messages.MessageKind
 import jetbrains.mps.project.Project
+import jetbrains.mps.smodel.ModelAccessHelper
 import jetbrains.mps.smodel.SLanguageHierarchy
-import jetbrains.mps.smodel.SModelStereotype
 import jetbrains.mps.smodel.language.LanguageRegistry
 import jetbrains.mps.smodel.resources.ModelsToResources
 import jetbrains.mps.smodel.runtime.MakeAspectDescriptor
 import jetbrains.mps.tool.builder.make.BuildMakeService
+import jetbrains.mps.util.Computable
 import org.apache.log4j.Logger
 import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.mps.openapi.language.SLanguage
 import org.jetbrains.mps.openapi.model.SModel
-import org.jetbrains.mps.openapi.module.SModule
 
 private val logger = Logger.getLogger("de.itemis.mps.gradle.generate")
 
@@ -147,32 +147,22 @@ private fun makeModels(proj: Project, models: List<SModel>): Boolean {
 
 
 fun generateProject(parsed: GenerateArgs, project: Project): Boolean {
-    val ftr = AsyncPromise<List<SModel>>()
-    val modelsList = ArrayList<SModel>()
-    val modulesList = ArrayList<SModule>()
     val moduleAndModelMatcher = ModuleAndModelMatcher(parsed.modules, parsed.excludeModules, parsed.models, parsed.excludeModels)
 
-    project.modelAccess.runReadAction {
-        modelsList.addAll(
-            project.projectModulesWithGenerators
-                .filter(moduleAndModelMatcher::isModuleIncluded)
-                .flatMap { module -> module.models }
-                .filter(moduleAndModelMatcher::isModelIncluded))
-        modulesList.addAll(
-            project.projectModulesWithGenerators
-                .filter(moduleAndModelMatcher::isModuleIncluded)
-        )
-        val allCheckedModels = modulesList.flatMap { module ->
-            module.models.filter { !SModelStereotype.isDescriptorModel(it) }
-        }.union(modelsList).toList()
-        ftr.setResult(allCheckedModels)
-    }
+    val (modulesToInclude, modelsToGenerate) = ModelAccessHelper(project.modelAccess).runReadAction (Computable {
+        val modules = project.projectModulesWithGenerators.filter(moduleAndModelMatcher::isModuleIncluded)
+        val models = modules
+            .flatMap { module -> module.models }
+            .filter(moduleAndModelMatcher::isModelIncluded)
 
-    val modelsToGenerate = ftr.get()
+        modules to models
+    })
 
-    if (modelsToGenerate == null) {
-        logger.error("failed to fetch modelsToGenerate")
-        return false
+    if (logger.isInfoEnabled &&
+        (parsed.models.isNotEmpty() || parsed.excludeModels.isNotEmpty()
+                || parsed.modules.isNotEmpty() || parsed.excludeModules.isNotEmpty())) {
+        logger.info("Modules included in generation: $modulesToInclude")
+        logger.info("Models included in generation: $modelsToGenerate")
     }
 
     if (parsed.environmentKind == EnvironmentKind.IDEA) {
