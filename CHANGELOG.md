@@ -9,7 +9,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- `generator`: extended plugin with the possibility to define include and exclude lists of models and solutions similar to the modelchecking plugin
+- `generate`: options to include and exclude lists of models and solutions, similar to `modelcheck`.
+
+### Fixed
+
+- `generate`: applicable make facets are now retrieved correctly on MPS 2021.3. 
 
 ## [1.5]
 

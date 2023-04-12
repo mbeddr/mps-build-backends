@@ -15,6 +15,9 @@ usage: execute-generators [-h] [--plugin PLUGIN]... [--macro MACRO]...
                           [--build-number BUILD_NUMBER] --project PROJECT
                           [--test-mode] [--environment ENVIRONMENT]
                           [--log-level LOG_LEVEL] [--model MODEL]...
+                          [--module MODULE]...
+                          [--exclude-model EXCLUDE_MODEL]...
+                          [--exclude-module EXCLUDE_MODULE]...
 
 required arguments:
   --project PROJECT                   project to generate from
@@ -47,9 +50,11 @@ optional arguments:
 
   --module MODULE                     list of modules to generate
 
-  --exclude-model EXCLUDE_MODEL       list of models to exclude from generate
+  --exclude-model EXCLUDE_MODEL       list of models to exclude from
+                                      generation
 
-  --exclude-module EXCLUDE_MODULE     list of modules to exclude from generate
+  --exclude-module EXCLUDE_MODULE     list of modules to exclude from
+                                      generation
 ```
 
 ## Gradle example (Kotlin syntax)
