@@ -16,21 +16,35 @@ dependencies {
     modelcheck(project(":modelcheck"))
 }
 
-val SUPPORTED_MPS_VERSIONS = arrayOf("2021.1.4", "2021.2.5", "2021.3.1")
+val SUPPORTED_MPS_VERSIONS = arrayOf("2021.1.4", "2021.2.5", "2021.3.2")
 
 val GENERATION_TESTS = listOf(
     GenerationTest("generateBuildSolution", "generate-build-solution", listOf("--model", "my.build.script")),
     GenerationTest("generateSimple", "generate-simple", listOf()),
     GenerationTest("generateBuildSolutionWithMpsEnvironment",
         "generate-build-solution", listOf("--model", "my.build.script", "--environment", "MPS")),
-    GenerationTest("generateSimpleTestSolution",
-        "generate-simple", listOf("--exclude-module", "my.solution.with.errors")),
-    GenerationTest("generateSimpleBuildTestSolution",
-        "generate-build-solution", listOf("--exclude-module", "my.solution.with.errors")),
-    GenerationTest("generateExcludeModuleTestSolution",
-        "generate-simple", listOf("--exclude-module", "my.solution.with.*")),
-    GenerationTest("generateBuildExcludeModuleTestSolution",
-        "generate-build-solution", listOf("--exclude-module", "my.solution.with.*")))
+
+    GenerationTest(
+        name = "generateIncorrect",
+        project = "generate-with-errors",
+        args = listOf("--log-level=all"),
+        expectSuccess = false),
+    GenerationTest(
+        name = "generateExcludeIncorrectModule",
+        project = "generate-with-errors",
+        args = listOf("--exclude-module", "solution.with.errors")
+    ),
+    GenerationTest(
+        name = "generateExcludeIncorrectModel",
+        project = "generate-with-errors",
+        args = listOf("--exclude-model", "solution.with.errors.incorrect")
+    ),
+    GenerationTest(
+        name = "generateIncludeCorrectModelOnly",
+        project = "generate-with-errors",
+        args = listOf("--model", "correct.model")
+    )
+)
 
 val MODELCHECK_TESTS = listOf(
     ModelCheckTest("modelcheckSimple",
@@ -70,7 +84,7 @@ val MODELCHECK_TESTS = listOf(
  * @param project project folder name (in `projects/`)
  * @param args additional arguments to the command
  */
-data class GenerationTest(val name: String, val project: String, val args: List<Any>) {
+data class GenerationTest(val name: String, val project: String, val args: List<Any>, val expectSuccess: Boolean = true) {
     val projectDir = file("projects/$project")
 }
 
@@ -125,7 +139,23 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
                     include("**/source_gen.caches/**")
                     include("**/classes_gen/**")
                 })
+
+                println("Deleting MPS caches in ${mpsHome}/system")
+                delete(fileTree(mpsHome) { include("system/**") })
             }
+
+            // Check exit value manually
+            isIgnoreExitValue = true
+            doLast {
+                val actualExitValue = executionResult.get().exitValue
+                val actualSuccess = actualExitValue == 0
+                if (actualSuccess != testCase.expectSuccess) {
+                    throw GradleException(
+                        "Generate outcome: expected success: ${testCase.expectSuccess}, but was: $actualSuccess" +
+                                " (actual exit value $actualExitValue)")
+                }
+            }
+
         }
     }
 
