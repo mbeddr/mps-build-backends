@@ -9,16 +9,22 @@ plugins {
     `maven-publish`
 }
 
-val mpsVersion: String by project
-
+val mpsZip by configurations.creating
 dependencies {
-    compileOnly("com.jetbrains:mps-openapi:$mpsVersion")
-    compileOnly("com.jetbrains:mps-core:$mpsVersion")
-    compileOnly("com.jetbrains:mps-tool:$mpsVersion")
-    compileOnly("com.jetbrains:mps-messaging:$mpsVersion")
-    compileOnly("com.jetbrains:platform-api:$mpsVersion")
-    compileOnly("com.jetbrains:util:$mpsVersion")
     compileOnly("log4j:log4j:1.2.17")
+
+    mpsZip(libs.mps)
+
+    compileOnly(zipTree({ mpsZip.singleFile }).matching {
+        include("lib/mps-openapi.jar")
+        include("lib/mps-core.jar")
+        include("lib/mps-messaging.jar")
+        include("lib/platform-api.jar")
+        include("lib/util.jar")
+
+        include("lib/mpsant/mps-tool.jar")
+    })
+
     implementation(project(":project-loader"))
 }
 

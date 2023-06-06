@@ -30,20 +30,21 @@ configurations {
 }
 
 dependencies {
-    val mpsRuntime by configurations.getting
+    compileOnly("log4j:log4j:1.2.17")
 
     api("com.xenomachina:kotlin-argparser:$kotlinArgParserVersion")
     api("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$fastXmlJacksonVersion")
 
-    mpsRuntime("com.jetbrains:mps-core:$mpsVersion")
-    mpsRuntime("com.jetbrains:mps-environment:$mpsVersion")
-    mpsRuntime("com.jetbrains:mps-platform:$mpsVersion")
-    mpsRuntime("com.jetbrains:mps-openapi:$mpsVersion")
-    mpsRuntime("com.jetbrains:platform-api:$mpsVersion")
-    mpsRuntime("com.jetbrains:util:$mpsVersion")
-    mpsRuntime("log4j:log4j:1.2.17")
+    mpsRuntime(zipTree({ mpsZip.singleFile }).matching {
+        include("lib/mps-core.jar")
+        include("lib/mps-environment.jar")
+        include("lib/mps-platform.jar")
+        include("lib/mps-openapi.jar")
+        include("lib/platform-api.jar")
+        include("lib/util.jar")
+    })
 
-    mpsZip("com.jetbrains:mps:$mpsVersion")
+    mpsZip(libs.mps)
 
     testImplementation("junit:junit:4.13.1")
     testImplementation("org.xmlunit:xmlunit-core:2.6.+")

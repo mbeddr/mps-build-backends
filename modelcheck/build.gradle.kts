@@ -11,19 +11,27 @@ plugins {
     `maven-publish`
 }
 
-val mpsVersion: String by project
+val mpsZip by configurations.creating
 
 dependencies {
-    compileOnly("com.jetbrains:mps-environment:$mpsVersion")
-    compileOnly("com.jetbrains:mps-openapi:$mpsVersion")
-    compileOnly("com.jetbrains:mps-core:$mpsVersion")
-    compileOnly("com.jetbrains:mps-modelchecker:$mpsVersion")
-    compileOnly("com.jetbrains:mps-httpsupport-runtime:$mpsVersion")
-    compileOnly("com.jetbrains:mps-project-check:$mpsVersion")
-    compileOnly("com.jetbrains:mps-platform:$mpsVersion")
-    compileOnly("com.jetbrains:platform-api:$mpsVersion")
-    compileOnly("com.jetbrains:util:$mpsVersion")
     compileOnly("log4j:log4j:1.2.17")
+    mpsZip(libs.mps)
+
+    compileOnly(zipTree({ mpsZip.singleFile }).matching {
+        include("lib/mps-environment.jar")
+        include("lib/mps-openapi.jar")
+        include("lib/mps-core.jar")
+        include("lib/mps-platform.jar")
+        include("lib/mps-project-check.jar")
+        include("lib/platform-api.jar")
+        include("lib/util.jar")
+
+        include("lib/mpsant/mps-tool.jar")
+
+        include("plugins/mps-modelchecker/lib/modelchecker.jar")
+        include("plugins/mps-httpsupport/solutions/jetbrains.mps.ide.httpsupport.runtime.jar")
+    })
+
     implementation(project(":project-loader"))
 
     implementation(kotlin("test"))
