@@ -1,3 +1,5 @@
+import java.nio.file.Files
+
 buildscript {
     configurations.classpath {
         resolutionStrategy.activateDependencyLocking()
@@ -19,7 +21,8 @@ dependencies {
 val SUPPORTED_MPS_VERSIONS = arrayOf("2021.1.4", "2021.2.5", "2021.3.2")
 
 val GENERATION_TESTS = listOf(
-    GenerationTest("generateBuildSolution", "generate-build-solution", listOf("--model", "my.build.script")),
+    GenerationTest("generateBuildSolution", "generate-build-solution", listOf("--model", "my.build.script"),
+        expectation = GenerationTestExpectation.SuccessWithFiles("solutions/my.build/build.xml")),
     GenerationTest("generateSimple", "generate-simple", listOf()),
     GenerationTest("generateBuildSolutionWithMpsEnvironment",
         "generate-build-solution", listOf("--model", "my.build.script", "--environment", "MPS")),
@@ -28,7 +31,7 @@ val GENERATION_TESTS = listOf(
         name = "generateIncorrect",
         project = "generate-with-errors",
         args = listOf("--log-level=all"),
-        expectSuccess = false),
+        expectation = GenerationTestExpectation.Failure),
     GenerationTest(
         name = "generateExcludeIncorrectModule",
         project = "generate-with-errors",
@@ -84,8 +87,45 @@ val MODELCHECK_TESTS = listOf(
  * @param project project folder name (in `projects/`)
  * @param args additional arguments to the command
  */
-data class GenerationTest(val name: String, val project: String, val args: List<Any>, val expectSuccess: Boolean = true) {
+data class GenerationTest(val name: String, val project: String, val args: List<Any>,
+                          val expectation: GenerationTestExpectation = GenerationTestExpectation.Success) {
     val projectDir = file("projects/$project")
+}
+
+interface GenerationTestExpectation {
+    fun verify(testCase: GenerationTest, exitCode: Int): String?
+    fun prepare(testCase: GenerationTest) {}
+
+    object Success : GenerationTestExpectation {
+        override fun verify(testCase: GenerationTest, exitCode: Int): String? =
+            if (exitCode == 0) null else "generation failed unexpectedly (exit value $exitCode)"
+    }
+
+    object Failure : GenerationTestExpectation {
+        override fun verify(testCase: GenerationTest, exitCode: Int): String? =
+            if (exitCode != 0) null else "generation succeeded unexpectedly"
+    }
+
+    data class SuccessWithFiles(val files: Set<File>) : GenerationTestExpectation {
+        constructor(vararg fileNames: String) : this(fileNames.map { File(it) }.toSet())
+
+        override fun verify(testCase: GenerationTest, exitCode: Int): String? {
+            if (exitCode != 0) return "generation failed unexpectedly (actual exit value $exitCode)"
+
+            val missingFiles = files.filter { !testCase.projectDir.resolve(it).exists() }
+
+            if (missingFiles.isEmpty()) return null
+
+            return missingFiles.joinToString(prefix = "the following files were not generated in ${testCase.projectDir}: ")
+        }
+
+        override fun prepare(testCase: GenerationTest) {
+            files.forEach {
+                val absolutePath = testCase.projectDir.resolve(it).toPath()
+                if (Files.exists(absolutePath)) Files.delete(absolutePath)
+            }
+        }
+    }
 }
 
 /**
@@ -144,15 +184,17 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
                 delete(fileTree(mpsHome) { include("system/**") })
             }
 
+            doFirst {
+                testCase.expectation.prepare(testCase)
+            }
+
             // Check exit value manually
             isIgnoreExitValue = true
             doLast {
                 val actualExitValue = executionResult.get().exitValue
-                val actualSuccess = actualExitValue == 0
-                if (actualSuccess != testCase.expectSuccess) {
-                    throw GradleException(
-                        "Generate outcome: expected success: ${testCase.expectSuccess}, but was: $actualSuccess" +
-                                " (actual exit value $actualExitValue)")
+                val message = testCase.expectation.verify(testCase, actualExitValue)
+                if (message != null) {
+                    throw GradleException("Generation test ${testCase.name} failed: $message")
                 }
             }
 
