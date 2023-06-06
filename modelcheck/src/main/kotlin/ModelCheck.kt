@@ -5,6 +5,7 @@ import de.itemis.mps.gradle.junit.Failure
 import de.itemis.mps.gradle.junit.Testcase
 import de.itemis.mps.gradle.junit.Testsuite
 import de.itemis.mps.gradle.junit.Testsuites
+import de.itemis.mps.gradle.logging.detectLogging
 import de.itemis.mps.gradle.project.loader.ModuleAndModelMatcher
 import jetbrains.mps.checkers.ModelCheckerBuilder
 import jetbrains.mps.errors.CheckerRegistry
@@ -17,7 +18,6 @@ import jetbrains.mps.project.Project
 import jetbrains.mps.smodel.SModelStereotype
 import jetbrains.mps.tool.environment.Environment
 import jetbrains.mps.util.CollectConsumer
-import org.apache.log4j.Logger
 import org.jetbrains.mps.openapi.model.SModel
 import org.jetbrains.mps.openapi.module.SModule
 import java.io.File
@@ -26,7 +26,8 @@ import java.util.Date
 import kotlin.math.min
 import kotlin.test.fail
 
-val logger = Logger.getLogger("de.itemis.mps.gradle.modelcheck")
+val logging = detectLogging()
+val logger = logging.getLogger("de.itemis.mps.gradle.modelcheck")
 
 enum class ReportFormat {
     @Deprecated(

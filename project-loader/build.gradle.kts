@@ -24,6 +24,7 @@ configurations {
 
 dependencies {
     compileOnly("log4j:log4j:1.2.17")
+    compileOnly("commons-logging:commons-logging:1.2")
 
     api("com.xenomachina:kotlin-argparser:2.0.7")
     api("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.+")
@@ -33,6 +34,7 @@ dependencies {
         include("lib/mps-environment.jar")
         include("lib/mps-platform.jar")
         include("lib/mps-openapi.jar")
+        include("lib/mps-logging.jar")
         include("lib/platform-api.jar")
         include("lib/util.jar")
     })

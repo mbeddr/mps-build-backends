@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.11
+
+### Added
+
+- MPS 2022.x is now supported:
+  * commons-logging is used to support both log4j (MPS 2021.3 and below) and java.util.logging (MPS 2022.2 and above)
+    frameworks.
+  * The new API in 2022.x to determine applicable facets is supported.
+
+### Changed
+
+- `project-loader`: logging subsystem changed and moved from the default package to `de.itemis.mps.gradle.logging`.
+  This is a breaking change for the library but not for the backends.
+
 ## 1.10
 
 ### Added

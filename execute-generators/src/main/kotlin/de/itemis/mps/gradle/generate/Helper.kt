@@ -2,9 +2,11 @@ package de.itemis.mps.gradle.generate
 
 
 import com.intellij.openapi.util.IconLoader
+import de.itemis.mps.gradle.logging.detectLogging
 import de.itemis.mps.gradle.project.loader.EnvironmentKind
 import de.itemis.mps.gradle.project.loader.ModuleAndModelMatcher
 import jetbrains.mps.generator.GenerationSettingsProvider
+import jetbrains.mps.generator.runtime.TemplateModule
 import jetbrains.mps.make.MakeSession
 import jetbrains.mps.make.facet.FacetRegistry
 import jetbrains.mps.make.facet.IFacet
@@ -17,15 +19,16 @@ import jetbrains.mps.messages.MessageKind
 import jetbrains.mps.project.Project
 import jetbrains.mps.smodel.ModelAccessHelper
 import jetbrains.mps.smodel.SLanguageHierarchy
+import jetbrains.mps.smodel.language.GeneratorRuntime
 import jetbrains.mps.smodel.language.LanguageRegistry
+import jetbrains.mps.smodel.language.LanguageRuntime
 import jetbrains.mps.smodel.resources.ModelsToResources
 import jetbrains.mps.smodel.runtime.MakeAspectDescriptor
 import jetbrains.mps.tool.builder.make.BuildMakeService
 import jetbrains.mps.util.Computable
-import org.apache.log4j.Logger
-import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.mps.openapi.language.SLanguage
 import org.jetbrains.mps.openapi.model.SModel
+import java.util.*
 
 enum class GenerationResult(val exitCode: Int) {
     Success(0),
@@ -35,16 +38,11 @@ enum class GenerationResult(val exitCode: Int) {
     fun isFailure() = this != Success
 }
 
-private val logger = Logger.getLogger("de.itemis.mps.gradle.generate")
-
-private val DEFAULT_FACETS = listOf(
-        IFacet.Name("jetbrains.mps.lang.core.Generate"),
-        IFacet.Name("jetbrains.mps.lang.core.TextGen"),
-        IFacet.Name("jetbrains.mps.make.facets.Make"),
-        IFacet.Name("jetbrains.mps.lang.makeup.Makeup"))
+val logging = detectLogging()
+val logger = logging.getLogger("de.itemis.mps.gradle.generate")
 
 private class MsgHandler : IMessageHandler {
-    val logger = Logger.getLogger("de.itemis.mps.gradle.generate.messages")
+    val logger = logging.getLogger("de.itemis.mps.gradle.generate.messages")
     override fun handle(msg: IMessage) {
         when (msg.kind) {
             MessageKind.INFORMATION -> logger.info(msg.text, msg.exception)
@@ -56,26 +54,65 @@ private class MsgHandler : IMessageHandler {
 
 }
 
-private fun createScript(proj: Project, models: List<SModel>): IScript {
+private interface LanguageLookupProblems {
+    fun languageNotFoundForNamespace(namespace: SLanguage)
+}
 
-    val allUsedLanguagesAR: AsyncPromise<Set<SLanguage>> = AsyncPromise()
-    val registry = LanguageRegistry.getInstance(proj.repository)
+private fun allLanguagesToActivateFacets(languageRegistry: LanguageRegistry,
+                                         usedLanguages: Iterable<SLanguage>,
+                                         problems: LanguageLookupProblems): Set<SLanguage> {
+    val result = mutableSetOf<SLanguage>()
+    val seen = mutableSetOf<GeneratorRuntime>()
+    val nsq: Queue<SLanguage> = ArrayDeque()
 
-    proj.modelAccess.runReadAction {
-        val allDirectlyUsedLanguages = models.map { it.module }.distinct().flatMap { it.usedLanguages }.distinct()
-        allUsedLanguagesAR.setResult(SLanguageHierarchy(registry, allDirectlyUsedLanguages).extended)
+    nsq.addAll(usedLanguages.distinct())
+
+    // We need to care about used languages of employed generators as we need to respect
+    // all facets of all languages that may appear during generation of a model/module in the make script
+    while (nsq.isNotEmpty()) {
+        val ns: SLanguage = nsq.remove()
+        if (!result.add(ns)) {
+            continue
+        }
+
+        val lr: LanguageRuntime? = languageRegistry.getLanguage(ns)
+        if (lr == null) {
+            problems.languageNotFoundForNamespace(ns)
+            continue
+        }
+
+        for (gr in lr.generators.filterIsInstance<TemplateModule>()) {
+            if (seen.add(gr)) {
+                nsq.addAll(gr.targetLanguages)
+            }
+        }
     }
 
-    val allUsedLanguages = allUsedLanguagesAR.get()
+    return result
+}
+
+private fun createScript(proj: Project, models: List<SModel>): IScript {
+
+    val registry = LanguageRegistry.getInstance(proj.repository)
+
+    val allUsedLanguages = ModelAccessHelper(proj.modelAccess).runReadAction (Computable {
+        val directlyUsedLanguages = models.map { it.module }.distinct().flatMap { it.usedLanguages }.distinct()
+        val indirectlyUsedLanguages = SLanguageHierarchy(registry, directlyUsedLanguages).extended
+
+        val result = allLanguagesToActivateFacets(registry, indirectlyUsedLanguages, object : LanguageLookupProblems {
+            override fun languageNotFoundForNamespace(namespace: SLanguage) {
+                throw IllegalStateException("Language $namespace was not found, cannot analyze it for facets")
+            }
+        })
+
+        return@Computable result
+    })
 
     val facetRegistry = proj.getComponent(FacetRegistry::class.java)
     val scb = ScriptBuilder(facetRegistry)
 
     // Map of facet name to source, for logging
-    val allFacets = DEFAULT_FACETS.toMutableList()
-    if (logger.isInfoEnabled) {
-        logger.info("Default make facets: $DEFAULT_FACETS")
-    }
+    val allFacets = mutableListOf<IFacet.Name>()
 
     when {
         allUsedLanguages == null -> logger.error("failed to retrieve used languages")
@@ -115,11 +152,14 @@ private fun createScript(proj: Project, models: List<SModel>): IScript {
     return scb.withFacetNames(allFacets).withFinalTarget(ITarget.Name("jetbrains.mps.make.facets.Make.make")).toScript()
 }
 
-private fun getFacetsForLanguages(facetRegistry: FacetRegistry, allUsedLanguages: Set<SLanguage>) =
+private fun getFacetsForLanguages(facetRegistry: FacetRegistry, languages: Set<SLanguage>) =
     try {
-        getFacetsForLanguagesMps20213(facetRegistry, allUsedLanguages)
+        getFacetsForLanguagesMps20213(facetRegistry, languages)
     } catch (e: NoSuchMethodException) {
-        allUsedLanguages.flatMap { facetRegistry.getFacetsForLanguage(it.qualifiedName) }
+        languages.flatMap {
+            @Suppress("DEPRECATION", "removal")
+            facetRegistry.getFacetsForLanguage(it.qualifiedName)
+        }
     }
 
 @Suppress("UNCHECKED_CAST")

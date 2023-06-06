@@ -2,13 +2,12 @@ package de.itemis.mps.gradle.modelcheck
 
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.mainBody
-import configureLogging
 import de.itemis.mps.gradle.project.loader.executeWithEnvironmentAndProject
 
 fun main(args: Array<String>) = mainBody("modelcheck") {
 
     val parsed = ArgParser(args).parseInto(::ModelCheckArgs)
-    configureLogging(parsed.logLevel)
+    logging.configure(parsed.logLevel)
 
     var hasErrors = true
     try {
