@@ -45,7 +45,7 @@ dependencies {
 
     mpsZip("com.jetbrains:mps:$mpsVersion")
 
-    testImplementation("junit:junit:4.12")
+    testImplementation("junit:junit:4.13.1")
     testImplementation("org.xmlunit:xmlunit-core:2.6.+")
 }
 
