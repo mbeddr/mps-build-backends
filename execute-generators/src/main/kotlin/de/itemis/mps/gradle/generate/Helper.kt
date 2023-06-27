@@ -4,6 +4,7 @@ package de.itemis.mps.gradle.generate
 import com.intellij.openapi.util.IconLoader
 import de.itemis.mps.gradle.project.loader.EnvironmentKind
 import de.itemis.mps.gradle.project.loader.ModuleAndModelMatcher
+import jetbrains.mps.generator.GenerationSettingsProvider
 import jetbrains.mps.make.MakeSession
 import jetbrains.mps.make.facet.FacetRegistry
 import jetbrains.mps.make.facet.IFacet
@@ -121,6 +122,10 @@ private fun makeModels(proj: Project, models: List<SModel>): Boolean {
     val session = MakeSession(proj, MsgHandler(), true)
     val res = ModelsToResources(models).resources().toList()
     val makeService = BuildMakeService()
+
+    val generationSettings = proj.getComponent(GenerationSettingsProvider::class.java).generationSettings
+    generationSettings.isParallelGenerator = true
+    generationSettings.numberOfParallelThreads = 2
 
     if (res.isEmpty()) {
         logger.warn("nothing to generate")
