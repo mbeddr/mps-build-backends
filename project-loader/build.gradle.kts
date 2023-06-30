@@ -7,6 +7,7 @@ buildscript {
 plugins {
     kotlin("jvm")
     `maven-publish`
+    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.13.2"
 }
 
 val mpsVersion: String by project
@@ -48,6 +49,10 @@ dependencies {
 
     testImplementation("junit:junit:4.13.1")
     testImplementation("org.xmlunit:xmlunit-core:2.6.+")
+}
+
+kotlin {
+    //explicitApi()
 }
 
 publishing {
