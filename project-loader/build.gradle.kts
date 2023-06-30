@@ -52,7 +52,7 @@ dependencies {
 }
 
 kotlin {
-    //explicitApi()
+    explicitApi()
 }
 
 publishing {

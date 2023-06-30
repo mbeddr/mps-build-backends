@@ -9,12 +9,12 @@ import jetbrains.mps.util.PathManager
 import org.apache.log4j.Logger
 import java.io.File
 
-data class Plugin(
+public data class Plugin(
         val id: String,
         val path: String
 )
 
-data class Macro(
+public data class Macro(
         val name: String,
         val value: String
 )
@@ -64,7 +64,7 @@ private fun basicEnvironmentConfig(): EnvironmentConfig {
  * Execute [action] in the context of an initialized MPS/IDEA environment. Shuts down the environment after the action
  * finishes, even if it throws an exception.
  */
-fun <T> executeWithEnvironment(
+public fun <T> executeWithEnvironment(
     environmentKind: EnvironmentKind,
     plugins: List<Plugin> = emptyList(),
     macros: List<Macro> = emptyList(),
@@ -174,7 +174,7 @@ fun <T> executeWithEnvironment(
  * @param testMode whether to enable IDEA test mode.
  * @param action the action to execute with the project.
  */
-fun <T> executeWithEnvironmentAndProject(
+public fun <T> executeWithEnvironmentAndProject(
     environmentKind: EnvironmentKind,
     projectDir: File,
     plugins: List<Plugin> = emptyList(),
@@ -183,7 +183,7 @@ fun <T> executeWithEnvironmentAndProject(
     buildNumber: String? = null,
     testMode: Boolean = false,
     action: (Environment, Project) -> T
-) = executeWithEnvironment(
+): T = executeWithEnvironment(
         environmentKind = environmentKind,
         plugins = plugins,
         macros = macros,
@@ -225,7 +225,7 @@ fun <T> executeWithEnvironmentAndProject(
  * @param testMode whether to enable IDEA test mode.
  * @param action the action to execute with the project.
  */
-fun <T> executeWithProject(
+public fun <T> executeWithProject(
     project: File,
     plugins: List<Plugin> = emptyList(),
     macros: List<Macro> = emptyList(),
@@ -254,7 +254,7 @@ fun <T> executeWithProject(
  *  @param action the action to execute with the project.
  *
  */
-fun <T> executeWithProject(parsed: Args, action: (Project) -> T) = executeWithProject(
+public fun <T> executeWithProject(parsed: Args, action: (Project) -> T): T = executeWithProject(
     project = parsed.project,
     plugins = parsed.plugins,
     macros = parsed.macros,
@@ -274,7 +274,7 @@ fun <T> executeWithProject(parsed: Args, action: (Project) -> T) = executeWithPr
  *  @param action the action to execute with the project.
  *
  */
-fun <T> executeWithEnvironmentAndProject(parsed: Args, action: (Environment, Project) -> T) = executeWithEnvironmentAndProject(
+public fun <T> executeWithEnvironmentAndProject(parsed: Args, action: (Environment, Project) -> T): T = executeWithEnvironmentAndProject(
     projectDir = parsed.project,
     plugins = parsed.plugins,
     macros = parsed.macros,

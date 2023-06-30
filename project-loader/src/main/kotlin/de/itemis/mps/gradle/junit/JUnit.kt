@@ -3,12 +3,12 @@ package de.itemis.mps.gradle.junit
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.dataformat.xml.annotation.*
 
-data class Skipped(@field:JacksonXmlText() val content: String)
+public data class Skipped(@field:JacksonXmlText() val content: String)
 
 /**
  * Indicates that the test errored.  An errored test is one that had an unanticipated problem. e.g., an unchecked throwable; or a problem with the implementation of the test. Contains as a text node relevant data for the error, e.g., a stack trace
  */
-data class Error(
+public data class Error(
         /**
          * The error message. e.g., if a java exception is thrown, the return value of getMessage()
          */
@@ -24,7 +24,7 @@ data class Error(
 /**
  * Indicates that the test failed. A failure is a test which the code has explicitly failed by using the mechanisms for that purpose. e.g., via an assertEquals. Contains as a text node relevant data for the failure, e.g., a stack trace
  */
-data class Failure(
+public data class Failure(
         /**
          * The message specified in the assert
          */
@@ -37,14 +37,14 @@ data class Failure(
         val type: String,
         @field:JacksonXmlText() val content: String? = null)
 
-data class SystemOut(@field:JacksonXmlText()
+public data class SystemOut(@field:JacksonXmlText()
                      val content: String)
 
-data class SystemErr(@field:JacksonXmlText()
+public data class SystemErr(@field:JacksonXmlText()
                      val content: String)
 
 
-data class Testcase(
+public data class Testcase(
         /**
          * Name of the test method
          */
@@ -75,7 +75,7 @@ data class Testcase(
 )
 
 @JacksonXmlRootElement(localName = "testsuite")
-data class Testsuite(
+public data class Testsuite(
         /**
          * Full class name of the test for non-aggregated testsuite documents. Class name without the package for aggregated testsuites documents
          */
@@ -150,14 +150,14 @@ data class Testsuite(
         val systemError: SystemErr = SystemErr("")
 )
 
-data class Property(
+public data class Property(
         @field:JacksonXmlProperty(isAttribute = true)
         val name: String,
         @field:JacksonXmlProperty(isAttribute = true)
         val value: String)
 
 @JacksonXmlRootElement(localName = "testsuites")
-data class Testsuites(@field:JacksonXmlElementWrapper(useWrapping = false, localName = "testsuite")
+public data class Testsuites(@field:JacksonXmlElementWrapper(useWrapping = false, localName = "testsuite")
                       @field:JacksonXmlProperty(localName = "testsuite")
                       val testsuites: List<Testsuite>
 )

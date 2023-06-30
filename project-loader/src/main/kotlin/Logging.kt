@@ -3,7 +3,7 @@ import org.apache.log4j.Level
 import org.apache.log4j.Logger
 import org.apache.log4j.SimpleLayout
 
-enum class LogLevel {
+public enum class LogLevel {
     ALL,
     INFO,
     WARN,
@@ -24,7 +24,7 @@ private fun LogLevel.toLog4j(): Level =
  * Adds a [ConsoleAppender] to [logger] if [logLevel] is anything but [LogLevel.OFF]. The appender is configured with
  * the corresponding [threshold][ConsoleAppender.threshold].
  */
-fun configureLogging(logLevel: LogLevel) {
+public fun configureLogging(logLevel: LogLevel) {
     val logger = Logger.getLogger("de.itemis.mps")
     if (logLevel != LogLevel.OFF) {
         val appender = ConsoleAppender(SimpleLayout(), "System.err")

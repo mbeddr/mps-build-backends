@@ -5,8 +5,8 @@ import org.jetbrains.mps.openapi.model.SModel
 import org.jetbrains.mps.openapi.model.SModelName
 import org.jetbrains.mps.openapi.module.SModule
 
-class ModuleAndModelMatcher {
-    constructor(modules: Collection<String>, excludeModules: Collection<String>, models: Collection<String>, excludeModels: Collection<String>) {
+public class ModuleAndModelMatcher {
+    public constructor(modules: Collection<String>, excludeModules: Collection<String>, models: Collection<String>, excludeModels: Collection<String>) {
         this.includeModuleRegex = regexFromAlternativesOrNull(modules)
         this.excludeModuleRegex = regexFromAlternativesOrNull(excludeModules)
         this.includeModelRegex = regexFromAlternativesOrNull(models)
@@ -21,7 +21,7 @@ class ModuleAndModelMatcher {
     /**
      * Whether the model should be included, according to include/exclude rules. Does NOT check module inclusion rules.
      */
-    fun isModelIncluded(model: SModel): Boolean {
+    public fun isModelIncluded(model: SModel): Boolean {
         return !SModelStereotype.isDescriptorModel(model)
                 && !SModelStereotype.isStubModel(model)
                 && isModelNameIncluded(model.name)
@@ -30,7 +30,7 @@ class ModuleAndModelMatcher {
     /**
      * Whether the model should be included, according to include/exclude rules. Does NOT check module inclusion rules.
      */
-    fun isModelNameIncluded(modelName: SModelName): Boolean {
+    public fun isModelNameIncluded(modelName: SModelName): Boolean {
         val name = modelName.longName
         if (includeModelRegex != null && !includeModelRegex.matches(name)) {
             return false
@@ -43,13 +43,13 @@ class ModuleAndModelMatcher {
         return true
     }
 
-    fun isModelAndModuleIncluded(model: SModel): Boolean {
+    public fun isModelAndModuleIncluded(model: SModel): Boolean {
         return isModelIncluded(model) && isModuleIncluded(model.module)
     }
 
-    fun isModuleIncluded(module: SModule): Boolean = isModuleNameIncluded(module.moduleName!!)
+    public fun isModuleIncluded(module: SModule): Boolean = isModuleNameIncluded(module.moduleName!!)
 
-    fun isModuleNameIncluded(name: String): Boolean {
+    public fun isModuleNameIncluded(name: String): Boolean {
         if (includeModuleRegex != null && !includeModuleRegex.matches(name)) {
             return false
         }
