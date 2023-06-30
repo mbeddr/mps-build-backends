@@ -23,6 +23,9 @@ val SUPPORTED_MPS_VERSIONS = arrayOf("2021.1.4", "2021.2.5", "2021.3.2")
 val GENERATION_TESTS = listOf(
     GenerationTest("generateBuildSolution", "generate-build-solution", listOf("--model", "my.build.script"),
         expectation = GenerationTestExpectation.SuccessWithFiles("solutions/my.build/build.xml")),
+    GenerationTest("generateBuildSolutionParallel", "generate-build-solution",
+        listOf("--model", "my.build.script", "--parallel-generation-threads=4"),
+        expectation = GenerationTestExpectation.SuccessWithFiles("solutions/my.build/build.xml")),
     GenerationTest("generateSimple", "generate-simple", listOf()),
     GenerationTest("generateBuildSolutionWithMpsEnvironment",
         "generate-build-solution", listOf("--model", "my.build.script", "--environment", "MPS")),
