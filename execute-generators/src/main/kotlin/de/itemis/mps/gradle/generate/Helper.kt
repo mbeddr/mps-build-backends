@@ -4,6 +4,7 @@ package de.itemis.mps.gradle.generate
 import com.intellij.openapi.util.IconLoader
 import de.itemis.mps.gradle.project.loader.EnvironmentKind
 import de.itemis.mps.gradle.project.loader.ModuleAndModelMatcher
+import jetbrains.mps.generator.GenerationSettingsProvider
 import jetbrains.mps.make.MakeSession
 import jetbrains.mps.make.facet.FacetRegistry
 import jetbrains.mps.make.facet.IFacet
@@ -60,7 +61,7 @@ private fun createScript(proj: Project, models: List<SModel>): IScript {
     val allUsedLanguages = allUsedLanguagesAR.get()
 
     val facetRegistry = proj.getComponent(FacetRegistry::class.java)
-    val scb = ScriptBuilder (facetRegistry)
+    val scb = ScriptBuilder(facetRegistry)
 
     // Map of facet name to source, for logging
     val allFacets = DEFAULT_FACETS.toMutableList()
@@ -147,6 +148,20 @@ private fun makeModels(proj: Project, models: List<SModel>): Boolean {
 
 
 fun generateProject(parsed: GenerateArgs, project: Project): Boolean {
+
+    parsed.parallelGenerationThreads.let {
+        val generationSettings = project.getComponent(GenerationSettingsProvider::class.java).generationSettings
+        when {
+            it == 0 -> generationSettings.isParallelGenerator = false
+            it > 0 -> {
+                logger.warn("Using parallel generation with $it threads")
+                generationSettings.isParallelGenerator = true
+                generationSettings.numberOfParallelThreads = it
+            }
+            else -> error("--parallel-generation-threads must be >= 0")
+        }
+    }
+
     val moduleAndModelMatcher = ModuleAndModelMatcher(parsed.modules, parsed.excludeModules, parsed.models, parsed.excludeModels)
 
     val (modulesToInclude, modelsToGenerate) = ModelAccessHelper(project.modelAccess).runReadAction (Computable {

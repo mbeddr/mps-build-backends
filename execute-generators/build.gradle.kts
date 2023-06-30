@@ -18,6 +18,7 @@ dependencies {
     compileOnly(zipTree({ mpsZip.singleFile }).matching {
         include("lib/mps-openapi.jar")
         include("lib/mps-core.jar")
+        include("lib/mps-generator.jar")
         include("lib/mps-messaging.jar")
         include("lib/platform-api.jar")
         include("lib/util.jar")
