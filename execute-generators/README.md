@@ -14,6 +14,7 @@ usage: execute-generators [-h] [--plugin PLUGIN]... [--macro MACRO]...
                           [--plugin-location PLUGIN_LOCATION]
                           [--build-number BUILD_NUMBER] --project PROJECT
                           [--test-mode] [--environment ENVIRONMENT]
+                          [--parallel-generation-threads THREADS]
                           [--log-level LOG_LEVEL] [--model MODEL]...
                           [--module MODULE]...
                           [--exclude-model EXCLUDE_MODEL]...
@@ -24,37 +25,41 @@ required arguments:
 
 
 optional arguments:
-  -h, --help                          show this help message and exit
+  -h, --help                              show this help message and exit
+        
+  --plugin PLUGIN                         plugin to to load. The format is
+                                          --plugin=<id>::<path>
+        
+  --macro MACRO                           macro to define. The format is
+                                          --macro=<name>::<value>
+        
+  --plugin-location PLUGIN_LOCATION       location to load additional plugins from
+        
+  --build-number BUILD_NUMBER             build number used to determine if the
+                                          plugins are compatible
+        
+  --test-mode                             run in test mode
+        
+  --environment ENVIRONMENT               kind of environment to initialize,
+                                          supported values are 'idea' (default),
+                                          'mps'
+                                      
+  --parallel-generation-threads THREADS   number of threads to use for parallel
+                                          generation. Default: 0 (parallel
+                                          generation disabled).                                      
 
-  --plugin PLUGIN                     plugin to to load. The format is
-                                      --plugin=<id>::<path>
-
-  --macro MACRO                       macro to define. The format is
-                                      --macro=<name>::<value>
-
-  --plugin-location PLUGIN_LOCATION   location to load additional plugins from
-
-  --build-number BUILD_NUMBER         build number used to determine if the
-                                      plugins are compatible
-
-  --test-mode                         run in test mode
-
-  --environment ENVIRONMENT           kind of environment to initialize,
-                                      supported values are 'idea' (default),
-                                      'mps'
-
-  --log-level LOG_LEVEL               console log level. Supported values:
-                                      info, warn, error, off. Default: warn.
-
-  --model MODEL                       list of models to generate
-
-  --module MODULE                     list of modules to generate
-
-  --exclude-model EXCLUDE_MODEL       list of models to exclude from
-                                      generation
-
-  --exclude-module EXCLUDE_MODULE     list of modules to exclude from
-                                      generation
+  --log-level LOG_LEVEL                   console log level. Supported values:
+                                          info, warn, error, off. Default: warn.
+        
+  --model MODEL                           list of models to generate
+        
+  --module MODULE                         list of modules to generate
+        
+  --exclude-model EXCLUDE_MODEL           list of models to exclude from
+                                          generation
+        
+  --exclude-module EXCLUDE_MODULE         list of modules to exclude from
+                                          generation
 ```
 
 ## Gradle example (Kotlin syntax)
