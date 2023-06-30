@@ -82,7 +82,7 @@ val unpackMps by tasks.registering(Sync::class) {
 }
 
 val generate by tasks.registering(JavaExec::class) {
-    dependsOn(unpackTask)
+    dependsOn(unpackMps)
     classpath(executeGenerators)
     classpath(fileTree(mpsHome) {
         include("lib/**/*.jar")
