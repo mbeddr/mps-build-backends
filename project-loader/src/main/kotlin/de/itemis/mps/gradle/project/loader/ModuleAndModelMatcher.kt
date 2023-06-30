@@ -5,18 +5,16 @@ import org.jetbrains.mps.openapi.model.SModel
 import org.jetbrains.mps.openapi.model.SModelName
 import org.jetbrains.mps.openapi.module.SModule
 
-public class ModuleAndModelMatcher {
-    public constructor(modules: Collection<String>, excludeModules: Collection<String>, models: Collection<String>, excludeModels: Collection<String>) {
-        this.includeModuleRegex = regexFromAlternativesOrNull(modules)
-        this.excludeModuleRegex = regexFromAlternativesOrNull(excludeModules)
-        this.includeModelRegex = regexFromAlternativesOrNull(models)
-        this.excludeModelRegex = regexFromAlternativesOrNull(excludeModels)
-    }
-
-    private val includeModuleRegex: Regex?
-    private val excludeModuleRegex: Regex?
-    private val includeModelRegex: Regex?
-    private val excludeModelRegex: Regex?
+public class ModuleAndModelMatcher public constructor(
+    modules: Collection<String>,
+    excludeModules: Collection<String>,
+    models: Collection<String>,
+    excludeModels: Collection<String>
+) {
+    private val includeModuleRegex: Regex? = regexFromAlternativesOrNull(modules)
+    private val excludeModuleRegex: Regex? = regexFromAlternativesOrNull(excludeModules)
+    private val includeModelRegex: Regex? = regexFromAlternativesOrNull(models)
+    private val excludeModelRegex: Regex? = regexFromAlternativesOrNull(excludeModels)
 
     /**
      * Whether the model should be included, according to include/exclude rules. Does NOT check module inclusion rules.

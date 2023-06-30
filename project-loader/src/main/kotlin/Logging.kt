@@ -21,8 +21,8 @@ private fun LogLevel.toLog4j(): Level =
     }
 
 /**
- * Adds a [ConsoleAppender] to [logger] if [logLevel] is anything but [LogLevel.OFF]. The appender is configured with
- * the corresponding [threshold][ConsoleAppender.threshold].
+ * Adds a [ConsoleAppender] to the `de.itemis.mps` logger if [logLevel] is anything but [LogLevel.OFF]. The appender is
+ * configured with the corresponding [threshold][ConsoleAppender.threshold].
  */
 public fun configureLogging(logLevel: LogLevel) {
     val logger = Logger.getLogger("de.itemis.mps")

@@ -266,7 +266,7 @@ public fun <T> executeWithProject(parsed: Args, action: (Project) -> T): T = exe
 )
 
 /**
- *  Convenient function to invoke [executeWithEnvironmentProject] with arguments parsed form the command line.
+ *  Convenient function to invoke [executeWithEnvironmentAndProject] with arguments parsed form the command line.
  *
  *  @see [executeWithEnvironmentAndProject] for more details.
  *
