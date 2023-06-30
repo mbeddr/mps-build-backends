@@ -21,7 +21,7 @@ usage: execute-generators [-h] [--plugin PLUGIN]... [--macro MACRO]...
                           [--exclude-module EXCLUDE_MODULE]...
 
 required arguments:
-  --project PROJECT                   project to generate from
+  --project PROJECT                       project to generate from
 
 
 optional arguments:
