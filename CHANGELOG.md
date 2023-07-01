@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8]
+
+### Added
+
+- `project-loader`: new overload of `executeWithEnvironmentAndProject` that allows passing an `EnvironmentConfig`,
+  new method to create an `EnvironmentConfig` from a list of plugins and macros. These two methods can be used together
+  to customize the configuration of the environment beyond the possibilities offered by the existing methods (e.g. one
+  can add libraries to the environment).
+
 ## [1.7]
 
 ### Added

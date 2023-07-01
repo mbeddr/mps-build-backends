@@ -42,13 +42,11 @@ private fun EnvironmentConfig.addPreInstalledPlugin(folder: String, id: String):
     return this
 }
 
-private fun basicEnvironmentConfig(): EnvironmentConfig {
-
+private fun basicEnvironmentConfig(): EnvironmentConfig =
     // This is a somewhat "safe" set of default plugins. It should work with most of the projects we have encountered
     // mbeddr projects won't build with this set of plugins for unknown reasons, most probably the runtime
     // dependencies in the mbeddr plugins are so messed up that they simply broken beyond repair.
-
-    val config = EnvironmentConfig
+    EnvironmentConfig
         .emptyConfig()
         .withDefaultPlugins()
         .withBuildPlugin()
@@ -57,8 +55,6 @@ private fun basicEnvironmentConfig(): EnvironmentConfig {
         .withVcsPlugin()
         .withJavaPlugin()
         .addPreInstalledPlugin("mps-httpsupport", "jetbrains.mps.ide.httpsupport")
-    return config
-}
 
 /**
  * Execute [action] in the context of an initialized MPS/IDEA environment. Shuts down the environment after the action
@@ -73,7 +69,18 @@ public fun <T> executeWithEnvironment(
     testMode: Boolean = false,
     action: (Environment) -> T
 ): T {
+    val cfg = buildEnvironmentConfig(plugins, pluginLocation, macros, testMode)
 
+    return executeWithEnvironment(cfg, environmentKind, pluginLocation, buildNumber, action)
+}
+
+public fun <T> executeWithEnvironment(
+    cfg: EnvironmentConfig,
+    environmentKind: EnvironmentKind,
+    pluginLocation: File?,
+    buildNumber: String?,
+    action: (Environment) -> T
+): T {
     val propertyOverrides = mutableListOf<Pair<String, String?>>()
 
     try {
@@ -93,28 +100,6 @@ public fun <T> executeWithEnvironment(
             )
             System.setProperty(PROPERTY_PLUGINS_COMPATIBLE_BUILD, buildNumber)
         }
-
-        val cfg = basicEnvironmentConfig()
-
-        plugins.forEach {
-            if (File(it.path).isAbsolute) {
-                cfg.addPlugin(it.path, it.id)
-            }
-            /**
-             *  MPS implementation accepts only absolute paths as plugin path:
-             *  https://github.com/JetBrains/MPS/blob/2019.3/core/tool/environment/source_gen/jetbrains/mps/tool/environment/EnvironmentConfig.java#L68
-             *  therefore we additionally check if the specified path is a subfolder of the optional
-             *  pluginLocation
-             */
-            else if (pluginLocation != null && File(pluginLocation, it.path).exists()) {
-                cfg.addPlugin(File(pluginLocation, it.path).absolutePath, it.id)
-            } else {
-                cfg.addPreInstalledPlugin(it.path, it.id)
-            }
-        }
-        macros.forEach { cfg.addMacro(it.name, File(it.value)) }
-
-        if (testMode) cfg.withTestModeOn()
 
         logger.info("creating $environmentKind environment")
 
@@ -157,6 +142,36 @@ public fun <T> executeWithEnvironment(
     }
 }
 
+public fun buildEnvironmentConfig(
+    plugins: List<Plugin> = listOf(),
+    pluginLocation: File? = null,
+    macros: List<Macro> = listOf(),
+    testMode: Boolean = false
+): EnvironmentConfig {
+    val cfg = basicEnvironmentConfig()
+
+    plugins.forEach {
+        if (File(it.path).isAbsolute) {
+            cfg.addPlugin(it.path, it.id)
+        }
+        /**
+         *  MPS implementation accepts only absolute paths as plugin path:
+         *  https://github.com/JetBrains/MPS/blob/2019.3/core/tool/environment/source_gen/jetbrains/mps/tool/environment/EnvironmentConfig.java#L68
+         *  therefore we additionally check if the specified path is a subfolder of the optional
+         *  pluginLocation
+         */
+        else if (pluginLocation != null && File(pluginLocation, it.path).exists()) {
+            cfg.addPlugin(File(pluginLocation, it.path).absolutePath, it.id)
+        } else {
+            cfg.addPreInstalledPlugin(it.path, it.id)
+        }
+    }
+    macros.forEach { cfg.addMacro(it.name, File(it.value)) }
+
+    if (testMode) cfg.withTestModeOn()
+    return cfg
+}
+
 /**
  * Execute [action] in the context of an initialized MPS/IDEA environment and project located in [projectDir]. Closes
  * the project and shuts down the environment and  after the action finishes, even if it throws an exception.
@@ -184,13 +199,34 @@ public fun <T> executeWithEnvironmentAndProject(
     testMode: Boolean = false,
     action: (Environment, Project) -> T
 ): T = executeWithEnvironment(
-        environmentKind = environmentKind,
-        plugins = plugins,
-        macros = macros,
-        pluginLocation = pluginLocation,
-        buildNumber = buildNumber,
-        testMode = testMode
-    ) { environment ->
+    environmentKind = environmentKind,
+    plugins = plugins,
+    macros = macros,
+    pluginLocation = pluginLocation,
+    buildNumber = buildNumber,
+    testMode = testMode,
+    action = openProjectAndRunAction(projectDir, action)
+)
+
+public fun <T> executeWithEnvironmentAndProject(
+    config: EnvironmentConfig,
+    environmentKind: EnvironmentKind,
+    projectDir: File,
+    pluginLocation: File? = null,
+    buildNumber: String? = null,
+    action: (Environment, Project) -> T
+): T = executeWithEnvironment(
+    config,
+    environmentKind = environmentKind,
+    pluginLocation = pluginLocation,
+    buildNumber = buildNumber,
+    action = openProjectAndRunAction(projectDir, action)
+)
+
+private fun <T> openProjectAndRunAction(
+    projectDir: File,
+    action: (Environment, Project) -> T
+): (Environment) -> T = fun(environment: Environment): T {
     logger.info("opening project: ${projectDir.absolutePath}")
 
     val project = environment.openProject(projectDir)
@@ -199,14 +235,13 @@ public fun <T> executeWithEnvironmentAndProject(
     environment.flushAllEvents()
 
     try {
-        return@executeWithEnvironment action(environment, project)
+        return action(environment, project)
     } finally {
         logger.info("disposing project")
         project.dispose()
         logger.info("project disposed")
     }
 }
-
 
 /**
  * Execute [action] in the context of an initialized MPS/IDEA environment and project located in [project]. Closes
