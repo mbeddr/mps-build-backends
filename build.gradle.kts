@@ -27,12 +27,12 @@ val versionMajor = 1
 val versionMinor = 8
 
 val suffix = run {
-    val buildNumberStr = System.getenv("BUILD_NUMBER")
-    if (buildNumberStr.isNullOrEmpty()) {
+    val buildCounterStr = System.getenv("BUILD_COUNTER")
+    if (buildCounterStr.isNullOrEmpty()) {
         return@run "-SNAPSHOT"
     } else {
         val gitCommitHash = getCommandOutput("git", "rev-parse", "--short=7", "HEAD")
-        return@run ".$buildNumberStr.$gitCommitHash"
+        return@run ".$buildCounterStr.$gitCommitHash"
     }
 }
 
