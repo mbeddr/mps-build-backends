@@ -60,6 +60,10 @@ optional arguments:
         
   --exclude-module EXCLUDE_MODULE         list of modules to exclude from
                                           generation
+
+error exit codes:
+  254: nothing to generate
+  255: general MPS error
 ```
 
 ## Gradle example (Kotlin syntax)

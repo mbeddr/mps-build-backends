@@ -9,7 +9,7 @@ import org.apache.log4j.Logger
 
 fun main(args: Array<String>) = mainBody("execute-generators") {
     val parsed = ArgParser(args).parseInto(::GenerateArgs)
-    var result = false
+    var result = GenerationResult.Error
 
     val logger = Logger.getLogger("de.itemis.mps.gradle.generate")
     configureLogging(parsed.logLevel)
@@ -21,9 +21,9 @@ fun main(args: Array<String>) = mainBody("execute-generators") {
     } catch (t: Throwable) {
         logger.fatal("error generating", t)
     }
-    if(!result) {
-        throw SystemExitException("generation failed", -1)
+    if(result.isFailure()) {
+        throw SystemExitException("generation failed", result.exitCode)
     }
 
-    System.exit(0)
+    System.exit(result.exitCode)
 }

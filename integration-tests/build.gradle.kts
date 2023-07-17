@@ -29,6 +29,8 @@ val GENERATION_TESTS = listOf(
     GenerationTest("generateSimple", "generate-simple", listOf()),
     GenerationTest("generateBuildSolutionWithMpsEnvironment",
         "generate-build-solution", listOf("--model", "my.build.script", "--environment", "MPS")),
+    GenerationTest("generateEmpty", "generate-simple", listOf("--exclude-model", "my.solution.java"),
+        expectation = GenerationTestExpectation.Empty),
 
     GenerationTest(
         name = "generateIncorrect",
@@ -106,7 +108,12 @@ interface GenerationTestExpectation {
 
     object Failure : GenerationTestExpectation {
         override fun verify(testCase: GenerationTest, exitCode: Int): String? =
-            if (exitCode != 0) null else "generation succeeded unexpectedly"
+            if (exitCode == 255) null else "generation did not fail unexpectedly (exit value $exitCode)"
+    }
+
+    object Empty : GenerationTestExpectation {
+        override fun verify(testCase: GenerationTest, exitCode: Int): String? =
+            if (exitCode == 254) null else "generation was not empty unexpectedly (exit value $exitCode)"
     }
 
     data class SuccessWithFiles(val files: Set<File>) : GenerationTestExpectation {
