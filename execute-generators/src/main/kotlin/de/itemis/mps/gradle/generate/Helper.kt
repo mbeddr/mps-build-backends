@@ -27,6 +27,14 @@ import org.jetbrains.concurrency.AsyncPromise
 import org.jetbrains.mps.openapi.language.SLanguage
 import org.jetbrains.mps.openapi.model.SModel
 
+enum class GenerationResult(val exitCode: Int) {
+    Success(0),
+    NothingToGenerate(254),
+    Error(255);
+
+    fun isFailure() = this != Success
+}
+
 private val logger = Logger.getLogger("de.itemis.mps.gradle.generate")
 
 private val DEFAULT_FACETS = listOf(
@@ -118,14 +126,14 @@ private fun getFacetsForLanguages(facetRegistry: FacetRegistry, allUsedLanguages
 private fun getFacetsForLanguagesMps20213(facetRegistry: FacetRegistry, allUsedLanguages: Set<SLanguage>): Iterable<IFacet> =
     facetRegistry.javaClass.getMethod("getFacetsForLanguages", java.lang.Iterable::class.java).invoke(facetRegistry, allUsedLanguages) as Iterable<IFacet>
 
-private fun makeModels(proj: Project, models: List<SModel>): Boolean {
+private fun makeModels(proj: Project, models: List<SModel>): GenerationResult {
     val session = MakeSession(proj, MsgHandler(), true)
     val res = ModelsToResources(models).resources().toList()
     val makeService = BuildMakeService()
 
     if (res.isEmpty()) {
         logger.warn("nothing to generate")
-        return false
+        return GenerationResult.NothingToGenerate
     }
     logger.info("starting generation")
     val future = makeService.make(session, res, createScript(proj, models))
@@ -134,20 +142,20 @@ private fun makeModels(proj: Project, models: List<SModel>): Boolean {
         logger.info("generation finished")
         return if (result.isSucessful) {
             logger.info("generation result: successful")
-            true
+            GenerationResult.Success
         } else {
             logger.error("generation result: failed")
             logger.error(result)
-            false
+            GenerationResult.Error
         }
     } catch (ex: Exception) {
         logger.error("failed to generate", ex)
     }
-    return false
+    return GenerationResult.Error
 }
 
 
-fun generateProject(parsed: GenerateArgs, project: Project): Boolean {
+fun generateProject(parsed: GenerateArgs, project: Project): GenerationResult {
 
     parsed.parallelGenerationThreads.let {
         val generationSettings = project.getComponent(GenerationSettingsProvider::class.java).generationSettings

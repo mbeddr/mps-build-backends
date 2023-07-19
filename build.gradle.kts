@@ -24,7 +24,7 @@ allprojects {
 }
 
 val versionMajor = 1
-val versionMinor = 8
+val versionMinor = 9
 
 val suffix = run {
     val buildCounterStr = System.getenv("BUILD_COUNTER")
