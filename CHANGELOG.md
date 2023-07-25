@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10]
+
+### Added
+
+- `project-loader`: new `ProjectLoader` and related classes using builder pattern to simplify maintaining backward
+  compatibility in the future.
+
+### Deprecated
+
+- `project-loader`: global methods `executeWithEnvironment` and `executeWithEnvironmentAndProject` are now deprecated,
+  use the new `ProjectLoader` class instead.
+
 ## [1.9]
 
 ### Added

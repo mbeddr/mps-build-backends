@@ -3,63 +3,13 @@ package de.itemis.mps.gradle.project.loader
 import jetbrains.mps.project.Project
 import jetbrains.mps.tool.environment.Environment
 import jetbrains.mps.tool.environment.EnvironmentConfig
-import jetbrains.mps.tool.environment.IdeaEnvironment
-import jetbrains.mps.tool.environment.MpsEnvironment
-import jetbrains.mps.util.PathManager
-import org.apache.log4j.Logger
 import java.io.File
 
-public data class Plugin(
-        val id: String,
-        val path: String
-)
-
-public data class Macro(
-        val name: String,
-        val value: String
-)
-
-private val logger = Logger.getLogger("de.itemis.mps.gradle.project.loader")
-
 /**
- *  The Idea platform reads this property first to determine where additional plugins are loaded from.
- */
-private const val PROPERTY_PLUGINS_PATH = "idea.plugins.path"
-
-/**
- * At least starting from MPS 2018.2 this property is read by the platform to check against this value if a plugin
- * is compatible with the application. It seems to override all other means of checks, e.g. build number in
- * ApplicationInfo.
- */
-private const val PROPERTY_PLUGINS_COMPATIBLE_BUILD = "idea.plugins.compatible.build"
-
-/**
- * Since 2019.2 absolute plugin path has to be provided in addPlugin(), but suitable replacement addDistributedPlugin()
- * is private, therefore this extension is used as temporary convenient replacement
- */
-private fun EnvironmentConfig.addPreInstalledPlugin(folder: String, id: String): EnvironmentConfig {
-    this.addPlugin(PathManager.getPreInstalledPluginsPath() + "/" + folder, id)
-    return this
-}
-
-private fun basicEnvironmentConfig(): EnvironmentConfig =
-    // This is a somewhat "safe" set of default plugins. It should work with most of the projects we have encountered
-    // mbeddr projects won't build with this set of plugins for unknown reasons, most probably the runtime
-    // dependencies in the mbeddr plugins are so messed up that they simply broken beyond repair.
-    EnvironmentConfig
-        .emptyConfig()
-        .withDefaultPlugins()
-        .withBuildPlugin()
-        .withBootstrapLibraries()
-        .withWorkbenchPath()
-        .withVcsPlugin()
-        .withJavaPlugin()
-        .addPreInstalledPlugin("mps-httpsupport", "jetbrains.mps.ide.httpsupport")
-
-/**
- * Execute [action] in the context of an initialized MPS/IDEA environment. Shuts down the environment after the action
+ * Executes [action] in the context of an initialized MPS/IDEA environment. Shuts down the environment after the action
  * finishes, even if it throws an exception.
  */
+@Deprecated("Use ProjectLoader#execute(action)")
 public fun <T> executeWithEnvironment(
     environmentKind: EnvironmentKind,
     plugins: List<Plugin> = emptyList(),
@@ -68,109 +18,53 @@ public fun <T> executeWithEnvironment(
     buildNumber: String? = null,
     testMode: Boolean = false,
     action: (Environment) -> T
-): T {
-    val cfg = buildEnvironmentConfig(plugins, pluginLocation, macros, testMode)
+): T =
+    ProjectLoader.build {
+        environmentConfig {
+            this.plugins.addAll(plugins)
+            this.pluginLocation = pluginLocation
+            this.macros.addAll(macros)
+            this.testMode = testMode
+        }
+        this.environmentKind = environmentKind
+        this.buildNumber = buildNumber
+    }.execute(action)
 
-    return executeWithEnvironment(cfg, environmentKind, pluginLocation, buildNumber, action)
-}
-
+/**
+ * Executes [action] in the context of an initialized MPS/IDEA environment. Shuts down the environment after the action
+ * finishes, even if it throws an exception.
+ */
+@Deprecated("Use ProjectLoader#execute(action)")
 public fun <T> executeWithEnvironment(
     cfg: EnvironmentConfig,
     environmentKind: EnvironmentKind,
     pluginLocation: File?,
     buildNumber: String?,
     action: (Environment) -> T
-): T {
-    val propertyOverrides = mutableListOf<Pair<String, String?>>()
-
-    try {
-        if (pluginLocation != null) {
-            logger.info("overriding plugin location with: ${pluginLocation.absolutePath}")
-            propertyOverrides.add(Pair(PROPERTY_PLUGINS_PATH, System.getProperty(PROPERTY_PLUGINS_PATH)))
-            System.setProperty(PROPERTY_PLUGINS_PATH, pluginLocation.absolutePath)
+): T =
+    ProjectLoader.build {
+        environmentConfig {
+            initialConfig = cfg
+            this.pluginLocation = pluginLocation
         }
+        this.environmentKind = environmentKind
+        this.buildNumber = buildNumber
+    }.execute(action)
 
-        if (buildNumber != null) {
-            logger.info("setting build number to \"$buildNumber\"")
-            propertyOverrides.add(
-                Pair(
-                    PROPERTY_PLUGINS_COMPATIBLE_BUILD,
-                    System.getProperty(PROPERTY_PLUGINS_COMPATIBLE_BUILD)
-                )
-            )
-            System.setProperty(PROPERTY_PLUGINS_COMPATIBLE_BUILD, buildNumber)
-        }
-
-        logger.info("creating $environmentKind environment")
-
-        val environment: Environment = when (environmentKind) {
-            EnvironmentKind.IDEA -> IdeaEnvironment(cfg).apply {
-                logger.info("initializing IDEA environment")
-                init()
-            }
-
-            EnvironmentKind.MPS -> MpsEnvironment(cfg).apply {
-                logger.info("initializing MPS environment")
-                init()
-            }
-        }
-
-        try {
-            logger.info("flushing events")
-            environment.flushAllEvents()
-
-            return action(environment)
-        } finally {
-            logger.info("flushing events before environment disposal")
-            environment.flushAllEvents()
-            logger.info("disposing environment")
-            environment.dispose()
-            logger.info("environment disposed")
-        }
-
-    } finally {
-        // cleanup overridden property values to the state that they were before.
-        propertyOverrides.forEach {
-            // if a property wasn't set before the value is "null"
-            // setting null as a value for a System property will result in a NPE
-            if (it.second != null) {
-                System.setProperty(it.first, it.second!!)
-            } else {
-                System.clearProperty(it.first)
-            }
-        }
-    }
-}
-
+@Deprecated("Use EnvironmentConfigBuilder class")
 public fun buildEnvironmentConfig(
     plugins: List<Plugin> = listOf(),
     pluginLocation: File? = null,
     macros: List<Macro> = listOf(),
     testMode: Boolean = false
-): EnvironmentConfig {
-    val cfg = basicEnvironmentConfig()
-
-    plugins.forEach {
-        if (File(it.path).isAbsolute) {
-            cfg.addPlugin(it.path, it.id)
-        }
-        /**
-         *  MPS implementation accepts only absolute paths as plugin path:
-         *  https://github.com/JetBrains/MPS/blob/2019.3/core/tool/environment/source_gen/jetbrains/mps/tool/environment/EnvironmentConfig.java#L68
-         *  therefore we additionally check if the specified path is a subfolder of the optional
-         *  pluginLocation
-         */
-        else if (pluginLocation != null && File(pluginLocation, it.path).exists()) {
-            cfg.addPlugin(File(pluginLocation, it.path).absolutePath, it.id)
-        } else {
-            cfg.addPreInstalledPlugin(it.path, it.id)
-        }
+): EnvironmentConfig =
+    EnvironmentConfigBuilder().let {
+        it.plugins.addAll(plugins)
+        it.pluginLocation = pluginLocation
+        it.macros.addAll(macros)
+        it.testMode = testMode
+        it.build()
     }
-    macros.forEach { cfg.addMacro(it.name, File(it.value)) }
-
-    if (testMode) cfg.withTestModeOn()
-    return cfg
-}
 
 /**
  * Execute [action] in the context of an initialized MPS/IDEA environment and project located in [projectDir]. Closes
@@ -189,6 +83,7 @@ public fun buildEnvironmentConfig(
  * @param testMode whether to enable IDEA test mode.
  * @param action the action to execute with the project.
  */
+@Deprecated("Use ProjectLoader#executeWithProject(action)")
 public fun <T> executeWithEnvironmentAndProject(
     environmentKind: EnvironmentKind,
     projectDir: File,
@@ -198,16 +93,21 @@ public fun <T> executeWithEnvironmentAndProject(
     buildNumber: String? = null,
     testMode: Boolean = false,
     action: (Environment, Project) -> T
-): T = executeWithEnvironment(
-    environmentKind = environmentKind,
-    plugins = plugins,
-    macros = macros,
-    pluginLocation = pluginLocation,
-    buildNumber = buildNumber,
-    testMode = testMode,
-    action = openProjectAndRunAction(projectDir, action)
-)
+): T {
+    val loader = ProjectLoader.build {
+        environmentConfig {
+            this.plugins.addAll(elements = plugins)
+            this.pluginLocation = pluginLocation
+            this.macros.addAll(elements = macros)
+            this.testMode = testMode
+        }
+        this.environmentKind = environmentKind
+        this.buildNumber = buildNumber
+    }
+    return loader.executeWithProject(projectDir, action)
+}
 
+@Deprecated("Use ProjectLoader#executeWithProject(action)")
 public fun <T> executeWithEnvironmentAndProject(
     config: EnvironmentConfig,
     environmentKind: EnvironmentKind,
@@ -215,32 +115,16 @@ public fun <T> executeWithEnvironmentAndProject(
     pluginLocation: File? = null,
     buildNumber: String? = null,
     action: (Environment, Project) -> T
-): T = executeWithEnvironment(
-    config,
-    environmentKind = environmentKind,
-    pluginLocation = pluginLocation,
-    buildNumber = buildNumber,
-    action = openProjectAndRunAction(projectDir, action)
-)
-
-private fun <T> openProjectAndRunAction(
-    projectDir: File,
-    action: (Environment, Project) -> T
-): (Environment) -> T = fun(environment: Environment): T {
-    logger.info("opening project: ${projectDir.absolutePath}")
-
-    val project = environment.openProject(projectDir)
-
-    logger.info("flushing events")
-    environment.flushAllEvents()
-
-    try {
-        return action(environment, project)
-    } finally {
-        logger.info("disposing project")
-        project.dispose()
-        logger.info("project disposed")
+): T {
+    val loader = ProjectLoader.build {
+        environmentConfig {
+            this.initialConfig = config
+            this.pluginLocation = pluginLocation
+        }
+        this.environmentKind = environmentKind
+        this.buildNumber = buildNumber
     }
+    return loader.executeWithProject(projectDir, action)
 }
 
 /**
@@ -260,6 +144,7 @@ private fun <T> openProjectAndRunAction(
  * @param testMode whether to enable IDEA test mode.
  * @param action the action to execute with the project.
  */
+@Deprecated("Use ProjectLoader#executeWithProject(action)")
 public fun <T> executeWithProject(
     project: File,
     plugins: List<Plugin> = emptyList(),
@@ -269,15 +154,19 @@ public fun <T> executeWithProject(
     testMode: Boolean = false,
     environmentKind: EnvironmentKind = EnvironmentKind.IDEA,
     action: (Project) -> T
-): T = executeWithEnvironmentAndProject(
-    projectDir = project,
-    environmentKind = environmentKind,
-    plugins = plugins,
-    macros = macros,
-    pluginLocation = pluginLocation,
-    buildNumber = buildNumber,
-    testMode = testMode
-) { _, openedProject -> action(openedProject) }
+): T {
+    val loader = ProjectLoader.build {
+        environmentConfig {
+            this.pluginLocation = pluginLocation
+            this.plugins.addAll(plugins)
+            this.macros.addAll(macros)
+            this.testMode = testMode
+        }
+        this.environmentKind = environmentKind
+        this.buildNumber = buildNumber
+    }
+    return loader.executeWithProject(project) { _, p -> action(p) }
+}
 
 
 /**
@@ -289,16 +178,9 @@ public fun <T> executeWithProject(
  *  @param action the action to execute with the project.
  *
  */
-public fun <T> executeWithProject(parsed: Args, action: (Project) -> T): T = executeWithProject(
-    project = parsed.project,
-    plugins = parsed.plugins,
-    macros = parsed.macros,
-    buildNumber = parsed.buildNumber,
-    pluginLocation = parsed.pluginLocation,
-    testMode = parsed.testMode,
-    environmentKind = parsed.environmentKind,
-    action = action
-)
+@Deprecated("Use ProjectLoader#executeWithProject(action)")
+public fun <T> executeWithProject(parsed: Args, action: (Project) -> T): T =
+    parsed.buildLoader().executeWithProject(parsed.project) { _, p -> action(p) }
 
 /**
  *  Convenient function to invoke [executeWithEnvironmentAndProject] with arguments parsed form the command line.
@@ -309,13 +191,6 @@ public fun <T> executeWithProject(parsed: Args, action: (Project) -> T): T = exe
  *  @param action the action to execute with the project.
  *
  */
-public fun <T> executeWithEnvironmentAndProject(parsed: Args, action: (Environment, Project) -> T): T = executeWithEnvironmentAndProject(
-    projectDir = parsed.project,
-    plugins = parsed.plugins,
-    macros = parsed.macros,
-    buildNumber = parsed.buildNumber,
-    pluginLocation = parsed.pluginLocation,
-    testMode = parsed.testMode,
-    environmentKind = parsed.environmentKind,
-    action = action
-)
+@Deprecated("Use ProjectLoader#executeWithProject(action)")
+public fun <T> executeWithEnvironmentAndProject(parsed: Args, action: (Environment, Project) -> T): T =
+    parsed.buildLoader().executeWithProject(parsed.project, action)

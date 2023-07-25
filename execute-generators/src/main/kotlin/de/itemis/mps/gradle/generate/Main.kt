@@ -15,13 +15,14 @@ fun main(args: Array<String>) = mainBody("execute-generators") {
     configureLogging(parsed.logLevel)
 
     try {
-        result = executeWithProject(parsed) { project -> generateProject(parsed, project) }
+        result = parsed.buildLoader()
+            .executeWithProject(parsed.project) { _, project -> generateProject(parsed, project) }
     } catch (ex: java.lang.Exception) {
         logger.fatal("error generating", ex)
     } catch (t: Throwable) {
         logger.fatal("error generating", t)
     }
-    if(result.isFailure()) {
+    if (result.isFailure()) {
         throw SystemExitException("generation failed", result.exitCode)
     }
 

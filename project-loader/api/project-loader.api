@@ -163,6 +163,8 @@ public final class de/itemis/mps/gradle/junit/Testsuites {
 
 public class de/itemis/mps/gradle/project/loader/Args {
 	public fun <init> (Lcom/xenomachina/argparser/ArgParser;)V
+	public final fun buildLoader ()Lde/itemis/mps/gradle/project/loader/ProjectLoader;
+	public fun configureProjectLoader (Lde/itemis/mps/gradle/project/loader/ProjectLoader$Builder;)V
 	public final fun getBuildNumber ()Ljava/lang/String;
 	public final fun getEnvironmentKind ()Lde/itemis/mps/gradle/project/loader/EnvironmentKind;
 	public final fun getLogLevel ()LLogLevel;
@@ -171,6 +173,20 @@ public class de/itemis/mps/gradle/project/loader/Args {
 	public final fun getPlugins ()Ljava/util/List;
 	public final fun getProject ()Ljava/io/File;
 	public final fun getTestMode ()Z
+}
+
+public final class de/itemis/mps/gradle/project/loader/EnvironmentConfigBuilder {
+	public fun <init> ()V
+	public final fun build ()Ljetbrains/mps/tool/environment/EnvironmentConfig;
+	public final fun getInitialConfig ()Ljetbrains/mps/tool/environment/EnvironmentConfig;
+	public final fun getMacros ()Ljava/util/List;
+	public final fun getPluginLocation ()Ljava/io/File;
+	public final fun getPlugins ()Ljava/util/List;
+	public final fun getTestMode ()Z
+	public final fun setInitialConfig (Ljetbrains/mps/tool/environment/EnvironmentConfig;)V
+	public final fun setMacros (Ljava/util/List;)V
+	public final fun setPluginLocation (Ljava/io/File;)V
+	public final fun setTestMode (Z)V
 }
 
 public final class de/itemis/mps/gradle/project/loader/EnvironmentKind : java/lang/Enum {
@@ -229,5 +245,27 @@ public final class de/itemis/mps/gradle/project/loader/Plugin {
 	public final fun getPath ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
+}
+
+public final class de/itemis/mps/gradle/project/loader/ProjectLoader {
+	public static final field Companion Lde/itemis/mps/gradle/project/loader/ProjectLoader$Companion;
+	public synthetic fun <init> (Ljetbrains/mps/tool/environment/EnvironmentConfig;Lde/itemis/mps/gradle/project/loader/EnvironmentKind;Ljava/io/File;Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun execute (Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public final fun executeWithProject (Ljava/io/File;Lkotlin/jvm/functions/Function2;)Ljava/lang/Object;
+}
+
+public final class de/itemis/mps/gradle/project/loader/ProjectLoader$Builder {
+	public fun <init> ()V
+	public final fun build ()Lde/itemis/mps/gradle/project/loader/ProjectLoader;
+	public final fun environmentConfig (Lkotlin/jvm/functions/Function1;)V
+	public final fun getBuildNumber ()Ljava/lang/String;
+	public final fun getEnvironmentConfigBuilder ()Lde/itemis/mps/gradle/project/loader/EnvironmentConfigBuilder;
+	public final fun getEnvironmentKind ()Lde/itemis/mps/gradle/project/loader/EnvironmentKind;
+	public final fun setBuildNumber (Ljava/lang/String;)V
+	public final fun setEnvironmentKind (Lde/itemis/mps/gradle/project/loader/EnvironmentKind;)V
+}
+
+public final class de/itemis/mps/gradle/project/loader/ProjectLoader$Companion {
+	public final fun build (Lkotlin/jvm/functions/Function1;)Lde/itemis/mps/gradle/project/loader/ProjectLoader;
 }
 

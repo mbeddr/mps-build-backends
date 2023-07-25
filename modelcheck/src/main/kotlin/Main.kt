@@ -12,7 +12,9 @@ fun main(args: Array<String>) = mainBody("modelcheck") {
 
     var hasErrors = true
     try {
-        hasErrors = executeWithEnvironmentAndProject(parsed) { environment, project -> modelCheckProject(parsed, environment, project) }
+        hasErrors = parsed.buildLoader().executeWithProject(parsed.project) { environment, project ->
+            modelCheckProject(parsed, environment, project)
+        }
     } catch (ex: java.lang.Exception) {
         logger.fatal("error model checking", ex)
     } catch (t: Throwable) {

@@ -55,4 +55,17 @@ public open class Args(parser: ArgParser) {
         help = "console log level. Supported values: info, warn, error, off. Default: warn.") {
         LogLevel.valueOf(uppercase())
     }.default(LogLevel.WARN)
+
+    public open fun configureProjectLoader(builder: ProjectLoader.Builder) {
+        builder.environmentConfig {
+            plugins.addAll(this@Args.plugins)
+            pluginLocation = this@Args.pluginLocation
+            macros.addAll(this@Args.macros)
+            testMode = this@Args.testMode
+        }
+        builder.environmentKind = environmentKind
+        builder.buildNumber = buildNumber
+    }
+
+    public fun buildLoader(): ProjectLoader = ProjectLoader.build(this::configureProjectLoader)
 }
