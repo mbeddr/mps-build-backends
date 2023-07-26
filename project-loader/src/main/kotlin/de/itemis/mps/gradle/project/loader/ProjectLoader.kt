@@ -169,7 +169,7 @@ public class ProjectLoader private constructor(
             return action(environment, project)
         } finally {
             logger.info("disposing project")
-            project.dispose()
+            environment.closeProject(project)
             logger.info("project disposed")
         }
     }
