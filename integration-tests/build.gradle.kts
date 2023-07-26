@@ -239,6 +239,9 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
 
             mainClass.set("de.itemis.mps.gradle.generate.MainKt")
 
+            // Workaround for https://youtrack.jetbrains.com/issue/MPS-35992/MPSHeadlessPlatformStarter-race-condition-causes-unnecessary-wait
+            args("--test-mode")
+
             args("--project", testCase.projectDir)
             args(testCase.args)
 
@@ -289,6 +292,9 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
             workingDir = mpsHome
 
             mainClass.set("de.itemis.mps.gradle.modelcheck.MainKt")
+
+            // Workaround for https://youtrack.jetbrains.com/issue/MPS-35992/MPSHeadlessPlatformStarter-race-condition-causes-unnecessary-wait
+            args("--test-mode")
 
             args("--project", testCase.projectDir)
             args("--result-file", file("$buildDir/TEST-${testCase.name}-mps-${mpsVersion}-results.xml"))
