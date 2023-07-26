@@ -5,8 +5,7 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm")
-    `maven-publish`
+    id("kotlin-conventions")
 }
 
 val mpsZip by configurations.creating

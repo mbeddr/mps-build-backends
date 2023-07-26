@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 buildscript {
     configurations.classpath {
         resolutionStrategy.activateDependencyLocking()
@@ -7,8 +5,7 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm")
-    `maven-publish`
+    id("kotlin-conventions")
 }
 
 val mpsZip by configurations.creating

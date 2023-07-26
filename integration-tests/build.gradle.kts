@@ -8,6 +8,7 @@ buildscript {
 
 plugins {
     base
+    id("base-conventions")
 }
 
 val executeGenerators by configurations.creating

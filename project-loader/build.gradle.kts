@@ -5,8 +5,7 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm")
-    `maven-publish`
+    id("kotlin-conventions")
     id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.13.2"
 }
 
@@ -33,8 +32,8 @@ configurations {
 dependencies {
     compileOnly("log4j:log4j:1.2.17")
 
-    api("com.xenomachina:kotlin-argparser:$kotlinArgParserVersion")
-    api("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$fastXmlJacksonVersion")
+    api("com.xenomachina:kotlin-argparser:2.0.7")
+    api("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.+")
 
     mpsRuntime(zipTree({ mpsZip.singleFile }).matching {
         include("lib/mps-core.jar")

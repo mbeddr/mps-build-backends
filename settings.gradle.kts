@@ -1,3 +1,9 @@
+pluginManagement {
+    plugins {
+        kotlin("jvm") version "1.6.10" apply false
+    }
+}
+
 rootProject.name = "mps-build-backends"
 
 include("execute-generators")
