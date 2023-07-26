@@ -24,7 +24,11 @@ internal class LoggingJul : Logging {
             if (formatter != null) {
                 handler.formatter = formatter
 
-                // Avoid duplicate log messages
+                // Skip parent handlers to avoid duplicate log messages for higher levels (WARN and above).
+                //
+                // Unfortunately, if we prevent parent handlers, the messages sent to this logger won't get logged into
+                // the idea.log files. I think this is okay because our use case is continuous integration builds,
+                // and STDERR is easier to observe on CI than log files.
                 logger.useParentHandlers = false
             }
             logger.addHandler(handler)
