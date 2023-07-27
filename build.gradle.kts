@@ -1,3 +1,6 @@
+plugins {
+    id("version-conventions")
+}
 tasks {
     register("setTeamCityBuildNumber") {
         doLast {
