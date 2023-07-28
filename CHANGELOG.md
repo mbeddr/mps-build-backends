@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.10]
+## 1.10
 
 ### Added
 
@@ -17,7 +17,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `project-loader`: global methods `executeWithEnvironment` and `executeWithEnvironmentAndProject` are now deprecated,
   use the new `ProjectLoader` class instead.
 
-## [1.9]
+## 1.9
 
 ### Added
 
@@ -30,7 +30,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `generate`: exit code for a general MPS error is now `255` on all systems. Previously `-1` was returned, which could
   be interpreted as `255` or `-1` depending on the system.
 
-## [1.8]
+## 1.8
 
 ### Added
 
@@ -39,14 +39,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   to customize the configuration of the environment beyond the possibilities offered by the existing methods (e.g. one
   can add libraries to the environment).
 
-## [1.7]
+## 1.7
 
 ### Added
 
 - `generate`: option `--parallel-generation-threads` to specify the number of threads to use for parallel generation.
   The default is 0, which means no parallel generation.
 
-## [1.6]
+## 1.6
 
 ### Added
 
@@ -56,21 +56,21 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - `generate`: applicable make facets are now retrieved correctly on MPS 2021.3. 
 
-## [1.5]
+## 1.5
 
 ### Added
 
 - `project-loader`: move argparser and jackson dependencies from 'implementation' to 'api' ('runtime' to 'compile' in
   Maven). 
 
-## [1.4]
+## 1.4
 
 ### Added
 
 - `--log-level` flag to set the default log level of backend-specific loggers (categories starting with
   `de.itemis.mps`). The default log level is `warn` but can be set to `off` for backward compatibility.
 
-## [1.3]
+## 1.3
 
 ### Added
 
@@ -83,19 +83,19 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   screenshots using mbeddr documentation language from the command line. If the loader is not activated, any icons are
   replaced by a single black pixel.
 
-## [1.2.6.903d328]
+## 1.2.6.903d328
 
 ### Changed
 
 - modelcheck now reports unresolved references.
 
-## [1.2]
+## 1.2
 
 ### Added
 
 - `--environment` option with two values, `IDEA` (default, for backward compatibility) and `MPS`.
 
-## [1.1]
+## 1.1
 
 ### Added
 
@@ -105,7 +105,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - If `--warning-as-error` was enabled, success would be erroneously reported there were no warnings, only errors. 
 
-## [1.0]
+## 1.0
 
 ### Added
 
