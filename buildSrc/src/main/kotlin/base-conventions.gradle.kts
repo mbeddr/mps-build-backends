@@ -1,10 +1,7 @@
-import de.itemis.mps.buildbackends.getCommandOutput
 import org.gradle.kotlin.dsl.maven
 import org.gradle.kotlin.dsl.repositories
 
-plugins {
-    id("version-conventions")
-}
+group = "de.itemis.mps.build-backends"
 
 repositories {
     mavenCentral()

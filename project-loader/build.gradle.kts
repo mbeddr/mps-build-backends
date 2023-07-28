@@ -1,3 +1,5 @@
+import de.itemis.mps.buildbackends.computeVersionSuffix
+
 buildscript {
     configurations.classpath {
         resolutionStrategy.activateDependencyLocking()
@@ -9,24 +11,15 @@ plugins {
     id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.13.2"
 }
 
-val mpsVersion: String by project
-val kotlinArgParserVersion: String by project
-val kotlinApiVersion: String by project
-val kotlinVersion: String by project
-
-val nexusUsername: String? by project
-val nexusPassword: String? by project
-val fastXmlJacksonVersion: String by project
+version = "${project.extra["version.project-loader"]}${computeVersionSuffix()}"
 
 // MPS runtime JARs should be available for compiling code and tests but not propagated to consumers.
 val mpsRuntime by configurations.creating
 val mpsZip by configurations.creating
 
 configurations {
-
     compileOnly.get().extendsFrom(mpsRuntime)
     testCompileOnly.get().extendsFrom(mpsRuntime)
-
 }
 
 dependencies {

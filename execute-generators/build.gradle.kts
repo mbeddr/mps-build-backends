@@ -5,7 +5,7 @@ buildscript {
 }
 
 plugins {
-    id("kotlin-conventions")
+    id("backend-conventions")
 }
 
 val mpsZip by configurations.creating
