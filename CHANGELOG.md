@@ -7,25 +7,18 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## 1.11
 
+`project-loader` library now has a separate version number and a [separate changelog](project-loader/CHANGELOG.md)
+because it had to receive some backwards incompatible changes.
+
 ### Added
 
 - MPS 2022.x is now supported:
   * commons-logging is used to support both log4j (MPS 2021.3 and below) and java.util.logging (MPS 2022.2 and above)
     frameworks.
-  * The new API in 2022.x to determine applicable facets is supported.
+  * `generate`: The new API in 2022.x to determine applicable facets is supported.
   * Note that MPS 2022.2 seems to have a race condition which makes it wait 100 seconds on startup. A workaround is to
     start the backend in test mode (`--test-mode`). This is reported to JetBrains as
     [MPS-35992](https://youtrack.jetbrains.com/issue/MPS-35992/MPSHeadlessPlatformStarter-race-condition-causes-unnecessary-wait).
-
-### Changed
-
-- `project-loader`: logging subsystem changed and moved from the default package to `de.itemis.mps.gradle.logging`.
-  This is a breaking change for the library but not for the backends.
-
-### Fixed
-
-- `project-loader`: project is now closed via `Environment#closeProject()` rather than `Project#dispose()` which should
-  fix an exception after project-loader shutdown (in test mode).
 
 ## 1.10
 

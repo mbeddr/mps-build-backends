@@ -42,7 +42,6 @@ dependencies {
     mpsZip(libs.mps)
 
     testImplementation("junit:junit:4.13.1")
-    testImplementation("org.xmlunit:xmlunit-core:2.6.+")
 }
 
 kotlin {
