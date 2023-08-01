@@ -25,7 +25,6 @@ dependencies {
         include("lib/platform-api.jar")
         include("lib/util.jar")
 
-        include("lib/mps-modelchecker.jar")
         include("lib/mpsant/mps-tool.jar")
 
         include("plugins/mps-modelchecker/lib/modelchecker.jar")
