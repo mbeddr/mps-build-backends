@@ -1,16 +1,17 @@
+package de.itemis.mps.gradle.modelcheck
+
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import de.itemis.mps.gradle.junit.*
-import org.junit.Assert
-import org.junit.Test
 import org.xmlunit.validation.Languages
 import org.xmlunit.validation.Validator
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.net.URL
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.*
 import javax.xml.transform.stream.StreamSource
-
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
 class JUnitXmlTest {
 
@@ -78,9 +79,10 @@ class JUnitXmlTest {
                 name = "my fancy test",
                 classname = "my class name",
                 time = 0,
-                error = de.itemis.mps.gradle.junit.Error(message = "my message", type = "")
+                error = Error(message = "my message", type = "")
         )
-        validateWithJunitSchema(Testsuite(
+        validateWithJunitSchema(
+            Testsuite(
                 name = "my tests",
                 testcases = listOf(test),
                 tests = 0,
@@ -92,7 +94,8 @@ class JUnitXmlTest {
                 errors = 12,
                 time = 4212,
                 skipped = 32
-        ))
+        )
+        )
     }
 
     @Test
@@ -102,7 +105,7 @@ class JUnitXmlTest {
                 name = "my fancy test",
                 classname = "my class name",
                 time = 0,
-                error = de.itemis.mps.gradle.junit.Error(message = "my message", type = "", content = "something")
+                error = Error(message = "my message", type = "", content = "something")
         )
         validateWithJunitSchema(Testsuite(
                 name = "my tests",
@@ -233,14 +236,12 @@ class JUnitXmlTest {
 
     private fun validateWithJunitSchema(it: Any) {
         val v = Validator.forLanguage(Languages.W3C_XML_SCHEMA_NS_URI)
-        v.setSchemaSource(StreamSource("junit.xsd".loadResource()!!.openStream(), "JUni.xsd"))
+        v.setSchemaSource(StreamSource("junit.xsd".loadResource()!!.openStream(), "junit.xsd"))
         val xmlMapper = XmlMapper()
         val outputStream = ByteArrayOutputStream()
         xmlMapper.writeValue(outputStream, it)
         val inputStream = ByteArrayInputStream(outputStream.toByteArray())
         val result = v.validateInstance(StreamSource(inputStream))
-        Assert.assertTrue(result.problems.joinToString { it.message }, result.isValid)
+        assertTrue(result.isValid, result.problems.joinToString { it.message })
     }
-
-
 }

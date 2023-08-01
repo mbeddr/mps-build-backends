@@ -1,164 +1,20 @@
-public final class LogLevel : java/lang/Enum {
-	public static final field ALL LLogLevel;
-	public static final field ERROR LLogLevel;
-	public static final field INFO LLogLevel;
-	public static final field OFF LLogLevel;
-	public static final field WARN LLogLevel;
-	public static fun valueOf (Ljava/lang/String;)LLogLevel;
-	public static fun values ()[LLogLevel;
+public final class de/itemis/mps/gradle/logging/LogLevel : java/lang/Enum {
+	public static final field ALL Lde/itemis/mps/gradle/logging/LogLevel;
+	public static final field ERROR Lde/itemis/mps/gradle/logging/LogLevel;
+	public static final field INFO Lde/itemis/mps/gradle/logging/LogLevel;
+	public static final field OFF Lde/itemis/mps/gradle/logging/LogLevel;
+	public static final field WARN Lde/itemis/mps/gradle/logging/LogLevel;
+	public static fun valueOf (Ljava/lang/String;)Lde/itemis/mps/gradle/logging/LogLevel;
+	public static fun values ()[Lde/itemis/mps/gradle/logging/LogLevel;
 }
 
-public final class LoggingKt {
-	public static final fun configureLogging (LLogLevel;)V
+public abstract interface class de/itemis/mps/gradle/logging/Logging {
+	public abstract fun configure (Lde/itemis/mps/gradle/logging/LogLevel;)V
+	public abstract fun getLogger (Ljava/lang/String;)Lorg/apache/commons/logging/Log;
 }
 
-public final class de/itemis/mps/gradle/junit/Error {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lde/itemis/mps/gradle/junit/Error;
-	public static synthetic fun copy$default (Lde/itemis/mps/gradle/junit/Error;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lde/itemis/mps/gradle/junit/Error;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getContent ()Ljava/lang/String;
-	public final fun getMessage ()Ljava/lang/String;
-	public final fun getType ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class de/itemis/mps/gradle/junit/Failure {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lde/itemis/mps/gradle/junit/Failure;
-	public static synthetic fun copy$default (Lde/itemis/mps/gradle/junit/Failure;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lde/itemis/mps/gradle/junit/Failure;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getContent ()Ljava/lang/String;
-	public final fun getMessage ()Ljava/lang/String;
-	public final fun getType ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class de/itemis/mps/gradle/junit/Property {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;)Lde/itemis/mps/gradle/junit/Property;
-	public static synthetic fun copy$default (Lde/itemis/mps/gradle/junit/Property;Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Lde/itemis/mps/gradle/junit/Property;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getName ()Ljava/lang/String;
-	public final fun getValue ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class de/itemis/mps/gradle/junit/Skipped {
-	public fun <init> (Ljava/lang/String;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;)Lde/itemis/mps/gradle/junit/Skipped;
-	public static synthetic fun copy$default (Lde/itemis/mps/gradle/junit/Skipped;Ljava/lang/String;ILjava/lang/Object;)Lde/itemis/mps/gradle/junit/Skipped;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getContent ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class de/itemis/mps/gradle/junit/SystemErr {
-	public fun <init> (Ljava/lang/String;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;)Lde/itemis/mps/gradle/junit/SystemErr;
-	public static synthetic fun copy$default (Lde/itemis/mps/gradle/junit/SystemErr;Ljava/lang/String;ILjava/lang/Object;)Lde/itemis/mps/gradle/junit/SystemErr;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getContent ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class de/itemis/mps/gradle/junit/SystemOut {
-	public fun <init> (Ljava/lang/String;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;)Lde/itemis/mps/gradle/junit/SystemOut;
-	public static synthetic fun copy$default (Lde/itemis/mps/gradle/junit/SystemOut;Ljava/lang/String;ILjava/lang/Object;)Lde/itemis/mps/gradle/junit/SystemOut;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getContent ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class de/itemis/mps/gradle/junit/Testcase {
-	public fun <init> (Ljava/lang/String;Ljava/lang/String;ILde/itemis/mps/gradle/junit/Skipped;Lde/itemis/mps/gradle/junit/Error;Lde/itemis/mps/gradle/junit/Failure;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILde/itemis/mps/gradle/junit/Skipped;Lde/itemis/mps/gradle/junit/Error;Lde/itemis/mps/gradle/junit/Failure;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/String;
-	public final fun component3 ()I
-	public final fun component4 ()Lde/itemis/mps/gradle/junit/Skipped;
-	public final fun component5 ()Lde/itemis/mps/gradle/junit/Error;
-	public final fun component6 ()Lde/itemis/mps/gradle/junit/Failure;
-	public final fun copy (Ljava/lang/String;Ljava/lang/String;ILde/itemis/mps/gradle/junit/Skipped;Lde/itemis/mps/gradle/junit/Error;Lde/itemis/mps/gradle/junit/Failure;)Lde/itemis/mps/gradle/junit/Testcase;
-	public static synthetic fun copy$default (Lde/itemis/mps/gradle/junit/Testcase;Ljava/lang/String;Ljava/lang/String;ILde/itemis/mps/gradle/junit/Skipped;Lde/itemis/mps/gradle/junit/Error;Lde/itemis/mps/gradle/junit/Failure;ILjava/lang/Object;)Lde/itemis/mps/gradle/junit/Testcase;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getClassname ()Ljava/lang/String;
-	public final fun getError ()Lde/itemis/mps/gradle/junit/Error;
-	public final fun getFailure ()Lde/itemis/mps/gradle/junit/Failure;
-	public final fun getName ()Ljava/lang/String;
-	public final fun getSkipped ()Lde/itemis/mps/gradle/junit/Skipped;
-	public final fun getTime ()I
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class de/itemis/mps/gradle/junit/Testsuite {
-	public fun <init> (Ljava/lang/String;IIILjava/lang/Integer;Ljava/lang/String;Ljava/lang/Integer;ILjava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lde/itemis/mps/gradle/junit/SystemOut;Lde/itemis/mps/gradle/junit/SystemErr;)V
-	public synthetic fun <init> (Ljava/lang/String;IIILjava/lang/Integer;Ljava/lang/String;Ljava/lang/Integer;ILjava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lde/itemis/mps/gradle/junit/SystemOut;Lde/itemis/mps/gradle/junit/SystemErr;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component10 ()Ljava/lang/String;
-	public final fun component11 ()Ljava/util/List;
-	public final fun component12 ()Ljava/util/List;
-	public final fun component13 ()Lde/itemis/mps/gradle/junit/SystemOut;
-	public final fun component14 ()Lde/itemis/mps/gradle/junit/SystemErr;
-	public final fun component2 ()I
-	public final fun component3 ()I
-	public final fun component4 ()I
-	public final fun component5 ()Ljava/lang/Integer;
-	public final fun component6 ()Ljava/lang/String;
-	public final fun component7 ()Ljava/lang/Integer;
-	public final fun component8 ()I
-	public final fun component9 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;IIILjava/lang/Integer;Ljava/lang/String;Ljava/lang/Integer;ILjava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lde/itemis/mps/gradle/junit/SystemOut;Lde/itemis/mps/gradle/junit/SystemErr;)Lde/itemis/mps/gradle/junit/Testsuite;
-	public static synthetic fun copy$default (Lde/itemis/mps/gradle/junit/Testsuite;Ljava/lang/String;IIILjava/lang/Integer;Ljava/lang/String;Ljava/lang/Integer;ILjava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/util/List;Lde/itemis/mps/gradle/junit/SystemOut;Lde/itemis/mps/gradle/junit/SystemErr;ILjava/lang/Object;)Lde/itemis/mps/gradle/junit/Testsuite;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getErrors ()I
-	public final fun getFailures ()I
-	public final fun getHostname ()Ljava/lang/String;
-	public final fun getId ()Ljava/lang/Integer;
-	public final fun getName ()Ljava/lang/String;
-	public final fun getPkg ()Ljava/lang/String;
-	public final fun getProperties ()Ljava/util/List;
-	public final fun getSkipped ()Ljava/lang/Integer;
-	public final fun getSystemError ()Lde/itemis/mps/gradle/junit/SystemErr;
-	public final fun getSystemOut ()Lde/itemis/mps/gradle/junit/SystemOut;
-	public final fun getTestcases ()Ljava/util/List;
-	public final fun getTests ()I
-	public final fun getTime ()I
-	public final fun getTimestamp ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class de/itemis/mps/gradle/junit/Testsuites {
-	public fun <init> (Ljava/util/List;)V
-	public final fun component1 ()Ljava/util/List;
-	public final fun copy (Ljava/util/List;)Lde/itemis/mps/gradle/junit/Testsuites;
-	public static synthetic fun copy$default (Lde/itemis/mps/gradle/junit/Testsuites;Ljava/util/List;ILjava/lang/Object;)Lde/itemis/mps/gradle/junit/Testsuites;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getTestsuites ()Ljava/util/List;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
+public final class de/itemis/mps/gradle/logging/LoggingFactoryKt {
+	public static final fun detectLogging ()Lde/itemis/mps/gradle/logging/Logging;
 }
 
 public class de/itemis/mps/gradle/project/loader/Args {
@@ -167,7 +23,7 @@ public class de/itemis/mps/gradle/project/loader/Args {
 	public fun configureProjectLoader (Lde/itemis/mps/gradle/project/loader/ProjectLoader$Builder;)V
 	public final fun getBuildNumber ()Ljava/lang/String;
 	public final fun getEnvironmentKind ()Lde/itemis/mps/gradle/project/loader/EnvironmentKind;
-	public final fun getLogLevel ()LLogLevel;
+	public final fun getLogLevel ()Lde/itemis/mps/gradle/logging/LogLevel;
 	public final fun getMacros ()Ljava/util/List;
 	public final fun getPluginLocation ()Ljava/io/File;
 	public final fun getPlugins ()Ljava/util/List;
@@ -249,7 +105,7 @@ public final class de/itemis/mps/gradle/project/loader/Plugin {
 
 public final class de/itemis/mps/gradle/project/loader/ProjectLoader {
 	public static final field Companion Lde/itemis/mps/gradle/project/loader/ProjectLoader$Companion;
-	public synthetic fun <init> (Ljetbrains/mps/tool/environment/EnvironmentConfig;Lde/itemis/mps/gradle/project/loader/EnvironmentKind;Ljava/io/File;Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljetbrains/mps/tool/environment/EnvironmentConfig;Lde/itemis/mps/gradle/project/loader/EnvironmentKind;Ljava/io/File;Ljava/lang/String;Lde/itemis/mps/gradle/logging/LogLevel;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun execute (Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public final fun executeWithProject (Ljava/io/File;Lkotlin/jvm/functions/Function2;)Ljava/lang/Object;
 }
@@ -261,8 +117,10 @@ public final class de/itemis/mps/gradle/project/loader/ProjectLoader$Builder {
 	public final fun getBuildNumber ()Ljava/lang/String;
 	public final fun getEnvironmentConfigBuilder ()Lde/itemis/mps/gradle/project/loader/EnvironmentConfigBuilder;
 	public final fun getEnvironmentKind ()Lde/itemis/mps/gradle/project/loader/EnvironmentKind;
+	public final fun getLogLevel ()Lde/itemis/mps/gradle/logging/LogLevel;
 	public final fun setBuildNumber (Ljava/lang/String;)V
 	public final fun setEnvironmentKind (Lde/itemis/mps/gradle/project/loader/EnvironmentKind;)V
+	public final fun setLogLevel (Lde/itemis/mps/gradle/logging/LogLevel;)V
 }
 
 public final class de/itemis/mps/gradle/project/loader/ProjectLoader$Companion {

@@ -1,10 +1,5 @@
-plugins {
-    id("version-conventions")
-}
 tasks {
     register("setTeamCityBuildNumber") {
-        doLast {
-            println("##teamcity[buildNumber '$version']")
-        }
+        // Empty task for compatibility with TeamCity builds, to be removed at some point
     }
 }

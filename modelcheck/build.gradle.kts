@@ -5,21 +5,23 @@ buildscript {
 }
 
 plugins {
-    id("kotlin-conventions")
+    id("backend-conventions")
 }
 
 val mpsZip by configurations.creating
 
 dependencies {
-    compileOnly("log4j:log4j:1.2.17")
     mpsZip(libs.mps)
 
+    compileOnly("commons-logging:commons-logging:1.2")
+
     compileOnly(zipTree({ mpsZip.singleFile }).matching {
-        include("lib/mps-environment.jar")
-        include("lib/mps-openapi.jar")
         include("lib/mps-core.jar")
+        include("lib/mps-environment.jar")
         include("lib/mps-platform.jar")
         include("lib/mps-project-check.jar")
+        include("lib/mps-openapi.jar")
+        include("lib/mps-logging.jar")
         include("lib/platform-api.jar")
         include("lib/util.jar")
 
@@ -32,7 +34,12 @@ dependencies {
     implementation(project(":project-loader"))
 
     implementation(kotlin("test"))
+
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.+")
+
     testImplementation(kotlin("test"))
+    testImplementation("org.xmlunit:xmlunit-core:2.6.+")
+
 }
 
 tasks.test {

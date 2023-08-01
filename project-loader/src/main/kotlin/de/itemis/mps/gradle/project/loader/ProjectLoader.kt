@@ -1,5 +1,7 @@
 package de.itemis.mps.gradle.project.loader
 
+import de.itemis.mps.gradle.logging.LogLevel
+import de.itemis.mps.gradle.logging.detectLogging
 import jetbrains.mps.project.Project
 import jetbrains.mps.tool.environment.Environment
 import jetbrains.mps.tool.environment.EnvironmentConfig
@@ -15,7 +17,8 @@ public class ProjectLoader private constructor(
     private val environmentConfig: EnvironmentConfig,
     private val environmentKind: EnvironmentKind,
     private val pluginLocation: File?,
-    private val buildNumber: String?
+    private val buildNumber: String?,
+    private val logLevel: LogLevel
 ) {
     private val logger = Logger.getLogger("de.itemis.mps.gradle.project.loader")
 
@@ -36,11 +39,14 @@ public class ProjectLoader private constructor(
          */
         public var buildNumber: String? = null
 
+        public var logLevel: LogLevel = LogLevel.WARN
+
         public fun build(): ProjectLoader = ProjectLoader(
             environmentConfigBuilder.build(),
             environmentKind,
             environmentConfigBuilder.pluginLocation,
-            buildNumber
+            buildNumber,
+            logLevel
         )
 
         /**
@@ -59,6 +65,8 @@ public class ProjectLoader private constructor(
      * the environment after the action finishes, even if it throws an exception.
      */
     public fun <T> execute(action: (Environment) -> T): T {
+        val logging = detectLogging()
+
         /**
          *  The Idea platform reads this property first to determine where additional plugins are loaded from.
          */
@@ -104,6 +112,9 @@ public class ProjectLoader private constructor(
                     init()
                 }
             }
+
+            // Configure logging again in case opening the environment has reset it.
+            logging.configure(logLevel)
 
             try {
                 logger.info("flushing events")
@@ -158,7 +169,7 @@ public class ProjectLoader private constructor(
             return action(environment, project)
         } finally {
             logger.info("disposing project")
-            project.dispose()
+            environment.closeProject(project)
             logger.info("project disposed")
         }
     }

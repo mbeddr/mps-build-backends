@@ -1,3 +1,5 @@
+import de.itemis.mps.buildbackends.computeVersionSuffix
+
 buildscript {
     configurations.classpath {
         resolutionStrategy.activateDependencyLocking()
@@ -9,37 +11,29 @@ plugins {
     id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.13.2"
 }
 
-val mpsVersion: String by project
-val kotlinArgParserVersion: String by project
-val kotlinApiVersion: String by project
-val kotlinVersion: String by project
-
-val nexusUsername: String? by project
-val nexusPassword: String? by project
-val fastXmlJacksonVersion: String by project
+version = "${project.extra["version.project-loader"]}${computeVersionSuffix()}"
 
 // MPS runtime JARs should be available for compiling code and tests but not propagated to consumers.
 val mpsRuntime by configurations.creating
 val mpsZip by configurations.creating
 
 configurations {
-
     compileOnly.get().extendsFrom(mpsRuntime)
     testCompileOnly.get().extendsFrom(mpsRuntime)
-
 }
 
 dependencies {
     compileOnly("log4j:log4j:1.2.17")
+    compileOnly("commons-logging:commons-logging:1.2")
 
     api("com.xenomachina:kotlin-argparser:2.0.7")
-    api("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.+")
 
     mpsRuntime(zipTree({ mpsZip.singleFile }).matching {
         include("lib/mps-core.jar")
         include("lib/mps-environment.jar")
         include("lib/mps-platform.jar")
         include("lib/mps-openapi.jar")
+        include("lib/mps-logging.jar")
         include("lib/platform-api.jar")
         include("lib/util.jar")
     })
@@ -47,7 +41,6 @@ dependencies {
     mpsZip(libs.mps)
 
     testImplementation("junit:junit:4.13.1")
-    testImplementation("org.xmlunit:xmlunit-core:2.6.+")
 }
 
 kotlin {

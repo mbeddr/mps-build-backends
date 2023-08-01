@@ -1,3 +1,4 @@
+import org.gradle.kotlin.dsl.support.serviceOf
 import java.nio.file.Files
 
 buildscript {
@@ -19,7 +20,7 @@ dependencies {
     modelcheck(project(":modelcheck"))
 }
 
-val SUPPORTED_MPS_VERSIONS = arrayOf("2021.1.4", "2021.2.5", "2021.3.2")
+val SUPPORTED_MPS_VERSIONS = arrayOf("2021.1.4", "2021.2.6", "2021.3.2", "2022.2", "2022.3")
 
 val GENERATION_TESTS = listOf(
     GenerationTest("generateBuildSolution", "generate-build-solution", listOf("--model", "my.build.script"),
@@ -150,6 +151,64 @@ data class ModelCheckTest(val name: String, val project: String, val args: List<
     val projectDir = file("projects/$project")
 }
 
+fun configureJavaForMpsVersion(javaExec: JavaExec, mpsHome: File, mpsVersion: String) {
+    val launcher = serviceOf<JavaToolchainService>().launcherFor {
+        vendor.set(JvmVendorSpec.matching("JetBrains"))
+        languageVersion.set(JavaLanguageVersion.of(if (mpsVersion < "2022") 11 else 17))
+    }
+    javaExec.javaLauncher.set(launcher)
+
+    if (mpsVersion >= "2022.3") {
+        javaExec.systemProperty("jna.boot.library.path", mpsHome.resolve("lib/jna/${System.getProperty("os.arch")}"))
+    }
+
+    if (mpsVersion >= "2022") {
+        val modules = listOf(
+            "java.base/java.io",
+            "java.base/java.lang",
+            "java.base/java.lang.reflect",
+            "java.base/java.net",
+            "java.base/java.nio",
+            "java.base/java.nio.charset",
+            "java.base/java.text",
+            "java.base/java.time",
+            "java.base/java.util",
+            "java.base/java.util.concurrent",
+            "java.base/java.util.concurrent.atomic",
+            "java.base/jdk.internal.vm",
+            "java.base/sun.nio.ch",
+            "java.base/sun.nio.fs",
+            "java.base/sun.security.ssl",
+            "java.base/sun.security.util",
+            "java.desktop/java.awt",
+            "java.desktop/java.awt.dnd.peer",
+            "java.desktop/java.awt.event",
+            "java.desktop/java.awt.image",
+            "java.desktop/java.awt.peer",
+            "java.desktop/javax.swing",
+            "java.desktop/javax.swing.plaf.basic",
+            "java.desktop/javax.swing.text.html",
+            "java.desktop/sun.awt.datatransfer",
+            "java.desktop/sun.awt.image",
+            "java.desktop/sun.awt",
+            "java.desktop/sun.font",
+            "java.desktop/sun.java2d",
+            "java.desktop/sun.swing",
+            "jdk.attach/sun.tools.attach",
+            "jdk.compiler/com.sun.tools.javac.api",
+            "jdk.internal.jvmstat/sun.jvmstat.monitor",
+            "jdk.jdi/com.sun.tools.jdi",
+            "java.desktop/sun.lwawt",
+            "java.desktop/sun.lwawt.macosx",
+            "java.desktop/com.apple.laf",
+            "java.desktop/com.apple.eawt",
+            "java.desktop/com.apple.eawt.event"
+        )
+
+        javaExec.jvmArgs(modules.map { "--add-opens=$it=ALL-UNNAMED" })
+    }
+}
+
 /**
  * Creates and returns the Gradle tasks to perform all the tests with a single MPS version.
  * Also creates any necessary Gradle objects (configurations, dependencies, etc.)
@@ -180,6 +239,9 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
 
             mainClass.set("de.itemis.mps.gradle.generate.MainKt")
 
+            // Workaround for https://youtrack.jetbrains.com/issue/MPS-35992/MPSHeadlessPlatformStarter-race-condition-causes-unnecessary-wait
+            args("--test-mode")
+
             args("--project", testCase.projectDir)
             args(testCase.args)
 
@@ -209,6 +271,7 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
                 }
             }
 
+            configureJavaForMpsVersion(this, mpsHome, mpsVersion)
         }
     }
 
@@ -230,6 +293,9 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
 
             mainClass.set("de.itemis.mps.gradle.modelcheck.MainKt")
 
+            // Workaround for https://youtrack.jetbrains.com/issue/MPS-35992/MPSHeadlessPlatformStarter-race-condition-causes-unnecessary-wait
+            args("--test-mode")
+
             args("--project", testCase.projectDir)
             args("--result-file", file("$buildDir/TEST-${testCase.name}-mps-${mpsVersion}-results.xml"))
 
@@ -246,6 +312,8 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
                                 " (actual exit value $actualExitValue)")
                 }
             }
+
+            configureJavaForMpsVersion(this, mpsHome, mpsVersion)
         }
     }
 

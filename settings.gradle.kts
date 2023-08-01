@@ -1,7 +1,5 @@
-pluginManagement {
-    plugins {
-        kotlin("jvm") version "1.6.10" apply false
-    }
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version ("0.5.0")
 }
 
 rootProject.name = "mps-build-backends"

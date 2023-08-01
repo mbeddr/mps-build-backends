@@ -1,8 +1,8 @@
 package de.itemis.mps.gradle.project.loader
 
-import LogLevel
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
+import de.itemis.mps.gradle.logging.LogLevel
 import java.io.File
 
 private fun <T> splitAndCreate(str: String, creator: (String, String) -> T): T {
@@ -16,14 +16,9 @@ private fun <T> splitAndCreate(str: String, creator: (String, String) -> T): T {
 private fun toMacro(str: String) = splitAndCreate(str, ::Macro)
 private fun toPlugin(str: String) = splitAndCreate(str, ::Plugin)
 
-public enum class EnvironmentKind {
-    MPS, IDEA
-}
-
 /**
  * Default set of arguments required to start a "headless" MPS. This class should be used by other users of the
- * project-loader in order to establish a somewhat standardised command line interface. Passing instances of this or
- * subclasses to [executeWithProject] is directly supported.
+ * project-loader in order to establish a somewhat standardised command line interface.
  */
 public open class Args(parser: ArgParser) {
 
@@ -65,6 +60,7 @@ public open class Args(parser: ArgParser) {
         }
         builder.environmentKind = environmentKind
         builder.buildNumber = buildNumber
+        builder.logLevel = de.itemis.mps.gradle.logging.LogLevel.valueOf(logLevel.toString())
     }
 
     public fun buildLoader(): ProjectLoader = ProjectLoader.build(this::configureProjectLoader)
