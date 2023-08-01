@@ -1,21 +1,25 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-com.fasterxml.jackson.core:jackson-annotations:2.11.4=executeGenerators,modelcheck
-com.fasterxml.jackson.core:jackson-core:2.11.4=executeGenerators,modelcheck
-com.fasterxml.jackson.core:jackson-databind:2.11.4=executeGenerators,modelcheck
-com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.4=executeGenerators,modelcheck
-com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.11.4=executeGenerators,modelcheck
-com.fasterxml.woodstox:woodstox-core:6.2.3=executeGenerators,modelcheck
+com.fasterxml.jackson.core:jackson-annotations:2.11.4=modelcheck
+com.fasterxml.jackson.core:jackson-core:2.11.4=modelcheck
+com.fasterxml.jackson.core:jackson-databind:2.11.4=modelcheck
+com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.4=modelcheck
+com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.11.4=modelcheck
+com.fasterxml.woodstox:woodstox-core:6.2.3=modelcheck
 com.jetbrains:mps:2020.3.6=mps2020.3.6
 com.jetbrains:mps:2021.1.4=mps2021.1.4
 com.jetbrains:mps:2021.2.5=mps2021.2.5
+com.jetbrains:mps:2021.2.6=mps2021.2.6
 com.jetbrains:mps:2021.3.1=mps2021.3.1
+com.jetbrains:mps:2021.3.2=mps2021.3.2
+com.jetbrains:mps:2022.2=mps2022.2
+com.jetbrains:mps:2022.3=mps2022.3
 com.xenomachina:kotlin-argparser:2.0.7=executeGenerators,modelcheck
 com.xenomachina:xenocom:0.0.7=executeGenerators,modelcheck
-jakarta.activation:jakarta.activation-api:1.2.1=executeGenerators,modelcheck
-jakarta.xml.bind:jakarta.xml.bind-api:2.3.2=executeGenerators,modelcheck
-org.codehaus.woodstox:stax2-api:4.2.1=executeGenerators,modelcheck
+jakarta.activation:jakarta.activation-api:1.2.1=modelcheck
+jakarta.xml.bind:jakarta.xml.bind-api:2.3.2=modelcheck
+org.codehaus.woodstox:stax2-api:4.2.1=modelcheck
 org.jetbrains.kotlin:kotlin-stdlib-common:1.6.10=executeGenerators,modelcheck
 org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.10=executeGenerators,modelcheck
 org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10=executeGenerators,modelcheck

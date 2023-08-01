@@ -27,7 +27,6 @@ dependencies {
     compileOnly("commons-logging:commons-logging:1.2")
 
     api("com.xenomachina:kotlin-argparser:2.0.7")
-    api("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.+")
 
     mpsRuntime(zipTree({ mpsZip.singleFile }).matching {
         include("lib/mps-core.jar")

@@ -236,7 +236,7 @@ class JUnitXmlTest {
 
     private fun validateWithJunitSchema(it: Any) {
         val v = Validator.forLanguage(Languages.W3C_XML_SCHEMA_NS_URI)
-        v.setSchemaSource(StreamSource("junit.xsd".loadResource()!!.openStream(), "JUni.xsd"))
+        v.setSchemaSource(StreamSource("junit.xsd".loadResource()!!.openStream(), "junit.xsd"))
         val xmlMapper = XmlMapper()
         val outputStream = ByteArrayOutputStream()
         xmlMapper.writeValue(outputStream, it)
