@@ -12,8 +12,15 @@ class GenerateArgs(parser: ArgParser) : Args(parser) {
     val excludeModules by parser.adding("--exclude-module", help = "list of modules to exclude from generation")
     val parallelGenerationThreads by parser.storing(
         "--parallel-generation-threads",
-        help = "Number of threads to use for parallel generation. Value of 0 means that parallel generation is disabled. Default: 0"
+        help = "Number of threads to use for parallel generation. Value of 0 means that parallel generation is disabled. Default: 0",
+        argName = "THREADS"
     ) { toInt() }
         .default(0)
         .addValidator { if (value < 0) throw InvalidArgumentException("parallel-generation-threads must be >= 0") }
+    val disableStrictMode by parser.flagging(
+        "--disable-strict-mode",
+        help = "Disable strict generation mode. Strict mode places additional limitations on generators, but is required for parallel generation"
+    ).addValidator {
+        if (parallelGenerationThreads != 0 && value) throw InvalidArgumentException("strict mode is required for parallel generation")
+    }
 }
