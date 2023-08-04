@@ -49,13 +49,13 @@ optional arguments:
         
   --exclude-module EXCLUDE_MODULE         list of modules to exclude from generation
 
-  --parallel-generation-threads THREADS   Number of threads to use for parallel generation. Value
-                                          of 0 means that parallel generation is disabled.
-                                          Default: 0
-
   --no-strict-mode                        Disable strict generation mode. Strict mode places
                                           additional limitations on generators, but is required
                                           for parallel generation
+
+  --parallel-generation-threads THREADS   Number of threads to use for parallel generation. Value
+                                          of 0 means that parallel generation is disabled.
+                                          Default: 0
 ```
 
 ## Error exit codes

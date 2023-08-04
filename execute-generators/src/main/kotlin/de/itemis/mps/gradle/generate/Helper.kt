@@ -210,7 +210,7 @@ fun generateProject(parsed: GenerateArgs, project: Project): GenerationResult {
             else -> error("--parallel-generation-threads must be >= 0")
         }
     }
-    if (parsed.disableStrictMode) {
+    if (parsed.noStrictMode) {
         generationSettings.isStrictMode = false
     }
 
