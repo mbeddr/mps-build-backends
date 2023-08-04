@@ -9,7 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- `generate`: added `--disable-strict-mode` option. Strict mode places additional limitations on generators, but
+- `generate`: added `--no-strict-mode` option. Strict mode places additional limitations on generators, but
   is required for parallel generation.
 
 ## 1.11

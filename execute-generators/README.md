@@ -15,7 +15,7 @@ usage: execute-generators [-h] [--plugin PLUGIN]... [--macro MACRO]...
                           --project PROJECT [--test-mode] [--environment ENVIRONMENT]
                           [--log-level LOG_LEVEL] [--model MODEL]... [--module MODULE]...
                           [--exclude-model EXCLUDE_MODEL]... [--exclude-module EXCLUDE_MODULE]...
-                          [--parallel-generation-threads THREADS] [--disable-strict-mode]
+                          [--parallel-generation-threads THREADS] [--no-strict-mode]
 
 required arguments:
   --project PROJECT                       project to generate from
@@ -53,7 +53,7 @@ optional arguments:
                                           of 0 means that parallel generation is disabled.
                                           Default: 0
 
-  --disable-strict-mode                   Disable strict generation mode. Strict mode places
+  --no-strict-mode                        Disable strict generation mode. Strict mode places
                                           additional limitations on generators, but is required
                                           for parallel generation
 ```
