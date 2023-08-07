@@ -5,6 +5,7 @@ import com.intellij.openapi.util.IconLoader
 import de.itemis.mps.gradle.logging.detectLogging
 import de.itemis.mps.gradle.project.loader.EnvironmentKind
 import de.itemis.mps.gradle.project.loader.ModuleAndModelMatcher
+import jetbrains.mps.generator.GenerationOptions
 import jetbrains.mps.generator.GenerationSettingsProvider
 import jetbrains.mps.generator.runtime.TemplateModule
 import jetbrains.mps.make.MakeSession
@@ -197,8 +198,8 @@ private fun makeModels(proj: Project, models: List<SModel>): GenerationResult {
 
 fun generateProject(parsed: GenerateArgs, project: Project): GenerationResult {
 
+    val generationSettings = project.getComponent(GenerationSettingsProvider::class.java).generationSettings
     parsed.parallelGenerationThreads.let {
-        val generationSettings = project.getComponent(GenerationSettingsProvider::class.java).generationSettings
         when {
             it == 0 -> generationSettings.isParallelGenerator = false
             it > 0 -> {
@@ -208,6 +209,9 @@ fun generateProject(parsed: GenerateArgs, project: Project): GenerationResult {
             }
             else -> error("--parallel-generation-threads must be >= 0")
         }
+    }
+    if (parsed.noStrictMode) {
+        generationSettings.isStrictMode = false
     }
 
     val moduleAndModelMatcher = ModuleAndModelMatcher(parsed.modules, parsed.excludeModules, parsed.models, parsed.excludeModels)
