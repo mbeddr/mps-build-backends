@@ -9,6 +9,8 @@ include("project-loader")
 include("modelcheck")
 include("integration-tests")
 
+includeBuild("gradle-mps-runner")
+
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
