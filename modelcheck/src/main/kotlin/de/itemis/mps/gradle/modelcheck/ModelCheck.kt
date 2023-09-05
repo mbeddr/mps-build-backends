@@ -18,6 +18,7 @@ import jetbrains.mps.project.Project
 import jetbrains.mps.smodel.SModelStereotype
 import jetbrains.mps.tool.environment.Environment
 import jetbrains.mps.util.CollectConsumer
+import jetbrains.mps.workbench.progress.SystemBackgroundTaskScheduler
 import org.jetbrains.mps.openapi.model.SModel
 import org.jetbrains.mps.openapi.model.SNode
 import org.jetbrains.mps.openapi.module.SModule
@@ -300,7 +301,13 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
         }
     }
     modelExtractor.includeStubs(false)
-    val checker = ModelCheckerBuilder(modelExtractor).createChecker(checkers)
+    val checker = ModelCheckerBuilder(modelExtractor)
+        .also {
+            if (args.parallel) {
+                it.withTaskScheduler(SystemBackgroundTaskScheduler(project))
+            }
+        }
+        .createChecker(checkers)
 
     val itemsToCheck = ModelCheckerBuilder.ItemsToCheck()
 
