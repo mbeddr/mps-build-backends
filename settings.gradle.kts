@@ -14,7 +14,7 @@ includeBuild("gradle-mps-runner")
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            library("mps", "com.jetbrains:mps:2021.2.5")
+            library("mps", "com.jetbrains:mps:2021.3.4")
         }
     }
 }
