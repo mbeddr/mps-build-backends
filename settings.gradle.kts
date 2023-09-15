@@ -9,7 +9,7 @@ include("project-loader")
 include("modelcheck")
 include("integration-tests")
 
-includeBuild("gradle-mps-runner")
+includeBuild("launcher")
 
 dependencyResolutionManagement {
     versionCatalogs {

@@ -9,7 +9,7 @@ buildscript {
 plugins {
     base
     id("base-conventions")
-    id("de.itemis.mps.gradle.mpsrunner.run-mps")
+    id("de.itemis.mps.gradle.launcher.mps-backend-launcher")
 }
 
 val executeGenerators by configurations.creating
@@ -168,6 +168,7 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
 
     val generateTasks = GENERATION_TESTS.map { testCase ->
         tasks.register("generate${testCase.name.capitalize()}WithMps$mpsVersion", JavaExec::class) {
+            mpsBackendLauncher.configureJavaForMpsVersion(this, mpsHome, mpsVersion)
             dependsOn(unpackTask)
             group = LifecycleBasePlugin.VERIFICATION_GROUP
             classpath(executeGenerators)
@@ -212,13 +213,13 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
                     throw GradleException("Generation test ${testCase.name} failed: $message")
                 }
             }
-
-            mpsRunner.configureJavaForMpsVersion(this, mpsHome, mpsVersion)
         }
     }
 
     val modelcheckTasks = MODELCHECK_TESTS.map { testCase ->
         tasks.register("modelcheckTest${testCase.name.capitalize()}WithMps$mpsVersion", JavaExec::class) {
+            mpsBackendLauncher.configureJavaForMpsVersion(this, mpsHome, mpsVersion)
+
             dependsOn(unpackTask)
             group = LifecycleBasePlugin.VERIFICATION_GROUP
             classpath(modelcheck)
@@ -255,8 +256,6 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
                     )
                 }
             }
-
-            mpsRunner.configureJavaForMpsVersion(this, mpsHome, mpsVersion)
         }
     }
 

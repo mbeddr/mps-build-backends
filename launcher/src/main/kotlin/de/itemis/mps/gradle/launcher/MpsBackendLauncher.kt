@@ -1,4 +1,4 @@
-package de.itemis.mps.gradle.mpsrunner
+package de.itemis.mps.gradle.launcher
 
 import org.gradle.api.tasks.JavaExec
 import org.gradle.jvm.toolchain.JavaLanguageVersion
@@ -7,7 +7,7 @@ import org.gradle.jvm.toolchain.JvmVendorSpec
 import java.io.File
 import javax.inject.Inject
 
-open class MpsRunner @Inject constructor(private val javaToolchainService: JavaToolchainService) {
+open class MpsBackendLauncher @Inject constructor(private val javaToolchainService: JavaToolchainService) {
 
     fun configureJavaForMpsVersion(javaExec: JavaExec, mpsHome: File, mpsVersion: String) {
         val launcher = javaToolchainService.launcherFor {
