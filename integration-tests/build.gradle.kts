@@ -1,11 +1,5 @@
 import java.nio.file.Files
 
-buildscript {
-    configurations.classpath {
-        resolutionStrategy.activateDependencyLocking()
-    }
-}
-
 plugins {
     base
     id("base-conventions")
