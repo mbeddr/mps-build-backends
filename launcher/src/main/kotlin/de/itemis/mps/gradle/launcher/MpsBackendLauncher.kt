@@ -63,5 +63,12 @@ open class MpsBackendLauncher @Inject constructor(private val javaToolchainServi
         )
 
         javaExec.jvmArgs(modules.map { "--add-opens=$it=ALL-UNNAMED" })
+
+        // MPS versions up to and including 2021.x create logs under their working directory so set it to a temporary
+        // directory to avoid polluting the checkout directory or MPS home.
+        javaExec.workingDir = javaExec.temporaryDir
+
+        javaExec.systemProperty("idea.config.path", javaExec.temporaryDir.resolve("config"))
+        javaExec.systemProperty("idea.system.path", javaExec.temporaryDir.resolve("system"))
     }
 }

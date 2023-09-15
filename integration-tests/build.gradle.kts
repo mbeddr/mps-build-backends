@@ -176,10 +176,6 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
                 include("lib/**/*.jar")
             })
 
-            // MPS creates logs under its working directory so start it from the MPS home directory, to avoid polluting
-            // the checkout directory
-            workingDir = mpsHome
-
             mainClass.set("de.itemis.mps.gradle.generate.MainKt")
 
             // Workaround for https://youtrack.jetbrains.com/issue/MPS-35992/MPSHeadlessPlatformStarter-race-condition-causes-unnecessary-wait
@@ -229,10 +225,6 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
                 include("plugins/mps-httpsupport/**/*.jar")
                 include("plugins/mps-modelchecker/**/*.jar")
             })
-
-            // MPS creates logs under its working directory so start it from the MPS home directory, to avoid polluting
-            // the checkout directory
-            workingDir = mpsHome
 
             mainClass.set("de.itemis.mps.gradle.modelcheck.MainKt")
 
