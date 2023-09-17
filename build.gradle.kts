@@ -1,9 +1,12 @@
+plugins {
+    id("kotlin-base-conventions")
+}
+
 tasks {
     register("setTeamCityBuildNumber") {
         // Empty task for compatibility with TeamCity builds, to be removed at some point
     }
-}
-
-plugins {
-    id("kotlin-conventions")
+    register("publish") {
+        dependsOn(gradle.includedBuild("launcher").task(":publish"))
+    }
 }
