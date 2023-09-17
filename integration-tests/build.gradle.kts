@@ -3,7 +3,7 @@ import java.nio.file.Files
 plugins {
     base
     id("base-conventions")
-    id("de.itemis.mps.gradle.launcher.mps-backend-launcher")
+    id("de.itemis.mps.gradle.launcher")
 }
 
 val executeGenerators by configurations.creating
