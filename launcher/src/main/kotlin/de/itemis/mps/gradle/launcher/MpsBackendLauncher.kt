@@ -1,24 +1,63 @@
 package de.itemis.mps.gradle.launcher
 
+import org.gradle.api.GradleException
+import org.gradle.api.file.Directory
+import org.gradle.api.provider.Provider
+import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.tasks.JavaExec
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.jvm.toolchain.JavaToolchainService
 import org.gradle.jvm.toolchain.JvmVendorSpec
+import org.gradle.process.CommandLineArgumentProvider
 import java.io.File
+import java.io.Serializable
+import java.util.Properties
 import javax.inject.Inject
 
-open class MpsBackendLauncher @Inject constructor(private val javaToolchainService: JavaToolchainService) {
+open class MpsBackendLauncher @Inject constructor(
+    private val javaToolchainService: JavaToolchainService,
+    private val providers: ProviderFactory) {
 
     fun configureJavaForMpsVersion(javaExec: JavaExec, mpsHome: File, mpsVersion: String) {
-        val launcher = javaToolchainService.launcherFor {
-            vendor.set(JvmVendorSpec.matching("JetBrains"))
-            languageVersion.set(JavaLanguageVersion.of(if (mpsVersion < "2022") 11 else 17))
+        configureJavaForMpsVersion(javaExec,
+            providers.provider { mpsHome },
+            providers.provider { mpsVersion })
+    }
+
+    /**
+     * Retrieves the MPS platform version from `$mpsHome/build.properties`, property `mps.build.number`.
+     */
+    fun mpsVersionFromMpsHome(mpsHome: Provider<Directory>): Provider<String> {
+        val buildPropertiesFile = mpsHome.map { it.file("build.properties") }
+        val fileContents = providers.fileContents(buildPropertiesFile)
+        return fileContents.asText.map {
+            val properties = it.reader().use { reader -> Properties().also { it.load(reader) } }
+
+            val fullNumber = properties["mps.build.number"] as String?
+                ?: throw GradleException("Could not read mps.build.number property from file ${buildPropertiesFile.get().asFile}")
+
+            val dash = fullNumber.indexOf("-")
+            fullNumber.substring(dash + 1)
         }
+    }
+
+    fun configureJavaForMpsVersion(javaExec: JavaExec, mpsHome: Provider<File>, mpsVersion: Provider<String>) {
+        val launcher = mpsVersion.flatMap { mpsVersionValue ->
+            javaToolchainService.launcherFor {
+                vendor.set(JvmVendorSpec.matching("JetBrains"))
+                languageVersion.set(JavaLanguageVersion.of(if (mpsVersionValue < "2022") 11 else 17))
+            }
+        }
+
         javaExec.javaLauncher.set(launcher)
 
-        if (mpsVersion >= "2022.3") {
-            javaExec.systemProperty("jna.boot.library.path", mpsHome.resolve("lib/jna/${System.getProperty("os.arch")}"))
-        }
+        javaExec.jvmArgumentProviders.add(CommandLineArgumentProvider {
+            if (mpsVersion.get() >= "2022.3") {
+                listOf("-Djna.boot.library.path=${mpsHome.get().resolve("lib/jna/${System.getProperty("os.arch")}").path}")
+            } else {
+                listOf()
+            }
+        })
 
         val modules = listOf(
             "java.base/java.io",
@@ -67,8 +106,11 @@ open class MpsBackendLauncher @Inject constructor(private val javaToolchainServi
         // MPS versions up to and including 2021.x create logs under their working directory so set it to a temporary
         // directory to avoid polluting the checkout directory or MPS home.
         javaExec.workingDir = javaExec.temporaryDir
-
         javaExec.systemProperty("idea.config.path", javaExec.temporaryDir.resolve("config"))
         javaExec.systemProperty("idea.system.path", javaExec.temporaryDir.resolve("system"))
     }
+}
+
+private class ProviderToString(val provider: Provider<String>): Serializable {
+    override fun toString(): String = provider.get()
 }
