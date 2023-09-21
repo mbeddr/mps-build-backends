@@ -1,10 +1,7 @@
 import de.itemis.mps.buildbackends.computeVersionSuffix
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    `kotlin-dsl`
+    `java-gradle-plugin`
     id("base-conventions")
     id("publishing-conventions")
 }
@@ -18,13 +15,15 @@ group = "de.itemis.mps.build-backends"
 version = "${project.extra["version.launcher"]}${computeVersionSuffix()}"
 
 java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-tasks.withType<KotlinCompile> {
-    compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_1_8)
-        apiVersion.set(KotlinVersion.KOTLIN_1_5)
-        allWarningsAsErrors.set(true)
+gradlePlugin {
+    plugins {
+        create("launcher") {
+            id = "de.itemis.mps.gradle.launcher"
+            implementationClass = "de.itemis.mps.gradle.LauncherPlugin"
+        }
     }
 }
