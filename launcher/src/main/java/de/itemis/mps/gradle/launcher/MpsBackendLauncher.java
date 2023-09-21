@@ -13,14 +13,12 @@ import org.gradle.jvm.toolchain.JavaToolchainService;
 import org.gradle.jvm.toolchain.JvmVendorSpec;
 import org.gradle.process.CommandLineArgumentProvider;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
-import javax.inject.Inject;
 
 public class MpsBackendLauncher {
 
