@@ -54,14 +54,17 @@ public class MpsBackendLauncher {
                 throw new GradleException("Error loading properties from file " + file, io);
             }
 
-            String fullNumber = properties.getProperty("mps.build.number");
-            if (fullNumber == null) {
+            String buildNumber = properties.getProperty("mps.build.number");
+            if (buildNumber == null) {
                 throw new GradleException("Could not read mps.build.number property from file " + buildPropertiesFile.get().getAsFile());
             }
 
-            int dash = fullNumber.indexOf("-");
-            return fullNumber.substring(dash + 1);
+            return buildNumberToVersion(buildNumber);
         });
+    }
+
+    private static String buildNumberToVersion(String buildNumber) {
+        return buildNumber.replaceFirst("^(?:.*-)?(\\d{2})(\\d)\\..*", "20$1.$2");
     }
 
     public void configureJavaForMpsVersion(JavaExec javaExec, Provider<File> mpsHome, Provider<String> mpsVersion) {
