@@ -17,6 +17,7 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -71,18 +72,20 @@ public class MpsBackendLauncher {
 
         javaExec.getJavaLauncher().set(launcher);
 
+        // Gradle needs this to be an inner class rather than a lambda so that it can be properly cached.
+        //noinspection Convert2Lambda
         javaExec.getJvmArgumentProviders().add(new CommandLineArgumentProvider() {
             @Override
             public Iterable<String> asArguments() {
                 if (mpsVersion.get().compareTo("2022.3") >= 0) {
-                    return List.of("-Djna.boot.library.path=" + new File(mpsHome.get(), "lib/jna/" + System.getProperty("os.arch")).getPath());
+                    return Collections.singleton("-Djna.boot.library.path=" + new File(mpsHome.get(), "lib/jna/" + System.getProperty("os.arch")).getPath());
                 } else {
-                    return List.of();
+                    return Collections.emptyList();
                 }
             }
         });
 
-        final List<String> modules = List.of(
+        final String[] modules = new String[]{
                 "java.base/java.io",
                 "java.base/java.lang",
                 "java.base/java.lang.reflect",
@@ -122,7 +125,7 @@ public class MpsBackendLauncher {
                 "java.desktop/com.apple.laf",
                 "java.desktop/com.apple.eawt",
                 "java.desktop/com.apple.eawt.event"
-        );
+        };
 
         for (String module : modules) {
             javaExec.jvmArgs("--add-opens=" + module + "=ALL-UNNAMED");
