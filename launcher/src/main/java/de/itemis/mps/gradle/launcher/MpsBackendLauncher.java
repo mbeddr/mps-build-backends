@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
 
 public class MpsBackendLauncher {
@@ -44,13 +43,15 @@ public class MpsBackendLauncher {
      */
     public Provider<String> mpsVersionFromMpsHome(Provider<Directory> mpsHome) {
         Provider<RegularFile> buildPropertiesFile = mpsHome.map((Directory it) -> it.file("build.properties"));
-        FileContents fileContents = providers.fileContents(buildPropertiesFile);
-        return fileContents.getAsText().map(it -> {
+        return buildPropertiesFile.map(file -> {
+            FileContents fileContents = providers.fileContents(buildPropertiesFile);
+            final String contents = fileContents.getAsText().get();
+
             Properties properties = new Properties();
-            try (StringReader reader = new StringReader(it)) {
+            try (StringReader reader = new StringReader(contents)) {
                 properties.load(reader);
             } catch (IOException io) {
-                throw new GradleException("Error loading properties from file " + buildPropertiesFile.get().getAsFile(), io);
+                throw new GradleException("Error loading properties from file " + file, io);
             }
 
             String fullNumber = properties.getProperty("mps.build.number");
