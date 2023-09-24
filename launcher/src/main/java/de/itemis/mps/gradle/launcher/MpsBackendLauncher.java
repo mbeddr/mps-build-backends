@@ -1,8 +1,8 @@
 package de.itemis.mps.gradle.launcher;
 
 import org.gradle.api.GradleException;
-import org.gradle.api.file.Directory;
 import org.gradle.api.file.FileContents;
+import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.provider.ProviderFactory;
@@ -24,11 +24,13 @@ public class MpsBackendLauncher {
 
     private final JavaToolchainService javaToolchainService;
     private final ProviderFactory providers;
+    private final ProjectLayout layout;
 
     @Inject
-    public MpsBackendLauncher(JavaToolchainService javaToolchainService, ProviderFactory providers) {
+    public MpsBackendLauncher(JavaToolchainService javaToolchainService, ProviderFactory providers, ProjectLayout layout) {
         this.javaToolchainService = javaToolchainService;
         this.providers = providers;
+        this.layout = layout;
     }
 
     public void configureJavaForMpsVersion(JavaExec javaExec, File mpsHome, String mpsVersion) {
@@ -37,13 +39,12 @@ public class MpsBackendLauncher {
                 providers.provider(() -> mpsVersion));
     }
 
-
     /**
      * Retrieves the MPS platform version from `$mpsHome/build.properties`, property `mps.build.number`.
      */
-    public Provider<String> mpsVersionFromMpsHome(Provider<Directory> mpsHome) {
-        Provider<RegularFile> buildPropertiesFile = mpsHome.map((Directory it) -> it.file("build.properties"));
-        return buildPropertiesFile.map(file -> {
+    public Provider<String> mpsVersionFromMpsHome(Provider<File> mpsHome) {
+        Provider<RegularFile> buildPropertiesProvider = layout.file(mpsHome.map((File it) -> new File(it, "build.properties")));
+        return buildPropertiesProvider.map(buildPropertiesFile -> {
             FileContents fileContents = providers.fileContents(buildPropertiesFile);
             final String contents = fileContents.getAsText().get();
 
@@ -51,12 +52,12 @@ public class MpsBackendLauncher {
             try (StringReader reader = new StringReader(contents)) {
                 properties.load(reader);
             } catch (IOException io) {
-                throw new GradleException("Error loading properties from file " + file, io);
+                throw new GradleException("Error loading properties from file " + buildPropertiesFile, io);
             }
 
             String buildNumber = properties.getProperty("mps.build.number");
             if (buildNumber == null) {
-                throw new GradleException("Could not read mps.build.number property from file " + buildPropertiesFile.get().getAsFile());
+                throw new GradleException("Could not read mps.build.number property from file " + buildPropertiesFile.getAsFile());
             }
 
             return buildNumberToVersion(buildNumber);
@@ -65,6 +66,10 @@ public class MpsBackendLauncher {
 
     private static String buildNumberToVersion(String buildNumber) {
         return buildNumber.replaceFirst("^(?:.*-)?(\\d{2})(\\d)\\..*", "20$1.$2");
+    }
+
+    public void configureJavaForMpsVersion(JavaExec javaExec, Provider<File> mpsHome) {
+        configureJavaForMpsVersion(javaExec, mpsHome, mpsVersionFromMpsHome(mpsHome));
     }
 
     public void configureJavaForMpsVersion(JavaExec javaExec, Provider<File> mpsHome, Provider<String> mpsVersion) {

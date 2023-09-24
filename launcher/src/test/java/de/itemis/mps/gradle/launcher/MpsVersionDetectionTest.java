@@ -26,7 +26,7 @@ public class MpsVersionDetectionTest {
                 StandardCharsets.ISO_8859_1);
 
         assertEquals("2021.3", launcher.mpsVersionFromMpsHome(
-                project.getLayout().dir(project.provider(() -> mpsDir))).get());
+                project.provider(() -> mpsDir)).get());
     }
 
 }
