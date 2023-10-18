@@ -125,6 +125,8 @@ fun writeJunitXml(modules: Iterable<SModule>,
             }
         }
 
+    val modelsToReport = models.union(errorsPerModel.keys)
+
     val xmlMapper = XmlMapper()
 
     @Suppress("DEPRECATION")
@@ -137,8 +139,8 @@ fun writeJunitXml(modules: Iterable<SModule>,
 
             val testsuite = Testsuite(name = "model checking",
                     failures = errorsPerModel.values.sumOf { it.size },
-                    testcases = oneTestCasePerModel(models, errorsPerModel, project),
-                    tests = models.count(),
+                    testcases = oneTestCasePerModel(modelsToReport, errorsPerModel, project),
+                    tests = modelsToReport.count(),
                     timestamp = getCurrentTimeStamp())
             xmlMapper.writeValue(file, testsuite)
         }
@@ -158,19 +160,21 @@ fun writeJunitXml(modules: Iterable<SModule>,
                         }
                     }
 
-            val moduleTestcases = oneTestCasePerModule(modules, errorsPerModule, project)
-            val modelTestcases = oneTestCasePerModel(models, errorsPerModel, project)
+            val modulesToReport = modules.union(errorsPerModule.keys)
+
+            val moduleTestcases = oneTestCasePerModule(modulesToReport, errorsPerModule, project)
+            val modelTestcases = oneTestCasePerModel(modelsToReport, errorsPerModel, project)
             val testcases = moduleTestcases + modelTestcases
             val testsuite = Testsuite(name = "model checking",
                 failures = allErrors.size,
                 testcases = testcases,
-                tests = modules.count() + models.count(),
+                tests = modulesToReport.count() + modelsToReport.count(),
                 timestamp = getCurrentTimeStamp())
             xmlMapper.writeValue(file, testsuite)
         }
 
         ReportFormat.ONE_TEST_PER_FAILED_MESSAGE -> {
-            val testsuits = models.mapIndexed { i: Int, mdl: SModel ->
+            val testsuits = modelsToReport.mapIndexed { i: Int, mdl: SModel ->
                 val errorsInModel = errorsPerModel[mdl] ?: emptyList()
                 val effectiveErrorsInModel = errorsInModel.map { item -> oneTestCasePerMessage(item, mdl, project) }
                     // some issues are reported multiple times per node for some reason -> filter out such issues
@@ -338,7 +342,14 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
             val allCheckedModels = itemsToCheck.modules.flatMap { module ->
                 module.models.filter { !SModelStereotype.isDescriptorModel(it) }
             }.union(itemsToCheck.models)
-            writeJunitXml(allCheckedModules, allCheckedModels, errorCollector.result, project, args.warningAsError, args.xmlReportFormat, File(args.xmlFile!!))
+            writeJunitXml(
+                modules = allCheckedModules,
+                models = allCheckedModels,
+                results = errorCollector.result,
+                project = project,
+                warnAsErrors = args.warningAsError,
+                format = args.xmlReportFormat,
+                file = File(args.xmlFile!!))
         }
     }
 
