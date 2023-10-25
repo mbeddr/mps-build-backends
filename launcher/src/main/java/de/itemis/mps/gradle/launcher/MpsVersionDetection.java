@@ -12,11 +12,11 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Properties;
 
-class MpsVersionDetection {
+public class MpsVersionDetection {
     /**
      * Retrieves the MPS platform version from `$mpsHome/build.properties`, property `mps.build.number`.
      */
-    static Provider<String> fromMpsHome(ProjectLayout layout, ProviderFactory providers, Provider<File> mpsHome) {
+    public static Provider<String> fromMpsHome(ProjectLayout layout, ProviderFactory providers, Provider<File> mpsHome) {
         Provider<RegularFile> buildPropertiesProvider = layout.file(mpsHome.map((File it) -> new File(it, "build.properties")));
         return buildPropertiesProvider.map(buildPropertiesFile -> {
             FileContents fileContents = providers.fileContents(buildPropertiesFile);
