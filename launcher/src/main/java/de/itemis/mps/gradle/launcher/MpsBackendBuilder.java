@@ -11,6 +11,7 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion;
 import org.gradle.jvm.toolchain.JavaLauncher;
 import org.gradle.jvm.toolchain.JavaToolchainService;
 import org.gradle.jvm.toolchain.JvmVendorSpec;
+import org.gradle.jvm.toolchain.internal.DefaultJvmVendorSpec;
 import org.gradle.process.CommandLineArgumentProvider;
 import org.gradle.process.JavaExecSpec;
 
@@ -36,7 +37,7 @@ public class MpsBackendBuilder {
 
         mpsHome = objects.directoryProperty();
         mpsVersion = objects.property(String.class).convention(MpsVersionDetection.fromMpsHome(layout, providers, mpsHome.getAsFile()));
-        jvmVendorSpec = objects.property(JvmVendorSpec.class);
+        jvmVendorSpec = objects.property(JvmVendorSpec.class).convention(DefaultJvmVendorSpec.any());
     }
 
     public MpsBackendBuilder withMpsHome(File mpsHome) {
