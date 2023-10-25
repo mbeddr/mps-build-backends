@@ -70,13 +70,6 @@ public class MpsBackendBuilder {
     }
 
     public void configure(JavaExecSpec javaExec) {
-        if (!mpsHome.isPresent()) {
-            throw new IllegalStateException("mpsHome was not set");
-        }
-        if (!mpsVersion.isPresent()) {
-            throw new IllegalStateException("mpsVersion was not set or could not be detected");
-        }
-
         configureLauncher(javaExec);
         configureJna(javaExec);
         configureOpens(javaExec);
