@@ -162,7 +162,10 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
 
     val generateTasks = GENERATION_TESTS.map { testCase ->
         tasks.register("generate${testCase.name.capitalize()}WithMps$mpsVersion", JavaExec::class) {
-            mpsBackendLauncher.configureJavaForMpsVersion(this, mpsHome, mpsVersion)
+            mpsBackendLauncher.forMpsHome(mpsHome)
+                .withMpsVersion(mpsVersion)
+                .withJetBrainsJvm()
+                .configure(this)
             dependsOn(unpackTask)
             group = LifecycleBasePlugin.VERIFICATION_GROUP
             classpath(executeGenerators)
@@ -208,7 +211,10 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
 
     val modelcheckTasks = MODELCHECK_TESTS.map { testCase ->
         tasks.register("modelcheckTest${testCase.name.capitalize()}WithMps$mpsVersion", JavaExec::class) {
-            mpsBackendLauncher.configureJavaForMpsVersion(this, mpsHome, mpsVersion)
+            mpsBackendLauncher.forMpsHome(mpsHome)
+                .withMpsVersion(mpsVersion)
+                .withJetBrainsJvm()
+                .configure(this)
 
             dependsOn(unpackTask)
             group = LifecycleBasePlugin.VERIFICATION_GROUP

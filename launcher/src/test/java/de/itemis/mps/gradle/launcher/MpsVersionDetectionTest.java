@@ -17,7 +17,7 @@ public class MpsVersionDetectionTest {
     @Test
     public void readsVersionFromBuildProperties(@TempDir File tempDir) throws IOException {
         final Project project = ProjectBuilder.builder().withProjectDir(tempDir).build();
-        final MpsBackendLauncher launcher = project.getObjects().newInstance(MpsBackendLauncher.class);
+        final MpsVersionDetection detector = project.getObjects().newInstance(MpsVersionDetection.class);
 
         File mpsDir = new File(tempDir, "build/mps");
         File buildProperties = new File(mpsDir, "build.properties");
@@ -25,7 +25,7 @@ public class MpsVersionDetectionTest {
         FileUtils.writeStringToFile(buildProperties, "mps.build.number=MPS-213.7172.1079\n",
                 StandardCharsets.ISO_8859_1);
 
-        assertEquals("2021.3", launcher.mpsVersionFromMpsHome(
+        assertEquals("2021.3", detector.mpsVersionFromMpsHome(
                 project.provider(() -> mpsDir)).get());
     }
 
