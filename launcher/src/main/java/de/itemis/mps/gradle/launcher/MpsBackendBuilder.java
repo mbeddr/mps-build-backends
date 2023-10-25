@@ -1,5 +1,6 @@
 package de.itemis.mps.gradle.launcher;
 
+import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.model.ObjectFactory;
@@ -47,6 +48,11 @@ public class MpsBackendBuilder {
 
     public MpsBackendBuilder withMpsHome(Provider<File> mpsHome) {
         this.mpsHome.set(layout.dir(mpsHome));
+        return this;
+    }
+
+    public MpsBackendBuilder withMpsHomeDirectory(Provider<Directory> mpsHome) {
+        this.mpsHome.set(mpsHome);
         return this;
     }
 
