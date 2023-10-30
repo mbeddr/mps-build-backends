@@ -25,7 +25,7 @@ public class MpsVersionDetectionTest {
         FileUtils.writeStringToFile(buildProperties, "mps.build.number=MPS-213.7172.1079\n",
                 StandardCharsets.ISO_8859_1);
 
-        assertEquals("2021.3", detector.mpsVersionFromMpsHome(
+        assertEquals("2021.3", MpsVersionDetection.fromMpsHome(project.getLayout(), project.getProviders(),
                 project.provider(() -> mpsDir)).get());
     }
 
