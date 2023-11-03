@@ -14,7 +14,7 @@ dependencies {
     modelcheck(project(":modelcheck"))
 }
 
-val SUPPORTED_MPS_VERSIONS = arrayOf("2021.1.4", "2021.2.6", "2021.3.2", "2022.2", "2022.3")
+val SUPPORTED_MPS_VERSIONS = arrayOf("2021.1.4", "2021.2.6", "2021.3.4", "2022.2", "2022.3")
 
 val GENERATION_TESTS = listOf(
     GenerationTest("generateBuildSolution", "generate-build-solution", listOf("--model", "my.build.script"),
@@ -79,6 +79,11 @@ val MODELCHECK_TESTS = listOf(
         project = "modelcheck",
         args = listOf("--model", "my.solution.with.errors.brokenref"),
         expectSuccess = false
+    ),
+    ModelCheckTest("modelcheckParallel",
+        project = "modelcheck",
+        args = listOf("--module", "my.solution", "--parallel"),
+        expectSuccessInMpsVersion = { it == "2021.3.4" }
     )
 )
 
@@ -141,8 +146,19 @@ interface GenerationTestExpectation {
  * @param project project folder name (in `projects/`)
  * @param args additional arguments to the command
  */
-data class ModelCheckTest(val name: String, val project: String, val args: List<Any>, val expectSuccess: Boolean = true) {
+data class ModelCheckTest(
+    val name: String,
+    val project: String,
+    val args: List<Any>,
+    val expectSuccessInMpsVersion: (String) -> Boolean
+) {
     val projectDir = file("projects/$project")
+
+    constructor(name: String, project: String, args: List<Any>, expectSuccess: Boolean = true) : this(
+        name,
+        project,
+        args,
+        { expectSuccess })
 }
 
 /**
@@ -239,11 +255,12 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
             // Check exit value manually
             isIgnoreExitValue = true
             doLast {
+                val expectedSuccess = testCase.expectSuccessInMpsVersion(mpsVersion)
                 val actualExitValue = executionResult.get().exitValue
                 val actualSuccess = actualExitValue == 0
-                if (actualSuccess != testCase.expectSuccess) {
+                if (actualSuccess != expectedSuccess) {
                     throw GradleException(
-                        "Modelcheck outcome: expected success: ${testCase.expectSuccess}, but was: $actualSuccess" +
+                        "Modelcheck outcome: expected success: $expectedSuccess, but was: $actualSuccess" +
                                 " (actual exit value $actualExitValue)"
                     )
                 }
