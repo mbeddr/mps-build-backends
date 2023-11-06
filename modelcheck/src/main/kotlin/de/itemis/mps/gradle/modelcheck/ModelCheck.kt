@@ -23,6 +23,8 @@ import org.jetbrains.mps.openapi.model.SModel
 import org.jetbrains.mps.openapi.model.SNode
 import org.jetbrains.mps.openapi.module.SModule
 import java.io.File
+import java.lang.IllegalArgumentException
+import java.lang.UnsupportedOperationException
 import java.text.SimpleDateFormat
 import java.util.Date
 import kotlin.math.min
@@ -279,6 +281,14 @@ private fun oneTestCasePerModule(modules: Iterable<SModule>, errorsPerModule: Ma
     }
 }
 
+private fun ModelCheckerBuilder.setParallelTaskScheduler(project: Project) {
+    try {
+        withTaskScheduler(SystemBackgroundTaskScheduler(project))
+    } catch (e: NoClassDefFoundError) {
+        logger.warn("Parallel model checking is not supported in this version of MPS", e)
+    }
+}
+
 fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: Project): Boolean {
     val checkers = environment.platform.findComponent(CheckerRegistry::class.java)!!.checkers
     if (checkers.all { it !is UnresolvedReferencesChecker }) {
@@ -304,7 +314,7 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
     val checker = ModelCheckerBuilder(modelExtractor)
         .also {
             if (args.parallel) {
-                it.withTaskScheduler(SystemBackgroundTaskScheduler(project))
+                it.setParallelTaskScheduler(project)
             }
         }
         .createChecker(checkers)

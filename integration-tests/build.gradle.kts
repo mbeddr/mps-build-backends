@@ -14,7 +14,7 @@ dependencies {
     modelcheck(project(":modelcheck"))
 }
 
-val SUPPORTED_MPS_VERSIONS = arrayOf("2021.1.4", "2021.2.6", "2021.3.2", "2022.2", "2022.3")
+val SUPPORTED_MPS_VERSIONS = arrayOf("2021.1.4", "2021.2.6", "2021.3.4", "2022.2", "2022.3")
 
 val GENERATION_TESTS = listOf(
     GenerationTest("generateBuildSolution", "generate-build-solution", listOf("--model", "my.build.script"),
@@ -79,6 +79,10 @@ val MODELCHECK_TESTS = listOf(
         project = "modelcheck",
         args = listOf("--model", "my.solution.with.errors.brokenref"),
         expectSuccess = false
+    ),
+    ModelCheckTest("modelcheckParallel",
+        project = "modelcheck",
+        args = listOf("--module", "my.solution", "--parallel")
     )
 )
 

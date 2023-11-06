@@ -19,8 +19,8 @@ usage: modelcheck [-h] [--plugin PLUGIN]... [--macro MACRO]... [--plugin-locatio
                   [--build-number BUILD_NUMBER] --project PROJECT [--test-mode]
                   [--environment ENVIRONMENT] [--log-level LOG_LEVEL] [--model MODEL]...
                   [--module MODULE]... [--exclude-model EXCLUDE_MODEL]...
-                  [--exclude-module EXCLUDE_MODULE]... [--warning-as-error] [--error-no-fail]
-                  [--result-file RESULT_FILE] [--result-format RESULT_FORMAT] [--result-all-errors]
+                  [--exclude-module EXCLUDE_MODULE]... [--parallel] [--warning-as-error]
+                  [--error-no-fail] [--result-file RESULT_FILE] [--result-format RESULT_FORMAT]
 
 required arguments:
   --project PROJECT                   project to generate from
@@ -52,6 +52,8 @@ optional arguments:
   --exclude-model EXCLUDE_MODEL       list of models to exclude from check (regexes)
 
   --exclude-module EXCLUDE_MODULE     list of modules to exclude from check (regexes)
+
+  --parallel                          run model checker in parallel
 
   --warning-as-error                  treat model checker warning as errors
 
