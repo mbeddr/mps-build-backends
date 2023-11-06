@@ -285,7 +285,7 @@ private fun ModelCheckerBuilder.setParallelTaskScheduler(project: Project) {
     try {
         withTaskScheduler(SystemBackgroundTaskScheduler(project))
     } catch (e: NoClassDefFoundError) {
-        throw IllegalArgumentException("Parallel model checking is not supported in this version of MPS", e)
+        logger.warn("Parallel model checking is not supported in this version of MPS", e)
     }
 }
 

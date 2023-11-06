@@ -82,8 +82,7 @@ val MODELCHECK_TESTS = listOf(
     ),
     ModelCheckTest("modelcheckParallel",
         project = "modelcheck",
-        args = listOf("--module", "my.solution", "--parallel"),
-        expectSuccessInMpsVersion = { it == "2021.3.4" }
+        args = listOf("--module", "my.solution", "--parallel")
     )
 )
 
@@ -146,19 +145,8 @@ interface GenerationTestExpectation {
  * @param project project folder name (in `projects/`)
  * @param args additional arguments to the command
  */
-data class ModelCheckTest(
-    val name: String,
-    val project: String,
-    val args: List<Any>,
-    val expectSuccessInMpsVersion: (String) -> Boolean
-) {
+data class ModelCheckTest(val name: String, val project: String, val args: List<Any>, val expectSuccess: Boolean = true) {
     val projectDir = file("projects/$project")
-
-    constructor(name: String, project: String, args: List<Any>, expectSuccess: Boolean = true) : this(
-        name,
-        project,
-        args,
-        { expectSuccess })
 }
 
 /**
@@ -255,12 +243,11 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
             // Check exit value manually
             isIgnoreExitValue = true
             doLast {
-                val expectedSuccess = testCase.expectSuccessInMpsVersion(mpsVersion)
                 val actualExitValue = executionResult.get().exitValue
                 val actualSuccess = actualExitValue == 0
-                if (actualSuccess != expectedSuccess) {
+                if (actualSuccess != testCase.expectSuccess) {
                     throw GradleException(
-                        "Modelcheck outcome: expected success: $expectedSuccess, but was: $actualSuccess" +
+                        "Modelcheck outcome: expected success: ${testCase.expectSuccess}, but was: $actualSuccess" +
                                 " (actual exit value $actualExitValue)"
                     )
                 }
