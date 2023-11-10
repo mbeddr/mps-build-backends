@@ -8,13 +8,16 @@ plugins {
 
 val executeGenerators by configurations.creating
 val modelcheck by configurations.creating
+val execute by configurations.creating
 
 dependencies {
     executeGenerators(project(":execute-generators"))
     modelcheck(project(":modelcheck"))
+    execute(project(":execute"))
 }
 
 val SUPPORTED_MPS_VERSIONS = arrayOf("2021.1.4", "2021.2.6", "2021.3.4", "2022.2", "2022.3")
+val UNSUPPORTED_MPS_VERSIONS_FOR_EXECUTE = setOf("2021.1.4", "2021.2.6")
 
 val GENERATION_TESTS = listOf(
     GenerationTest("generateBuildSolution", "generate-build-solution", listOf("--model", "my.build.script"),
@@ -86,6 +89,42 @@ val MODELCHECK_TESTS = listOf(
     )
 )
 
+val EXECUTE_TESTS = run {
+    val commonArgs = arrayOf("--module", "my.solution", "--method", "execute")
+    listOf(
+        ExecuteTest(
+            "executeMethodTakesArgumentsWithArguments", "execute-method",
+            listOf(*commonArgs, "--class", "my.solution.java.TakesArguments", "--arg", "arg1", "--arg", "arg2")
+        ),
+        ExecuteTest(
+            "executeMethodTakesArgumentsWithoutArguments",
+            "execute-method",
+            listOf(*commonArgs, "--class", "my.solution.java.TakesArguments")
+        ),
+        ExecuteTest(
+            "executeMethodNoArgumentsWithArguments",
+            "execute-method",
+            listOf(*commonArgs, "--class", "my.solution.java.NoArguments", "--arg", "arg1", "--arg", "arg2"),
+            expectSuccess = false
+        ),
+        ExecuteTest(
+            "executeMethodNoArgumentsWithoutArguments",
+            "execute-method",
+            listOf(*commonArgs, "--class", "my.solution.java.NoArguments")
+        ),
+        ExecuteTest(
+            "executeMethodMissing", "execute-method",
+            listOf(*commonArgs, "--class", "my.solution.java.MissingMethod"),
+            expectSuccess = false
+        ),
+        ExecuteTest(
+            "executeMethodMissingClass", "execute-method",
+            listOf(*commonArgs, "--class", "my.solution.java.MissingClass"),
+            expectSuccess = false
+        )
+    )
+}
+
 /**
  * Describes a project to generate with the supported MPS versions
  *
@@ -146,6 +185,17 @@ interface GenerationTestExpectation {
  * @param args additional arguments to the command
  */
 data class ModelCheckTest(val name: String, val project: String, val args: List<Any>, val expectSuccess: Boolean = true) {
+    val projectDir = file("projects/$project")
+}
+
+/**
+ * Describes a project to execute code in generated classes with the supported MPS versions
+ *
+ * @param name test name
+ * @param project project folder name (in `projects/`)
+ * @param args additional arguments to the command
+ */
+data class ExecuteTest(val name: String, val project: String, val args: List<Any>, val expectSuccess: Boolean = true) {
     val projectDir = file("projects/$project")
 }
 
@@ -255,7 +305,44 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
         }
     }
 
-    return generateTasks + modelcheckTasks
+    val executeTasks = EXECUTE_TESTS.map { testCase ->
+        tasks.register("executeTest${testCase.name.capitalize()}WithMps$mpsVersion", JavaExec::class) {
+            mpsBackendLauncher.forMpsHome(mpsHome)
+                .withMpsVersion(mpsVersion)
+                .withJetBrainsJvm()
+                .configure(this)
+
+            dependsOn(unpackTask)
+            group = LifecycleBasePlugin.VERIFICATION_GROUP
+            classpath(execute)
+            classpath(fileTree(mpsHome) {
+                include("lib/**/*.jar")
+            })
+
+            mainClass.set("de.itemis.mps.gradle.execute.MainKt")
+
+            // Workaround for https://youtrack.jetbrains.com/issue/MPS-35992/MPSHeadlessPlatformStarter-race-condition-causes-unnecessary-wait
+            args("--test-mode")
+
+            args("--project", testCase.projectDir)
+            args(testCase.args)
+
+            isIgnoreExitValue = true
+            doLast {
+                val actualExitValue = executionResult.get().exitValue
+                val actualSuccess = actualExitValue == 0
+                val expectedSuccess = testCase.expectSuccess && !UNSUPPORTED_MPS_VERSIONS_FOR_EXECUTE.contains(mpsVersion)
+                if (actualSuccess != expectedSuccess) {
+                    throw GradleException(
+                        "Execute outcome: expected success: $expectedSuccess, but was: $actualSuccess" +
+                                " (actual exit value $actualExitValue)"
+                    )
+                }
+            }
+        }
+    }
+
+    return generateTasks + modelcheckTasks + executeTasks
 }
 
 val testTasksByVersion = SUPPORTED_MPS_VERSIONS.map { mpsVersion ->

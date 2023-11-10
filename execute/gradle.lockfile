@@ -1,0 +1,23 @@
+# This is a Gradle generated file for dependency locking.
+# Manual edits can break the build and are not advised.
+# This file is expected to be part of source control.
+com.jetbrains:mps:2021.3.4=mpsZip
+com.xenomachina:kotlin-argparser:2.0.7=compileClasspath,testCompileClasspath,testRuntimeClasspath
+com.xenomachina:xenocom:0.0.7=compileClasspath,testCompileClasspath,testRuntimeClasspath
+commons-logging:commons-logging:1.2=compileClasspath
+net.java.dev.jna:jna:5.6.0=kotlinCompilerClasspath
+org.jetbrains.intellij.deps:trove4j:1.0.20181211=kotlinCompilerClasspath
+org.jetbrains.kotlin:kotlin-compiler-embeddable:1.6.10=kotlinCompilerClasspath
+org.jetbrains.kotlin:kotlin-daemon-embeddable:1.6.10=kotlinCompilerClasspath
+org.jetbrains.kotlin:kotlin-reflect:1.6.10=kotlinCompilerClasspath
+org.jetbrains.kotlin:kotlin-script-runtime:1.6.10=kotlinCompilerClasspath,kotlinCompilerPluginClasspathMain,kotlinCompilerPluginClasspathTest
+org.jetbrains.kotlin:kotlin-scripting-common:1.6.10=kotlinCompilerPluginClasspathMain,kotlinCompilerPluginClasspathTest
+org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10=kotlinCompilerPluginClasspathMain,kotlinCompilerPluginClasspathTest
+org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable:1.6.10=kotlinCompilerPluginClasspathMain,kotlinCompilerPluginClasspathTest
+org.jetbrains.kotlin:kotlin-scripting-jvm:1.6.10=kotlinCompilerPluginClasspathMain,kotlinCompilerPluginClasspathTest
+org.jetbrains.kotlin:kotlin-stdlib-common:1.6.10=compileClasspath,kotlinCompilerClasspath,kotlinCompilerPluginClasspathMain,kotlinCompilerPluginClasspathTest,testCompileClasspath,testRuntimeClasspath
+org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.10=compileClasspath,testCompileClasspath,testRuntimeClasspath
+org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10=compileClasspath,testCompileClasspath,testRuntimeClasspath
+org.jetbrains.kotlin:kotlin-stdlib:1.6.10=compileClasspath,kotlinCompilerClasspath,kotlinCompilerPluginClasspathMain,kotlinCompilerPluginClasspathTest,testCompileClasspath,testRuntimeClasspath
+org.jetbrains:annotations:13.0=compileClasspath,kotlinCompilerClasspath,kotlinCompilerPluginClasspathMain,kotlinCompilerPluginClasspathTest,testCompileClasspath,testRuntimeClasspath
+empty=annotationProcessor,testAnnotationProcessor

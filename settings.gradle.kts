@@ -11,6 +11,7 @@ rootProject.name = "mps-build-backends"
 include("execute-generators")
 include("project-loader")
 include("modelcheck")
+include("execute")
 include("integration-tests")
 
 includeBuild("launcher")
