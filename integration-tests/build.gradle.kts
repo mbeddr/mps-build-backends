@@ -1,4 +1,5 @@
 import java.nio.file.Files
+import java.util.*
 
 plugins {
     base
@@ -198,6 +199,8 @@ data class ModelCheckTest(val name: String, val project: String, val args: List<
 data class ExecuteTest(val name: String, val project: String, val args: List<Any>, val expectSuccess: Boolean = true) {
     val projectDir = file("projects/$project")
 }
+
+fun String.capitalize() = replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
 
 /**
  * Creates and returns the Gradle tasks to perform all the tests with a single MPS version.
