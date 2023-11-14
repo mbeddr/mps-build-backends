@@ -94,32 +94,32 @@ val EXECUTE_TESTS = run {
     val commonArgs = arrayOf("--module", "my.solution", "--method", "execute")
     listOf(
         ExecuteTest(
-            "executeMethodTakesArgumentsWithArguments", "execute-method",
-            listOf(*commonArgs, "--class", "my.solution.java.TakesArguments", "--arg", "arg1", "--arg", "arg2")
+            "executeMethodWithArgumentsPassingArguments", "execute-method",
+            listOf(*commonArgs, "--class", "my.solution.java.WithArguments", "--arg", "arg1", "--arg", "arg2")
         ),
         ExecuteTest(
-            "executeMethodTakesArgumentsWithoutArguments",
+            "executeMethodWithArgumentsNotPassingArguments",
             "execute-method",
-            listOf(*commonArgs, "--class", "my.solution.java.TakesArguments")
+            listOf(*commonArgs, "--class", "my.solution.java.WithArguments")
         ),
         ExecuteTest(
-            "executeMethodNoArgumentsWithArguments",
+            "executeMethodWithoutArgumentsPassingArguments",
             "execute-method",
-            listOf(*commonArgs, "--class", "my.solution.java.NoArguments", "--arg", "arg1", "--arg", "arg2"),
+            listOf(*commonArgs, "--class", "my.solution.java.WithoutArguments", "--arg", "arg1", "--arg", "arg2"),
             expectSuccess = false
         ),
         ExecuteTest(
-            "executeMethodNoArgumentsWithoutArguments",
+            "executeMethodWithoutArgumentsNotPassingArguments",
             "execute-method",
-            listOf(*commonArgs, "--class", "my.solution.java.NoArguments")
+            listOf(*commonArgs, "--class", "my.solution.java.WithoutArguments")
         ),
         ExecuteTest(
-            "executeMethodMissing", "execute-method",
+            "executeMissingMethod", "execute-method",
             listOf(*commonArgs, "--class", "my.solution.java.MissingMethod"),
             expectSuccess = false
         ),
         ExecuteTest(
-            "executeMethodMissingClass", "execute-method",
+            "executeMethodInMissingClass", "execute-method",
             listOf(*commonArgs, "--class", "my.solution.java.MissingClass"),
             expectSuccess = false
         )
@@ -217,38 +217,56 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
         into(mpsHome)
     }
 
-    val generateTasks = GENERATION_TESTS.map { testCase ->
-        tasks.register("generate${testCase.name.capitalize()}WithMps$mpsVersion", JavaExec::class) {
-            mpsBackendLauncher.forMpsHome(mpsHome)
-                .withMpsVersion(mpsVersion)
-                .withJetBrainsJvm()
-                .configure(this)
-            dependsOn(unpackTask)
-            group = LifecycleBasePlugin.VERIFICATION_GROUP
-            classpath(executeGenerators)
-            classpath(fileTree(mpsHome) {
-                include("lib/**/*.jar")
+    fun JavaExec.configureGenerateTask(projectDir: File) {
+        mpsBackendLauncher.forMpsHome(mpsHome)
+            .withMpsVersion(mpsVersion)
+            .withJetBrainsJvm()
+            .configure(this)
+        dependsOn(unpackTask)
+        classpath(executeGenerators)
+        classpath(fileTree(mpsHome) {
+            include("lib/**/*.jar")
+        })
+
+        mainClass.set("de.itemis.mps.gradle.generate.MainKt")
+
+        // Workaround for https://youtrack.jetbrains.com/issue/MPS-35992/MPSHeadlessPlatformStarter-race-condition-causes-unnecessary-wait
+        args("--test-mode")
+
+        args("--project", projectDir)
+
+        doFirst {
+            println("Deleting generated sources in $projectDir")
+            delete(fileTree(projectDir) {
+                include("**/source_gen/**")
+                include("**/source_gen.caches/**")
+                include("**/classes_gen/**")
             })
 
-            mainClass.set("de.itemis.mps.gradle.generate.MainKt")
+            println("Deleting MPS caches in ${mpsHome}/system")
+            delete(fileTree(mpsHome) { include("system/**") })
+        }
+    }
 
-            // Workaround for https://youtrack.jetbrains.com/issue/MPS-35992/MPSHeadlessPlatformStarter-race-condition-causes-unnecessary-wait
-            args("--test-mode")
+    fun generateProjectForExecuteTaskName(projectName: String): String {
+        val projectNameInTask = projectName.split("-").joinToString("") { it.capitalize() }
+        return "generateForExecute${projectNameInTask}WithMps$mpsVersion"
+    }
+    EXECUTE_TESTS.distinctBy { it.project }.map {
+        tasks.register(generateProjectForExecuteTaskName(it.project), JavaExec::class) {
+            configureGenerateTask(it.projectDir)
 
-            args("--project", testCase.projectDir)
+            group = LifecycleBasePlugin.BUILD_GROUP
+        }
+    }
+
+    val generateTasks = GENERATION_TESTS.map { testCase ->
+        tasks.register("generate${testCase.name.capitalize()}WithMps$mpsVersion", JavaExec::class) {
+            configureGenerateTask(testCase.projectDir)
+
+            group = LifecycleBasePlugin.VERIFICATION_GROUP
+
             args(testCase.args)
-
-            doFirst {
-                println("Deleting generated sources in ${testCase.projectDir}")
-                delete(fileTree(testCase.projectDir) {
-                    include("**/source_gen/**")
-                    include("**/source_gen.caches/**")
-                    include("**/classes_gen/**")
-                })
-
-                println("Deleting MPS caches in ${mpsHome}/system")
-                delete(fileTree(mpsHome) { include("system/**") })
-            }
 
             doFirst {
                 testCase.expectation.prepare(testCase)
@@ -315,7 +333,7 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
                 .withJetBrainsJvm()
                 .configure(this)
 
-            dependsOn(unpackTask)
+            dependsOn(unpackTask, generateProjectForExecuteTaskName(testCase.project))
             group = LifecycleBasePlugin.VERIFICATION_GROUP
             classpath(execute)
             classpath(fileTree(mpsHome) {

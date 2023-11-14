@@ -83,7 +83,7 @@
     </language>
   </registry>
   <node concept="312cEu" id="nRJS0RMij3">
-    <property role="TrG5h" value="TakesArguments" />
+    <property role="TrG5h" value="WithArguments" />
     <node concept="2tJIrI" id="nRJS0RMl0S" role="jymVt" />
     <node concept="2YIFZL" id="nRJS0RMQyI" role="jymVt">
       <property role="TrG5h" value="execute" />
@@ -145,7 +145,7 @@
     <node concept="3Tm1VV" id="nRJS0RMlTN" role="1B3o_S" />
   </node>
   <node concept="312cEu" id="nRJS0RMRf7">
-    <property role="TrG5h" value="NoArguments" />
+    <property role="TrG5h" value="WithoutArguments" />
     <node concept="2tJIrI" id="nRJS0RMREt" role="jymVt" />
     <node concept="2YIFZL" id="nRJS0RMRsX" role="jymVt">
       <property role="TrG5h" value="execute" />
@@ -178,6 +178,7 @@
   </node>
   <node concept="312cEu" id="nRJS0RMS4R">
     <property role="TrG5h" value="MissingMethod" />
+    <node concept="2tJIrI" id="5Csmp2j9iAD" role="jymVt" />
     <node concept="2YIFZL" id="nRJS0RMS5W" role="jymVt">
       <property role="TrG5h" value="execute" />
       <node concept="3clFbS" id="nRJS0RMS5Z" role="3clF47">
