@@ -91,8 +91,8 @@ dependencies {
 val mpsHome = File(buildDir, "mps")
 
 val unpackMps by tasks.registering(Sync::class) {
-    dependsOn(configuration)
-    from({ configuration.resolve().map(project::zipTree) })
+    dependsOn(mps)
+    from({ mps.resolve().map(project::zipTree) })
     into(mpsHome)
 }
 
@@ -110,7 +110,6 @@ val runModelCheck by tasks.registering(JavaExec::class) {
     args("--project", it.projectDir)
     args("--result-file", file("$buildDir/modelcheck-results.xml"))
 
-    args("--project", it.projectDir)
     args("--model", "my.model.to.check")
 }
 ```
