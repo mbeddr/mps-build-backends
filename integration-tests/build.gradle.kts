@@ -248,18 +248,6 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
         }
     }
 
-    fun generateProjectForExecuteTaskName(projectName: String): String {
-        val projectNameInTask = projectName.split("-").joinToString("") { it.capitalize() }
-        return "generateForExecute${projectNameInTask}WithMps$mpsVersion"
-    }
-    EXECUTE_TESTS.distinctBy { it.project }.map {
-        tasks.register(generateProjectForExecuteTaskName(it.project), JavaExec::class) {
-            configureGenerateTask(it.projectDir)
-
-            group = LifecycleBasePlugin.BUILD_GROUP
-        }
-    }
-
     val generateTasks = GENERATION_TESTS.map { testCase ->
         tasks.register("generate${testCase.name.capitalize()}WithMps$mpsVersion", JavaExec::class) {
             configureGenerateTask(testCase.projectDir)
@@ -326,38 +314,53 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
         }
     }
 
-    val executeTasks = EXECUTE_TESTS.map { testCase ->
-        tasks.register("executeTest${testCase.name.capitalize()}WithMps$mpsVersion", JavaExec::class) {
-            mpsBackendLauncher.forMpsHome(mpsHome)
-                .withMpsVersion(mpsVersion)
-                .withJetBrainsJvm()
-                .configure(this)
+    val executeTasks: List<TaskProvider<JavaExec>>
+    if (mpsVersion in UNSUPPORTED_MPS_VERSIONS_FOR_EXECUTE) {
+        executeTasks = listOf()
+    } else {
+        val generateForExecuteTasks = EXECUTE_TESTS.distinctBy { it.project }.associate {
+            val projectNameInTask = it.project.split("-").joinToString("") { it.capitalize() }
+            val taskName = "generateForExecute${projectNameInTask}WithMps$mpsVersion"
 
-            dependsOn(unpackTask, generateProjectForExecuteTaskName(testCase.project))
-            group = LifecycleBasePlugin.VERIFICATION_GROUP
-            classpath(execute)
-            classpath(fileTree(mpsHome) {
-                include("lib/**/*.jar")
-            })
+            it.project to tasks.register(taskName, JavaExec::class) {
+                configureGenerateTask(it.projectDir)
+                group = LifecycleBasePlugin.BUILD_GROUP
+            }
+        }
 
-            mainClass.set("de.itemis.mps.gradle.execute.MainKt")
+        executeTasks = EXECUTE_TESTS.map { testCase ->
+            tasks.register("executeTest${testCase.name.capitalize()}WithMps$mpsVersion", JavaExec::class) {
+                mpsBackendLauncher.forMpsHome(mpsHome)
+                    .withMpsVersion(mpsVersion)
+                    .withJetBrainsJvm()
+                    .configure(this)
 
-            // Workaround for https://youtrack.jetbrains.com/issue/MPS-35992/MPSHeadlessPlatformStarter-race-condition-causes-unnecessary-wait
-            args("--test-mode")
+                dependsOn(unpackTask, generateForExecuteTasks[testCase.project])
+                group = LifecycleBasePlugin.VERIFICATION_GROUP
+                classpath(execute)
+                classpath(fileTree(mpsHome) {
+                    include("lib/**/*.jar")
+                })
 
-            args("--project", testCase.projectDir)
-            args(testCase.args)
+                mainClass.set("de.itemis.mps.gradle.execute.MainKt")
 
-            isIgnoreExitValue = true
-            doLast {
-                val actualExitValue = executionResult.get().exitValue
-                val actualSuccess = actualExitValue == 0
-                val expectedSuccess = testCase.expectSuccess && !UNSUPPORTED_MPS_VERSIONS_FOR_EXECUTE.contains(mpsVersion)
-                if (actualSuccess != expectedSuccess) {
-                    throw GradleException(
-                        "Execute outcome: expected success: $expectedSuccess, but was: $actualSuccess" +
-                                " (actual exit value $actualExitValue)"
-                    )
+                // Workaround for https://youtrack.jetbrains.com/issue/MPS-35992/MPSHeadlessPlatformStarter-race-condition-causes-unnecessary-wait
+                args("--test-mode")
+
+                args("--project", testCase.projectDir)
+                args(testCase.args)
+
+                isIgnoreExitValue = true
+                doLast {
+                    val actualExitValue = executionResult.get().exitValue
+                    val actualSuccess = actualExitValue == 0
+                    val expectedSuccess = testCase.expectSuccess
+                    if (actualSuccess != expectedSuccess) {
+                        throw GradleException(
+                            "Execute outcome: expected success: $expectedSuccess, but was: $actualSuccess" +
+                                    " (actual exit value $actualExitValue)"
+                        )
+                    }
                 }
             }
         }
