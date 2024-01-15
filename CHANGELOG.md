@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.14.2
+
+### Changed
+
+- `modelcheck`: jackson-dataformat-xml reverted to 2.11.+ because 2.16.+ turned out to be incompatible with
+  MPS 2022.2.x.
+
 ## 1.14.1
 
 ### Changed

@@ -35,7 +35,7 @@ dependencies {
 
     implementation(kotlin("test"))
 
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.16.+")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.+")
 
     testImplementation(kotlin("test"))
     testImplementation("org.xmlunit:xmlunit-core:2.6.+")
