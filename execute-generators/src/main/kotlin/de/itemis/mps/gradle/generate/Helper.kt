@@ -145,10 +145,6 @@ private fun createScript(proj: Project, models: List<SModel>): IScript {
         }
     }
 
-
-    // For some reason MPS doesn't explicitly stat that there is a dependency on Generate, TextGen and Make, so we have
-    // to make sure they are always included in the set of facets even if for MPS there is no dependency on them.
-
     // todo: not sure if we really need the final target to be Make.make all the time. The code was taken fom #BuildMakeService.defaultMakeScript
     return scb.withFacetNames(allFacets).withFinalTarget(ITarget.Name("jetbrains.mps.make.facets.Make.make")).toScript()
 }
