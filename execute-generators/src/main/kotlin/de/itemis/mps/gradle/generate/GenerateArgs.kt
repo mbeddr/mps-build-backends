@@ -1,9 +1,9 @@
 package de.itemis.mps.gradle.generate
 
 import com.xenomachina.argparser.ArgParser
-import com.xenomachina.argparser.InvalidArgumentException
 import com.xenomachina.argparser.default
 import de.itemis.mps.gradle.project.loader.Args
+import de.itemis.mps.gradle.project.loader.checkArgument
 
 class GenerateArgs(parser: ArgParser) : Args(parser) {
     val models by parser.adding("--model", help = "list of models to generate")
@@ -20,8 +20,8 @@ class GenerateArgs(parser: ArgParser) : Args(parser) {
         argName = "THREADS"
     ) { toInt() }
         .default(0)
-        .addValidator { if (value < 0) throw InvalidArgumentException("parallel-generation-threads must be >= 0") }
+        .addValidator { checkArgument(value >= 0) { "parallel-generation-threads value $value must be >= 0" } }
         .addValidator {
-            if (value > 0 && noStrictMode) throw InvalidArgumentException("strict mode is required for parallel generation")
+            checkArgument(!noStrictMode || value == 0) { "strict mode is required for parallel generation" }
         }
 }

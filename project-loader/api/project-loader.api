@@ -31,6 +31,10 @@ public class de/itemis/mps/gradle/project/loader/Args {
 	public final fun getTestMode ()Z
 }
 
+public final class de/itemis/mps/gradle/project/loader/ArgsKt {
+	public static final fun checkArgument (ZLkotlin/jvm/functions/Function0;)V
+}
+
 public final class de/itemis/mps/gradle/project/loader/EnvironmentConfigBuilder {
 	public fun <init> ()V
 	public final fun build ()Ljetbrains/mps/tool/environment/EnvironmentConfig;

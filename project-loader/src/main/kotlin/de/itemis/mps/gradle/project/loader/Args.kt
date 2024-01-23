@@ -1,15 +1,14 @@
 package de.itemis.mps.gradle.project.loader
 
 import com.xenomachina.argparser.ArgParser
+import com.xenomachina.argparser.InvalidArgumentException
 import com.xenomachina.argparser.default
 import de.itemis.mps.gradle.logging.LogLevel
 import java.io.File
 
 private fun <T> splitAndCreate(str: String, creator: (String, String) -> T): T {
-    val split = str.split("::")
-    if (split.size < 2) {
-        throw RuntimeException("string if not of the right format. Expected <key>::<value>")
-    }
+    val split = str.split("::", limit = 2)
+    checkArgument(split.size == 2) { "String '$str' does not have format <key>::<value>." }
     return creator(split[0], split[1])
 }
 
@@ -64,4 +63,8 @@ public open class Args(parser: ArgParser) {
     }
 
     public fun buildLoader(): ProjectLoader = ProjectLoader.build(this::configureProjectLoader)
+}
+
+public inline fun checkArgument(isOk: Boolean, message: () -> String) {
+    if (!isOk) throw InvalidArgumentException(message())
 }

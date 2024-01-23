@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 2.1.0
+
+### Added
+
+- `checkArgument` function for checking invalid arguments in a consistent way.
+
 ## 2.0.0
 
 ### Added
