@@ -3,8 +3,9 @@ package de.itemis.mps.gradle.generate
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.SystemExitException
 import com.xenomachina.argparser.mainBody
+import kotlin.system.exitProcess
 
-fun main(args: Array<String>) = mainBody("execute-generators") {
+fun main(args: Array<String>): Unit = mainBody("execute-generators") {
     val parsed = ArgParser(args).parseInto(::GenerateArgs)
     var result = GenerationResult.Error
 
@@ -22,5 +23,5 @@ fun main(args: Array<String>) = mainBody("execute-generators") {
         throw SystemExitException("generation failed", result.exitCode)
     }
 
-    System.exit(result.exitCode)
+    exitProcess(result.exitCode)
 }

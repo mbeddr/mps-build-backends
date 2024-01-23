@@ -22,7 +22,7 @@ private fun toPlugin(str: String) = splitAndCreate(str, ::Plugin)
 public open class Args(parser: ArgParser) {
 
     public val plugins: MutableList<Plugin> by parser.adding("--plugin",
-            help = "plugin to to load. The format is --plugin=<id>::<path>")
+            help = "plugin to load. The format is --plugin=<id>::<path>")
     { toPlugin(this) }
 
     public val macros: MutableList<Macro> by parser.adding("--macro",

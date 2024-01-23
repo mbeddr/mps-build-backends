@@ -17,7 +17,7 @@ private fun Project.getModuleReference(moduleName: String): SModuleReference {
 
     modelAccess.runReadAction {
         val module = repository.modules.find { it.moduleName == moduleName }
-            ?: throw IllegalArgumentException("Not found module $moduleName")
+            ?: throw IllegalArgumentException("Module not found: $moduleName")
         moduleReference = module.moduleReference
     }
 
