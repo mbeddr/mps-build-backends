@@ -15,6 +15,7 @@ import jetbrains.mps.ide.httpsupport.runtime.base.HttpSupportUtil
 import jetbrains.mps.ide.modelchecker.platform.actions.UnresolvedReferencesChecker
 import jetbrains.mps.progress.EmptyProgressMonitor
 import jetbrains.mps.project.Project
+import jetbrains.mps.smodel.ModelAccessBase
 import jetbrains.mps.smodel.SModelStereotype
 import jetbrains.mps.tool.environment.Environment
 import jetbrains.mps.util.CollectConsumer
@@ -283,7 +284,12 @@ private fun oneTestCasePerModule(modules: Iterable<SModule>, errorsPerModule: Ma
 
 private fun ModelCheckerBuilder.setParallelTaskScheduler(project: Project) {
     try {
-        withTaskScheduler(SystemBackgroundTaskScheduler(project))
+        try {
+            val executor = (project.repository.modelAccess as ModelAccessBase).shareRead()
+            withTaskScheduler(SystemBackgroundTaskScheduler(project, executor))
+        } catch (e: NoSuchMethodError) {
+            withTaskScheduler(SystemBackgroundTaskScheduler(project))
+        }
     } catch (e: NoClassDefFoundError) {
         logger.warn("Parallel model checking is not supported in this version of MPS", e)
     }
@@ -311,14 +317,6 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
         }
     }
     modelExtractor.includeStubs(false)
-    val checker = ModelCheckerBuilder(modelExtractor)
-        .also {
-            if (args.parallel) {
-                it.setParallelTaskScheduler(project)
-            }
-        }
-        .createChecker(checkers)
-
     val itemsToCheck = ModelCheckerBuilder.ItemsToCheck()
 
     project.modelAccess.runReadAction {
@@ -334,6 +332,14 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
                     .filter(moduleAndModelMatcher::isModuleIncluded)
             )
         }
+
+        val checker = ModelCheckerBuilder(modelExtractor)
+            .also {
+                if (args.parallel) {
+                    it.setParallelTaskScheduler(project)
+                }
+            }
+            .createChecker(checkers)
 
         checker.check(itemsToCheck, project.repository, errorCollector, EmptyProgressMonitor())
 

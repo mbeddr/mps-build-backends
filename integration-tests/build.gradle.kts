@@ -17,7 +17,7 @@ dependencies {
     execute(project(":execute"))
 }
 
-val SUPPORTED_MPS_VERSIONS = arrayOf("2021.1.4", "2021.2.6", "2021.3.4", "2022.2", "2022.3")
+val SUPPORTED_MPS_VERSIONS = arrayOf("2021.1.4", "2021.2.6", "2021.3.5", "2022.2", "2022.3")
 val UNSUPPORTED_MPS_VERSIONS_FOR_EXECUTE = setOf("2021.1.4", "2021.2.6")
 
 val GENERATION_TESTS = listOf(

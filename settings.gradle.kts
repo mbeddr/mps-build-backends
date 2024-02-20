@@ -19,7 +19,7 @@ includeBuild("launcher")
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            library("mps", "com.jetbrains:mps:2021.3.4")
+            library("mps", "com.jetbrains:mps:2021.3.5")
         }
     }
 }

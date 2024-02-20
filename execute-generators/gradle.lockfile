@@ -1,7 +1,7 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-com.jetbrains:mps:2021.3.4=mpsZip
+com.jetbrains:mps:2021.3.5=mpsZip
 com.xenomachina:kotlin-argparser:2.0.7=compileClasspath,implementationDependenciesMetadata,runtimeClasspath,testCompileClasspath,testImplementationDependenciesMetadata,testRuntimeClasspath
 com.xenomachina:xenocom:0.0.7=compileClasspath,implementationDependenciesMetadata,runtimeClasspath,testCompileClasspath,testImplementationDependenciesMetadata,testRuntimeClasspath
 commons-logging:commons-logging:1.2=compileClasspath,compileOnlyDependenciesMetadata
