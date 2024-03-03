@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 2.2.0
+
+### Added
+
+- `EnvironmentArgs` superclass of `Args` for situations where the user can specify no, or multiple projects.
+
 ## 2.1.0
 
 ### Added

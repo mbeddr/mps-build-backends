@@ -17,7 +17,16 @@ public final class de/itemis/mps/gradle/logging/LoggingFactoryKt {
 	public static final fun detectLogging ()Lde/itemis/mps/gradle/logging/Logging;
 }
 
-public class de/itemis/mps/gradle/project/loader/Args {
+public class de/itemis/mps/gradle/project/loader/Args : de/itemis/mps/gradle/project/loader/EnvironmentArgs {
+	public fun <init> (Lcom/xenomachina/argparser/ArgParser;)V
+	public final fun getProject ()Ljava/io/File;
+}
+
+public final class de/itemis/mps/gradle/project/loader/ArgsKt {
+	public static final fun checkArgument (ZLkotlin/jvm/functions/Function0;)V
+}
+
+public class de/itemis/mps/gradle/project/loader/EnvironmentArgs {
 	public fun <init> (Lcom/xenomachina/argparser/ArgParser;)V
 	public final fun buildLoader ()Lde/itemis/mps/gradle/project/loader/ProjectLoader;
 	public fun configureProjectLoader (Lde/itemis/mps/gradle/project/loader/ProjectLoader$Builder;)V
@@ -27,12 +36,7 @@ public class de/itemis/mps/gradle/project/loader/Args {
 	public final fun getMacros ()Ljava/util/List;
 	public final fun getPluginLocation ()Ljava/io/File;
 	public final fun getPlugins ()Ljava/util/List;
-	public final fun getProject ()Ljava/io/File;
 	public final fun getTestMode ()Z
-}
-
-public final class de/itemis/mps/gradle/project/loader/ArgsKt {
-	public static final fun checkArgument (ZLkotlin/jvm/functions/Function0;)V
 }
 
 public final class de/itemis/mps/gradle/project/loader/EnvironmentConfigBuilder {
