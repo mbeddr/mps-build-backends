@@ -20,6 +20,7 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
             library("mps", "com.jetbrains:mps:2021.3.5")
+            library("commons-logging", "commons-logging:commons-logging:1.2")
         }
     }
 }
