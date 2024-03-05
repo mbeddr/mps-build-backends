@@ -1,3 +1,7 @@
+import com.google.common.collect.ImmutableMultimap
+import com.google.common.collect.Multimap
+import com.google.common.collect.MultimapBuilder
+import com.google.common.collect.Multimaps
 import java.nio.file.Files
 import java.util.*
 
@@ -200,13 +204,19 @@ data class ExecuteTest(val name: String, val project: String, val args: List<Any
     val projectDir = file("projects/$project")
 }
 
+enum class TestKind {
+    GENERATE,
+    MODELCHECK,
+    EXECUTE
+}
+
 fun String.capitalize() = replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
 
 /**
  * Creates and returns the Gradle tasks to perform all the tests with a single MPS version.
  * Also creates any necessary Gradle objects (configurations, dependencies, etc.)
  */
-fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
+fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out Task>> {
     val configuration = configurations.create("mps$mpsVersion")
     dependencies.add(configuration.name, "com.jetbrains:mps:$mpsVersion@zip")
 
@@ -366,18 +376,46 @@ fun tasksForMpsVersion(mpsVersion: String): List<TaskProvider<out Task>> {
         }
     }
 
-    return generateTasks + modelcheckTasks + executeTasks
+    return ImmutableMultimap.builder<TestKind, TaskProvider<out Task>>()
+        .putAll(TestKind.EXECUTE, executeTasks)
+        .putAll(TestKind.GENERATE, generateTasks)
+        .putAll(TestKind.MODELCHECK, modelcheckTasks)
+        .build()
 }
 
-val testTasksByVersion = SUPPORTED_MPS_VERSIONS.map { mpsVersion ->
-    val tasksForThisVersion = tasksForMpsVersion(mpsVersion)
-    tasks.register("checkMps${mpsVersion}") {
-        description = "Runs all tests using MPS $mpsVersion"
+data class Key(val kind: TestKind, val mpsVersion: String)
+
+fun buildTestMatrix(): Multimap<Key, TaskProvider<out Task>> {
+    val builder = ImmutableMultimap.builder<Key, TaskProvider<out Task>>()
+
+    for (mpsVersion in SUPPORTED_MPS_VERSIONS) {
+        val tasksForThisVersion = tasksForMpsVersion(mpsVersion)
+        for (entry in tasksForThisVersion.entries()) {
+            builder.put(Key(entry.key, mpsVersion), entry.value)
+        }
+    }
+
+    return builder.build()
+}
+
+val testMatrix = buildTestMatrix()
+
+tasks.named("check") {
+    dependsOn(testMatrix.values())
+}
+
+for (kind in TestKind.values()) {
+    tasks.register("test${kind.name.lowercase().capitalize()}") {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
-        dependsOn(tasksForThisVersion)
+        description = "Run all '${kind.name.lowercase()}' tests"
+        dependsOn(Multimaps.filterKeys(testMatrix) { it!!.kind == kind }.values())
     }
 }
 
-tasks.named("check") {
-    dependsOn(testTasksByVersion)
+for (mpsVersion in SUPPORTED_MPS_VERSIONS) {
+    tasks.register("testMps$mpsVersion") {
+        group = LifecycleBasePlugin.VERIFICATION_GROUP
+        description = "Run all tests with MPS $mpsVersion"
+        dependsOn(Multimaps.filterKeys(testMatrix) { it!!.mpsVersion == mpsVersion }.values())
+    }
 }
