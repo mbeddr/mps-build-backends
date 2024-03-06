@@ -26,4 +26,5 @@ semantic versioning instead.
 
 ## Supported MPS versions
 
-The current version supports MPS 2021.1 to MPS 2022.3. It may work with earlier MPS versions but is not tested with them.
+The current version supports MPS 2021.3 to MPS 2022.3. It may work with earlier or later MPS versions but is not tested
+with them.
