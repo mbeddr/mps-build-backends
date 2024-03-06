@@ -227,12 +227,12 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
         into(mpsHome)
     }
 
-    fun JavaExec.configureGenerateTask(projectDir: File) {
+    fun JavaExecSpec.configureGenerateTaskForSpec(projectDir: File, temporaryDir: File) {
         mpsBackendLauncher.forMpsHome(mpsHome)
             .withMpsVersion(mpsVersion)
             .withJetBrainsJvm()
+            .withTemporaryDirectory(temporaryDir)
             .configure(this)
-        dependsOn(unpackTask)
         classpath(executeGenerators)
         classpath(fileTree(mpsHome) {
             include("lib/**/*.jar")
@@ -244,17 +244,25 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
         args("--test-mode")
 
         args("--project", projectDir)
+    }
 
+    fun cleanBeforeGeneration(projectDir: File) {
+        println("Deleting generated sources in $projectDir")
+        delete(fileTree(projectDir) {
+            include("**/source_gen/**")
+            include("**/source_gen.caches/**")
+            include("**/classes_gen/**")
+        })
+
+        println("Deleting MPS caches in ${mpsHome}/system")
+        delete(fileTree(mpsHome) { include("system/**") })
+    }
+
+    fun JavaExec.configureGenerateTask(projectDir: File) {
+        configureGenerateTaskForSpec(projectDir, this.temporaryDir)
+        dependsOn(unpackTask)
         doFirst {
-            println("Deleting generated sources in $projectDir")
-            delete(fileTree(projectDir) {
-                include("**/source_gen/**")
-                include("**/source_gen.caches/**")
-                include("**/classes_gen/**")
-            })
-
-            println("Deleting MPS caches in ${mpsHome}/system")
-            delete(fileTree(mpsHome) { include("system/**") })
+            cleanBeforeGeneration(projectDir)
         }
     }
 
@@ -324,45 +332,46 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
         }
     }
 
-    val executeTasks: List<TaskProvider<JavaExec>>
+    val executeTasks: List<TaskProvider<out Task>>
     if (mpsVersion in UNSUPPORTED_MPS_VERSIONS_FOR_EXECUTE) {
         executeTasks = listOf()
     } else {
-        val generateForExecuteTasks = EXECUTE_TESTS.distinctBy { it.project }.associate {
-            val projectNameInTask = it.project.split("-").joinToString("") { it.capitalize() }
-            val taskName = "generateForExecute${projectNameInTask}WithMps$mpsVersion"
-
-            it.project to tasks.register(taskName, JavaExec::class) {
-                configureGenerateTask(it.projectDir)
-                group = LifecycleBasePlugin.BUILD_GROUP
-            }
-        }
-
         executeTasks = EXECUTE_TESTS.map { testCase ->
-            tasks.register("executeTest${testCase.name.capitalize()}WithMps$mpsVersion", JavaExec::class) {
-                mpsBackendLauncher.forMpsHome(mpsHome)
-                    .withMpsVersion(mpsVersion)
-                    .withJetBrainsJvm()
-                    .configure(this)
+            tasks.register("executeTest${testCase.name.capitalize()}WithMps$mpsVersion") {
+                dependsOn(unpackTask)
 
-                dependsOn(unpackTask, generateForExecuteTasks[testCase.project])
-                group = LifecycleBasePlugin.VERIFICATION_GROUP
-                classpath(execute)
-                classpath(fileTree(mpsHome) {
-                    include("lib/**/*.jar")
-                })
-
-                mainClass.set("de.itemis.mps.gradle.execute.MainKt")
-
-                // Workaround for https://youtrack.jetbrains.com/issue/MPS-35992/MPSHeadlessPlatformStarter-race-condition-causes-unnecessary-wait
-                args("--test-mode")
-
-                args("--project", testCase.projectDir)
-                args(testCase.args)
-
-                isIgnoreExitValue = true
                 doLast {
-                    val actualExitValue = executionResult.get().exitValue
+                    cleanBeforeGeneration(testCase.projectDir)
+
+                    javaexec {
+                        configureGenerateTaskForSpec(testCase.projectDir, temporaryDir)
+                    }
+
+                    val executionResult = javaexec {
+                        mpsBackendLauncher.forMpsHome(mpsHome)
+                            .withMpsVersion(mpsVersion)
+                            .withJetBrainsJvm()
+                            .withTemporaryDirectory(temporaryDir)
+                            .configure(this)
+
+                        group = LifecycleBasePlugin.VERIFICATION_GROUP
+                        classpath(execute)
+                        classpath(fileTree(mpsHome) {
+                            include("lib/**/*.jar")
+                        })
+
+                        mainClass.set("de.itemis.mps.gradle.execute.MainKt")
+
+                        // Workaround for https://youtrack.jetbrains.com/issue/MPS-35992/MPSHeadlessPlatformStarter-race-condition-causes-unnecessary-wait
+                        args("--test-mode")
+
+                        args("--project", testCase.projectDir)
+                        args(testCase.args)
+
+                        isIgnoreExitValue = true
+                    }
+
+                    val actualExitValue = executionResult.exitValue
                     val actualSuccess = actualExitValue == 0
                     val expectedSuccess = testCase.expectSuccess
                     if (actualSuccess != expectedSuccess) {
