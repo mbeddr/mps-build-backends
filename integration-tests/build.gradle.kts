@@ -239,9 +239,6 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
 
         mainClass.set("de.itemis.mps.gradle.generate.MainKt")
 
-        // Workaround for https://youtrack.jetbrains.com/issue/MPS-35992/MPSHeadlessPlatformStarter-race-condition-causes-unnecessary-wait
-        args("--test-mode")
-
         args("--project", projectDir)
     }
 
@@ -308,9 +305,6 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
 
             mainClass.set("de.itemis.mps.gradle.modelcheck.MainKt")
 
-            // Workaround for https://youtrack.jetbrains.com/issue/MPS-35992/MPSHeadlessPlatformStarter-race-condition-causes-unnecessary-wait
-            args("--test-mode")
-
             args("--project", testCase.projectDir)
             args("--result-file", file("$buildDir/TEST-${testCase.name}-mps-${mpsVersion}-results.xml"))
 
@@ -356,9 +350,6 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
                     })
 
                     mainClass.set("de.itemis.mps.gradle.execute.MainKt")
-
-                    // Workaround for https://youtrack.jetbrains.com/issue/MPS-35992/MPSHeadlessPlatformStarter-race-condition-causes-unnecessary-wait
-                    args("--test-mode")
 
                     args("--project", testCase.projectDir)
                     args(testCase.args)
