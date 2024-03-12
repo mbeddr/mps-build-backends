@@ -19,6 +19,7 @@ public final class de/itemis/mps/gradle/logging/LoggingFactoryKt {
 
 public class de/itemis/mps/gradle/project/loader/Args : de/itemis/mps/gradle/project/loader/EnvironmentArgs {
 	public fun <init> (Lcom/xenomachina/argparser/ArgParser;)V
+	public fun configureProjectLoader (Lde/itemis/mps/gradle/project/loader/ProjectLoader$Builder;)V
 	public final fun getProject ()Ljava/io/File;
 }
 
@@ -36,6 +37,7 @@ public class de/itemis/mps/gradle/project/loader/EnvironmentArgs {
 	public final fun getMacros ()Ljava/util/List;
 	public final fun getPluginLocation ()Ljava/io/File;
 	public final fun getPlugins ()Ljava/util/List;
+	public final fun getSkipLibraries ()Z
 	public final fun getTestMode ()Z
 }
 
@@ -43,6 +45,7 @@ public final class de/itemis/mps/gradle/project/loader/EnvironmentConfigBuilder 
 	public fun <init> ()V
 	public final fun build ()Ljetbrains/mps/tool/environment/EnvironmentConfig;
 	public final fun getInitialConfig ()Ljetbrains/mps/tool/environment/EnvironmentConfig;
+	public final fun getLibraries ()Ljava/util/List;
 	public final fun getMacros ()Ljava/util/List;
 	public final fun getPluginLocation ()Ljava/io/File;
 	public final fun getPlugins ()Ljava/util/List;

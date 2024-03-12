@@ -7,6 +7,7 @@ import java.io.File
 public class EnvironmentConfigBuilder {
     public var initialConfig: EnvironmentConfig = basicEnvironmentConfig()
     public val plugins: MutableList<Plugin> = mutableListOf()
+    public val libraries: MutableList<String> = mutableListOf()
     public var pluginLocation: File? = null
     public var macros: MutableList<Macro> = mutableListOf()
     public var testMode: Boolean = false
@@ -30,6 +31,9 @@ public class EnvironmentConfigBuilder {
                 cfg.addPreInstalledPlugin(it.path, it.id)
             }
         }
+
+        libraries.forEach { cfg.addLib(it) }
+
         macros.forEach { cfg.addMacro(it.name, File(it.value)) }
 
         if (testMode) cfg.withTestModeOn()

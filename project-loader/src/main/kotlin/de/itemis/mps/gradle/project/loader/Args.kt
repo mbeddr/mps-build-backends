@@ -48,9 +48,13 @@ public open class EnvironmentArgs(parser: ArgParser) {
         LogLevel.valueOf(uppercase())
     }.default(LogLevel.WARN)
 
+    public val skipLibraries: Boolean by parser.flagging("--no-libraries",
+        help = "do not load project libraries under MPS environment")
+
     public open fun configureProjectLoader(builder: ProjectLoader.Builder) {
         builder.environmentConfig {
             plugins.addAll(this@EnvironmentArgs.plugins)
+
             pluginLocation = this@EnvironmentArgs.pluginLocation
             macros.addAll(this@EnvironmentArgs.macros)
             testMode = this@EnvironmentArgs.testMode
@@ -73,8 +77,53 @@ public open class Args(parser: ArgParser) : EnvironmentArgs(parser) {
     public val project: File by parser.storing("--project",
             help = "project to generate from") { File(this) }
 
+    override fun configureProjectLoader(builder: ProjectLoader.Builder) {
+        super.configureProjectLoader(builder)
+
+        if (!skipLibraries && environmentKind == EnvironmentKind.MPS) {
+            builder.environmentConfig {
+                addProjectLibraries(this, this.macros.associate { it.name to it.value }, project)
+            }
+        }
+
+    }
 }
 
 public inline fun checkArgument(isOk: Boolean, message: () -> String) {
     if (!isOk) throw InvalidArgumentException(message())
+}
+
+private fun addProjectLibraries(configBuilder: EnvironmentConfigBuilder, macros: Map<String, String>, projectLocation: File) {
+    val librariesXml = projectLocation.resolve(".mps/libraries.xml")
+    if (!librariesXml.exists()) return
+
+    val pathRegex = Regex("<option name=(?:'path'|\"path\") value=['\"](.*?)['\"] />")
+    librariesXml.useLines { lines ->
+        val libraryPaths = lines
+            .map { pathRegex.find(it)?.groupValues?.get(1) }
+            .filterNotNull()
+            .map { expandMacros(macros, it) }
+
+        configBuilder.libraries.addAll(
+            libraryPaths
+        )
+    }
+
+    println("Known macros: $macros")
+    println("Added libraries from $librariesXml: ${configBuilder.libraries}")
+}
+
+private fun expandMacros(macros: Map<String, String>, input: String): String {
+    if (!input.startsWith("\${")) return input
+
+    val macroLastChar = input.indexOf('}')
+    if (macroLastChar < 0) return input // malformed
+
+    val macro = input.substring(2, macroLastChar)
+
+    println("Found macro: $macro")
+
+    if (!macros.containsKey(macro)) return input // unknown macro
+
+    return macros[macro] + input.substring(macroLastChar + 1)
 }

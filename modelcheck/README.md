@@ -16,8 +16,8 @@ The simplest way to run it is by using Gradle's `JavaExec` task. See below for a
 
 ```
 usage: modelcheck [-h] [--plugin PLUGIN]... [--macro MACRO]... [--plugin-location PLUGIN_LOCATION]
-                  [--build-number BUILD_NUMBER] --project PROJECT [--test-mode]
-                  [--environment ENVIRONMENT] [--log-level LOG_LEVEL] [--model MODEL]...
+                  [--build-number BUILD_NUMBER] [--test-mode] [--environment ENVIRONMENT]
+                  [--log-level LOG_LEVEL] [--no-libraries] --project PROJECT [--model MODEL]...
                   [--module MODULE]... [--exclude-model EXCLUDE_MODEL]...
                   [--exclude-module EXCLUDE_MODULE]... [--parallel] [--warning-as-error]
                   [--error-no-fail] [--result-file RESULT_FILE] [--result-format RESULT_FORMAT]
@@ -29,7 +29,7 @@ required arguments:
 optional arguments:
   -h, --help                          show this help message and exit
 
-  --plugin PLUGIN                     plugin to to load. The format is --plugin=<id>::<path>
+  --plugin PLUGIN                     plugin to load. The format is --plugin=<id>::<path>
 
   --macro MACRO                       macro to define. The format is --macro=<name>::<value>
 
@@ -44,6 +44,8 @@ optional arguments:
 
   --log-level LOG_LEVEL               console log level. Supported values: info, warn, error, off.
                                       Default: warn.
+
+  --no-libraries                      do not load project libraries under MPS environment
 
   --model MODEL                       list of models to check (regexes)
 

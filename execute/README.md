@@ -14,9 +14,9 @@ read and write locks itself, for example with `jetbrains.mps.lang.access`.
 
 ```
 usage: execute [-h] [--plugin PLUGIN]... [--macro MACRO]... [--plugin-location PLUGIN_LOCATION]
-               [--build-number BUILD_NUMBER] --project PROJECT [--test-mode]
-               [--environment ENVIRONMENT] [--log-level LOG_LEVEL] --module MODULE --class CLASS
-               --method METHOD [--arg ARG]...
+               [--build-number BUILD_NUMBER] [--test-mode] [--environment ENVIRONMENT]
+               [--log-level LOG_LEVEL] [--no-libraries] --project PROJECT --module MODULE
+               --class CLASS --method METHOD [--arg ARG]...
 
 required arguments:
   --project PROJECT                   project to generate from
@@ -33,7 +33,7 @@ required arguments:
 optional arguments:
   -h, --help                          show this help message and exit
 
-  --plugin PLUGIN                     plugin to to load. The format is --plugin=<id>::<path>
+  --plugin PLUGIN                     plugin to load. The format is --plugin=<id>::<path>
 
   --macro MACRO                       macro to define. The format is --macro=<name>::<value>
 
@@ -48,6 +48,8 @@ optional arguments:
 
   --log-level LOG_LEVEL               console log level. Supported values: info, warn, error, off.
                                       Default: warn.
+
+  --no-libraries                      do not load project libraries under MPS environment
 
   --arg ARG                           list of strings to pass to the method. Allowed only if the
                                       method signature is (Project, String[])
