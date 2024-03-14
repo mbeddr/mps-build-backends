@@ -12,6 +12,8 @@ include("execute-generators")
 include("project-loader")
 include("modelcheck")
 include("execute")
+include("rerun-migrations")
+
 include("integration-tests")
 
 includeBuild("launcher")
