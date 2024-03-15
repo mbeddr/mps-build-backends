@@ -36,6 +36,7 @@ public class de/itemis/mps/gradle/project/loader/EnvironmentArgs {
 	public final fun getLogLevel ()Lde/itemis/mps/gradle/logging/LogLevel;
 	public final fun getMacros ()Ljava/util/List;
 	public final fun getPluginLocation ()Ljava/io/File;
+	public final fun getPluginRoots ()Ljava/util/List;
 	public final fun getPlugins ()Ljava/util/List;
 	public final fun getSkipLibraries ()Z
 	public final fun getTestMode ()Z

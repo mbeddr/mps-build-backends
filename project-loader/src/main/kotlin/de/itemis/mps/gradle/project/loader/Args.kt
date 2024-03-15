@@ -6,6 +6,7 @@ import com.xenomachina.argparser.default
 import de.itemis.mps.gradle.logging.LogLevel
 import de.itemis.mps.gradle.logging.detectLogging
 import java.io.File
+import java.nio.file.Path
 
 private fun <T> splitAndCreate(str: String, creator: (String, String) -> T): T {
     val split = str.split("::", limit = 2)
@@ -34,6 +35,10 @@ public open class EnvironmentArgs(parser: ArgParser) {
     public val pluginLocation: File? by parser.storing("--plugin-location",
         help = "location to load additional plugins from") { File(this) }.default<File?>(null)
 
+    public val pluginRoots: MutableList<Path> by parser.adding("--plugin-root",
+        help = "directory to search for plugins in. This detection method is independent from --plugin and --plugin-location"
+    ) { Path.of(this) }
+
     public val buildNumber: String? by parser.storing("--build-number",
         help = "build number used to determine if the plugins are compatible").default<String?>(null)
 
@@ -55,7 +60,9 @@ public open class EnvironmentArgs(parser: ArgParser) {
     public open fun configureProjectLoader(builder: ProjectLoader.Builder) {
         builder.environmentConfig {
             plugins.addAll(this@EnvironmentArgs.plugins)
-
+            this@EnvironmentArgs.pluginRoots.forEach {
+                plugins.addAll(findPluginsRecursively(it))
+            }
             pluginLocation = this@EnvironmentArgs.pluginLocation
             macros.addAll(this@EnvironmentArgs.macros)
             testMode = this@EnvironmentArgs.testMode
