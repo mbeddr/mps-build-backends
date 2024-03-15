@@ -43,6 +43,12 @@ dependencies {
     testImplementation("junit:junit:4.13.1")
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
+}
+
 kotlin {
     explicitApi()
 }

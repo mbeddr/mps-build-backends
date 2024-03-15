@@ -4,6 +4,7 @@ import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.InvalidArgumentException
 import com.xenomachina.argparser.default
 import de.itemis.mps.gradle.logging.LogLevel
+import de.itemis.mps.gradle.logging.detectLogging
 import java.io.File
 
 private fun <T> splitAndCreate(str: String, creator: (String, String) -> T): T {
@@ -82,7 +83,7 @@ public open class Args(parser: ArgParser) : EnvironmentArgs(parser) {
 
         if (!skipLibraries && environmentKind == EnvironmentKind.MPS) {
             builder.environmentConfig {
-                addProjectLibraries(this, this.macros.associate { it.name to it.value }, project)
+                findProjectLibraries(project, macros, libraries::addAll)
             }
         }
 
@@ -91,39 +92,4 @@ public open class Args(parser: ArgParser) : EnvironmentArgs(parser) {
 
 public inline fun checkArgument(isOk: Boolean, message: () -> String) {
     if (!isOk) throw InvalidArgumentException(message())
-}
-
-private fun addProjectLibraries(configBuilder: EnvironmentConfigBuilder, macros: Map<String, String>, projectLocation: File) {
-    val librariesXml = projectLocation.resolve(".mps/libraries.xml")
-    if (!librariesXml.exists()) return
-
-    val pathRegex = Regex("<option name=(?:'path'|\"path\") value=['\"](.*?)['\"] />")
-    librariesXml.useLines { lines ->
-        val libraryPaths = lines
-            .map { pathRegex.find(it)?.groupValues?.get(1) }
-            .filterNotNull()
-            .map { expandMacros(macros, it) }
-
-        configBuilder.libraries.addAll(
-            libraryPaths
-        )
-    }
-
-    println("Known macros: $macros")
-    println("Added libraries from $librariesXml: ${configBuilder.libraries}")
-}
-
-private fun expandMacros(macros: Map<String, String>, input: String): String {
-    if (!input.startsWith("\${")) return input
-
-    val macroLastChar = input.indexOf('}')
-    if (macroLastChar < 0) return input // malformed
-
-    val macro = input.substring(2, macroLastChar)
-
-    println("Found macro: $macro")
-
-    if (!macros.containsKey(macro)) return input // unknown macro
-
-    return macros[macro] + input.substring(macroLastChar + 1)
 }

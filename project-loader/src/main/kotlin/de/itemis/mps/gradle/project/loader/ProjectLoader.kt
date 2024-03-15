@@ -7,7 +7,6 @@ import jetbrains.mps.tool.environment.Environment
 import jetbrains.mps.tool.environment.EnvironmentConfig
 import jetbrains.mps.tool.environment.IdeaEnvironment
 import jetbrains.mps.tool.environment.MpsEnvironment
-import org.apache.log4j.Logger
 import java.io.File
 
 /**
@@ -20,7 +19,7 @@ public class ProjectLoader private constructor(
     private val buildNumber: String?,
     private val logLevel: LogLevel
 ) {
-    private val logger = Logger.getLogger("de.itemis.mps.gradle.project.loader")
+    private val logger = detectLogging().getLogger("de.itemis.mps.gradle.project.loader")
 
     public class Builder {
         /**
