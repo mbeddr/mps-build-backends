@@ -14,9 +14,9 @@ read and write locks itself, for example with `jetbrains.mps.lang.access`.
 
 ```
 usage: execute [-h] [--plugin PLUGIN]... [--macro MACRO]... [--plugin-location PLUGIN_LOCATION]
-               [--build-number BUILD_NUMBER] [--test-mode] [--environment ENVIRONMENT]
-               [--log-level LOG_LEVEL] [--no-libraries] --project PROJECT --module MODULE
-               --class CLASS --method METHOD [--arg ARG]...
+               [--plugin-root PLUGIN_ROOT]... [--build-number BUILD_NUMBER] [--test-mode]
+               [--environment ENVIRONMENT] [--log-level LOG_LEVEL] [--no-libraries]
+               --project PROJECT --module MODULE --class CLASS --method METHOD [--arg ARG]...
 
 required arguments:
   --project PROJECT                   project to generate from
@@ -38,6 +38,9 @@ optional arguments:
   --macro MACRO                       macro to define. The format is --macro=<name>::<value>
 
   --plugin-location PLUGIN_LOCATION   location to load additional plugins from
+
+  --plugin-root PLUGIN_ROOT           directory to search for plugins in. This detection method is
+                                      independent from --plugin and --plugin-location
 
   --build-number BUILD_NUMBER         build number used to determine if the plugins are compatible
 
