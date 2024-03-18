@@ -16,7 +16,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.isDirectory
 
-private val logger = detectLogging().getLogger("de.itemis.mps.gradle.tasks.PluginIds")
+private val logger = detectLogging().getLogger("de.itemis.mps.gradle.project.loader.PluginIds")
 
 internal fun findPluginsRecursively(root: Path): List<Plugin> = mutableListOf<Plugin>().apply {
     if (!root.isDirectory()) {

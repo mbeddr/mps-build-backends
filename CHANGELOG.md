@@ -9,9 +9,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- `project-loader` will now load project libraries from `.mps/libraries.xml` under the project directory when using MPS
-  environment (can be disabled via `--no-libraries`).
-- `project-loader`: new `--plugin-root` argument. Loader automatically detects plugins in subdirectories of plugin roots.
+- all backends (via `project-loader`): will now load project libraries from `.mps/libraries.xml` under the project 
+  directory when using MPS
+- all backends (via `project-loader`): new `--plugin-root` argument to automatically detect plugins in subdirectories 
+  of plugin roots.
 
 ## 1.14.3
 
