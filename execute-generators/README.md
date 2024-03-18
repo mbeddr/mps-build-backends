@@ -11,11 +11,12 @@ is by using Gradle's `JavaExec` task. See below for an example.
 
 ```
 usage: execute-generators [-h] [--plugin PLUGIN]... [--macro MACRO]...
-                          [--plugin-location PLUGIN_LOCATION] [--build-number BUILD_NUMBER]
-                          --project PROJECT [--test-mode] [--environment ENVIRONMENT]
-                          [--log-level LOG_LEVEL] [--model MODEL]... [--module MODULE]...
-                          [--exclude-model EXCLUDE_MODEL]... [--exclude-module EXCLUDE_MODULE]...
-                          [--parallel-generation-threads THREADS] [--no-strict-mode]
+                          [--plugin-location PLUGIN_LOCATION] [--plugin-root PLUGIN_ROOT]...
+                          [--build-number BUILD_NUMBER] [--test-mode] [--environment ENVIRONMENT]
+                          [--log-level LOG_LEVEL] [--no-libraries] --project PROJECT
+                          [--model MODEL]... [--module MODULE]... [--exclude-model EXCLUDE_MODEL]...
+                          [--exclude-module EXCLUDE_MODULE]... [--no-strict-mode]
+                          [--parallel-generation-threads THREADS]
 
 required arguments:
   --project PROJECT                       project to generate from
@@ -23,30 +24,36 @@ required arguments:
 
 optional arguments:
   -h, --help                              show this help message and exit
-        
-  --plugin PLUGIN                         plugin to to load. The format is --plugin=<id>::<path>
-        
+
+  --plugin PLUGIN                         plugin to load. The format is --plugin=<id>::<path>
+
   --macro MACRO                           macro to define. The format is --macro=<name>::<value>
-        
+
   --plugin-location PLUGIN_LOCATION       location to load additional plugins from
-        
+
+  --plugin-root PLUGIN_ROOT               directory to search for plugins in. This detection
+                                          method is independent from --plugin and
+                                          --plugin-location
+
   --build-number BUILD_NUMBER             build number used to determine if the plugins are
                                           compatible
-        
+
   --test-mode                             run in test mode
-        
+
   --environment ENVIRONMENT               kind of environment to initialize, supported values are
                                           'idea' (default), 'mps'
 
   --log-level LOG_LEVEL                   console log level. Supported values: info, warn, error,
                                           off. Default: warn.
-        
+
+  --no-libraries                          do not load project libraries under MPS environment
+
   --model MODEL                           list of models to generate
-        
+
   --module MODULE                         list of modules to generate
-        
+
   --exclude-model EXCLUDE_MODEL           list of models to exclude from generation
-        
+
   --exclude-module EXCLUDE_MODULE         list of modules to exclude from generation
 
   --no-strict-mode                        Disable strict generation mode. Strict mode places

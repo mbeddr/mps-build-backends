@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.15.0
+
+### Added
+
+- all backends (via `project-loader`): will now load project libraries from `.mps/libraries.xml` under the project 
+  directory when using MPS
+- all backends (via `project-loader`): new `--plugin-root` argument to automatically detect plugins in subdirectories 
+  of plugin roots.
+
 ## 1.14.3
 
 ### Fixed

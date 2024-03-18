@@ -7,6 +7,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 2.3.0
+
+### Added
+
+- Load project libraries from `.mps/libraries.xml` under the project directory when using MPS environment (can be 
+  disabled via `--no-libraries`).
+- New `--plugin-root` argument. Automatically detect plugins in subdirectories of plugin roots.
+
 ## 2.2.0
 
 ### Added
