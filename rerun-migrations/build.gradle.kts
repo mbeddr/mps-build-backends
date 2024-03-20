@@ -9,6 +9,7 @@ mpsZips {
     include("lib/mps-openapi.jar")
     include("lib/mps-logging.jar")
     include("lib/platform-api.jar")
+    include("lib/platform-impl.jar")
     include("lib/util.jar")
 
     include("plugins/mps-migration/lib/*.jar")

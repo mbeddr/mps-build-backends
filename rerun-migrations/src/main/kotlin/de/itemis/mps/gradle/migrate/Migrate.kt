@@ -1,5 +1,6 @@
 package de.itemis.mps.gradle.migrate
 
+import com.intellij.openapi.application.ex.ApplicationManagerEx
 import de.itemis.mps.gradle.logging.detectLogging
 import jetbrains.mps.ide.ThreadUtils
 import jetbrains.mps.lang.migration.runtime.base.MigrationModuleUtil
@@ -7,6 +8,7 @@ import jetbrains.mps.lang.migration.runtime.base.MigrationScript
 import jetbrains.mps.lang.migration.runtime.base.MigrationScriptReference
 import jetbrains.mps.migration.global.BaseProjectMigration
 import jetbrains.mps.migration.global.ProjectMigrationsRegistry
+import jetbrains.mps.project.MPSProject
 import jetbrains.mps.project.Project
 import jetbrains.mps.smodel.ModelAccessHelper
 import jetbrains.mps.smodel.SLanguageHierarchy
@@ -31,20 +33,44 @@ fun migrate(args: MigrateArgs) {
             try {
                 runProjectMigrations(project, projectMigrationsToExclude)
                 runRerunnableModuleMigrations(project, moduleMigrationsToExclude)
+
+                // Make sure changes performed by the migration are written to disk.
+                saveProject(project)
             } finally {
                 environment.closeProject(project)
             }
+            environment.flushAllEvents()
         }
     }
 }
 
-fun runProjectMigrations(project: Project, migrationsToExclude: Set<ProjectMigration>) {
-    @Suppress("DEPRECATION")
-    val projectName = project.name
+private fun saveProject(project: Project) {
+    logger.info("Saving project ${getName(project)}")
+    ThreadUtils.runInUIThreadAndWait {
+        project.modelAccess.runWriteAction {
+            project.repository.saveAll()
+        }
+
+        val applicationEx = ApplicationManagerEx.getApplicationEx()
+        val ideaProject = (project as MPSProject).project
+
+        val saveAllowed: Boolean = applicationEx.isSaveAllowed
+        try {
+            applicationEx.isSaveAllowed = true
+            ideaProject.save()
+        } finally {
+            applicationEx.isSaveAllowed = saveAllowed
+        }
+    }
+}
+
+
+private fun runProjectMigrations(project: Project, migrationsToExclude: Set<ProjectMigration>) {
+    val projectName = getName(project)
     logger.info("Executing all project migrations on $projectName on EDT")
     ThreadUtils.runInUIThreadAndWait {
         project.modelAccess.runWriteAction {
-            for (migration in ProjectMigrationsRegistry.getInstance().migrations) {
+            for (migration in ProjectMigrationsRegistry.getInstance().getMigrations(project)) {
                 if (migration is BaseProjectMigration && ProjectMigration(migration.migrationId) in migrationsToExclude) {
                     logger.info("Not executing excluded project migration ${migration.migrationId}")
                     continue
@@ -57,6 +83,10 @@ fun runProjectMigrations(project: Project, migrationsToExclude: Set<ProjectMigra
     }
     logger.info("Done executing all project migrations on $projectName")
 }
+
+// A helper function to avoid deprecation warnings everywhere we need the project name
+@Suppress("DEPRECATION")
+private fun getName(project: Project) = project.name
 
 private fun runRerunnableModuleMigrations(
     project: Project,
@@ -96,6 +126,9 @@ fun updateModelVersionsIfPossible(module: SModule, language: SLanguage, from: In
     val models = module.models
     for (model in models) {
         if (model !is SModelInternal) continue
+
+        // Language is probably used via a devkit, we cannot update its version
+        if (language !in model.importedLanguageIds()) continue
 
         if (model.isReadOnly) continue // Ignore stubs
 
