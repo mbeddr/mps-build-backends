@@ -28,6 +28,7 @@ public class MpsBackendBuilder {
     private final DirectoryProperty mpsHome;
     private final Property<String> mpsVersion;
     private final Property<JvmVendorSpec> jvmVendorSpec;
+    private final Property<String> javaExecutable;
 
     private File temporaryDirectory;
 
@@ -39,6 +40,7 @@ public class MpsBackendBuilder {
         mpsHome = objects.directoryProperty();
         mpsVersion = objects.property(String.class).convention(MpsVersionDetection.fromMpsHome(layout, providers, mpsHome.getAsFile()));
         jvmVendorSpec = objects.property(JvmVendorSpec.class).convention(DefaultJvmVendorSpec.any());
+        javaExecutable = objects.property(String.class);
     }
 
     public MpsBackendBuilder withMpsHome(File mpsHome) {
@@ -75,24 +77,51 @@ public class MpsBackendBuilder {
         return this;
     }
 
+    public MpsBackendBuilder withJavaExecutable(Provider<String> javaExecutable) {
+        this.javaExecutable.set(javaExecutable);
+        return this;
+    }
+
     public void configure(JavaExecSpec javaExec) {
-        configureLauncher(javaExec);
+        configureJavaExecutableOrLauncher(javaExec);
         configureJna(javaExec);
         configureOpens(javaExec);
         configureWorkspace(javaExec);
     }
 
-    private void configureLauncher(JavaExecSpec javaExec) {
-        Provider<JavaLauncher> launcher = mpsVersion.flatMap((mpsVersionValue) ->
-                javaToolchainService.launcherFor((spec) -> {
-                    spec.getVendor().set(jvmVendorSpec);
-                    spec.getLanguageVersion().set(JavaLanguageVersion.of(mpsVersionValue.compareTo("2022") < 0 ? 11 : 17));
-                }));
+    private static class LazyToString {
+        private final Provider<String> provider;
 
-        if (javaExec instanceof JavaExec) {
-            ((JavaExec) javaExec).getJavaLauncher().set(launcher);
+        public LazyToString(Provider<String> provider) {
+            this.provider = provider;
+        }
+
+        @Override
+        public String toString() {
+            return provider.get();
+        }
+    }
+
+    private void configureJavaExecutableOrLauncher(JavaExecSpec javaExec) {
+        if (javaExecutable.isPresent()) {
+            if (javaExec instanceof JavaExec) {
+                ((JavaExec) javaExec).getJavaLauncher().set((JavaLauncher) null);
+            }
+
+            javaExec.setExecutable(new LazyToString(javaExecutable));
         } else {
-            javaExec.setExecutable(launcher.get().getExecutablePath());
+
+            Provider<JavaLauncher> launcher = mpsVersion.flatMap((mpsVersionValue) ->
+                    javaToolchainService.launcherFor((spec) -> {
+                        spec.getVendor().set(jvmVendorSpec);
+                        spec.getLanguageVersion().set(JavaLanguageVersion.of(mpsVersionValue.compareTo("2022") < 0 ? 11 : 17));
+                    }));
+
+            if (javaExec instanceof JavaExec) {
+                ((JavaExec) javaExec).getJavaLauncher().set(launcher);
+            } else {
+                javaExec.setExecutable(launcher.get().getExecutablePath());
+            }
         }
     }
 
