@@ -1,13 +1,15 @@
 package de.itemis.mps.gradle.migrate
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ex.ApplicationManagerEx
+import com.intellij.openapi.vfs.LocalFileSystem
 import de.itemis.mps.gradle.logging.detectLogging
-import jetbrains.mps.ide.ThreadUtils
 import jetbrains.mps.lang.migration.runtime.base.MigrationModuleUtil
 import jetbrains.mps.lang.migration.runtime.base.MigrationScript
 import jetbrains.mps.lang.migration.runtime.base.MigrationScriptReference
 import jetbrains.mps.migration.global.BaseProjectMigration
 import jetbrains.mps.migration.global.ProjectMigrationsRegistry
+import jetbrains.mps.project.AbstractModule
 import jetbrains.mps.project.MPSProject
 import jetbrains.mps.project.Project
 import jetbrains.mps.smodel.ModelAccessHelper
@@ -31,11 +33,14 @@ fun migrate(args: MigrateArgs) {
         for (projectDir in args.projects) {
             val project = environment.openProject(File(projectDir))
             try {
-                runProjectMigrations(project, projectMigrationsToExclude)
-                runRerunnableModuleMigrations(project, moduleMigrationsToExclude)
+                ApplicationManager.getApplication().invokeAndWait {
+                    runProjectMigrations(project, projectMigrationsToExclude)
+                    runRerunnableModuleMigrations(project, moduleMigrationsToExclude)
+                    forceSaveAllModules(project)
 
-                // Make sure changes performed by the migration are written to disk.
-                saveProject(project)
+                    // Make sure changes performed by the migration are written to disk.
+                    saveProject(project)
+                }
             } finally {
                 environment.closeProject(project)
             }
@@ -44,41 +49,46 @@ fun migrate(args: MigrateArgs) {
     }
 }
 
+private fun forceSaveAllModules(project: Project) {
+    project.modelAccess.runWriteAction {
+        val allModules = project.projectModulesWithGenerators
+        for (module in allModules.asSequence().filterIsInstance<AbstractModule>()) {
+            module.forceSaveRecursively()
+        }
+    }
+}
+
 private fun saveProject(project: Project) {
     logger.info("Saving project ${getName(project)}")
-    ThreadUtils.runInUIThreadAndWait {
-        project.modelAccess.runWriteAction {
-            project.repository.saveAll()
-        }
+    project.modelAccess.runWriteAction {
+        project.repository.saveAll()
+    }
 
-        val applicationEx = ApplicationManagerEx.getApplicationEx()
-        val ideaProject = (project as MPSProject).project
+    val applicationEx = ApplicationManagerEx.getApplicationEx()
+    val ideaProject = (project as MPSProject).project
 
-        val saveAllowed: Boolean = applicationEx.isSaveAllowed
-        try {
-            applicationEx.isSaveAllowed = true
-            ideaProject.save()
-        } finally {
-            applicationEx.isSaveAllowed = saveAllowed
-        }
+    val saveAllowed: Boolean = applicationEx.isSaveAllowed
+    try {
+        applicationEx.isSaveAllowed = true
+        ideaProject.save()
+    } finally {
+        applicationEx.isSaveAllowed = saveAllowed
     }
 }
 
 
 private fun runProjectMigrations(project: Project, migrationsToExclude: Set<ProjectMigration>) {
     val projectName = getName(project)
-    logger.info("Executing all project migrations on $projectName on EDT")
-    ThreadUtils.runInUIThreadAndWait {
-        project.modelAccess.runWriteAction {
-            for (migration in ProjectMigrationsRegistry.getInstance().getMigrations(project)) {
-                if (migration is BaseProjectMigration && ProjectMigration(migration.migrationId) in migrationsToExclude) {
-                    logger.info("Not executing excluded project migration ${migration.migrationId}")
-                    continue
-                }
-
-                logger.info("Executing project migration '${migration.description}' on $projectName")
-                migration.execute(project)
+    logger.info("Executing all project migrations on $projectName")
+    project.modelAccess.runWriteAction {
+        for (migration in ProjectMigrationsRegistry.getInstance().getMigrations(project)) {
+            if (migration is BaseProjectMigration && ProjectMigration(migration.migrationId) in migrationsToExclude) {
+                logger.info("Not executing excluded project migration ${migration.migrationId}")
+                continue
             }
+
+            logger.info("Executing project migration '${migration.description}' on $projectName")
+            migration.execute(project)
         }
     }
     logger.info("Done executing all project migrations on $projectName")
