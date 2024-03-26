@@ -8,7 +8,8 @@ report file.
 The tool is JVM-based and needs on its classpath:
 
 * The MPS libraries (`${mps_home}/lib/**/*.jar`).
-* The `mps-httpsupport` plugin (`${mps_home}/plugins/mps-httpsupport/**/*.jar`)
+* The `mps-httpsupport` plugin (`${mps_home}/plugins/mps-httpsupport/**/*.jar`).
+* The `mps-modelchecker` plugin (`${mps_home}/plugins/mps-modelchecker/**/*.jar`).
 
 The simplest way to run it is by using Gradle's `JavaExec` task. See below for an example.
 
@@ -109,6 +110,7 @@ val runModelCheck by tasks.registering(JavaExec::class) {
         include("lib/**/*.jar")
         // modelcheck uses HttpSupportUtil#getURL()
         include("plugins/mps-httpsupport/**/*.jar")
+        include("plugins/mps-modelchecker/**/*.jar")
     })
 
     mainClass.set("de.itemis.mps.gradle.modelcheck.MainKt")
