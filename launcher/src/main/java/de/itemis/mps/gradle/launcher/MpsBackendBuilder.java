@@ -19,7 +19,7 @@ import org.gradle.process.JavaExecSpec;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.io.File;
-import java.util.Collections;
+import java.util.ArrayList;
 
 public class MpsBackendBuilder {
     private final JavaToolchainService javaToolchainService;
@@ -84,7 +84,7 @@ public class MpsBackendBuilder {
 
     public void configure(JavaExecSpec javaExec) {
         configureJavaExecutableOrLauncher(javaExec);
-        configureJna(javaExec);
+        configureVersionSpecificProperties(javaExec);
         configureOpens(javaExec);
         configureWorkspace(javaExec);
     }
@@ -125,17 +125,20 @@ public class MpsBackendBuilder {
         }
     }
 
-    private void configureJna(JavaExecSpec javaExec) {
+    private void configureVersionSpecificProperties(JavaExecSpec javaExec) {
         // Gradle needs this to be an inner class rather than a lambda so that it can be properly cached.
         //noinspection Convert2Lambda
         javaExec.getJvmArgumentProviders().add(new CommandLineArgumentProvider() {
             @Override
             public Iterable<String> asArguments() {
-                if (mpsVersion.get().compareTo("2022.3") >= 0) {
-                    return Collections.singleton("-Djna.boot.library.path=" + mpsHome.get().file("lib/jna/" + System.getProperty("os.arch")).getAsFile());
-                } else {
-                    return Collections.emptyList();
+                ArrayList<String> result = new ArrayList<>();
+                if (mpsVersion.get().compareTo("2023.3") >= 0) {
+                    result.add("-Dintellij.platform.load.app.info.from.resources=true");
                 }
+                if (mpsVersion.get().compareTo("2022.3") >= 0) {
+                    result.add("-Djna.boot.library.path=" + mpsHome.get().file("lib/jna/" + System.getProperty("os.arch")).getAsFile());
+                }
+                return result;
             }
         });
     }
