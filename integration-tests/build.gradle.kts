@@ -264,6 +264,7 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
 
     val generateTasks = GENERATION_TESTS.map { testCase ->
         tasks.register("generate${testCase.name.capitalize()}WithMps$mpsVersion", JavaExec::class) {
+            dependsOn(executeGenerators)
             configureGenerateTask(testCase.projectDir)
 
             group = LifecycleBasePlugin.VERIFICATION_GROUP
@@ -288,6 +289,7 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
 
     val modelcheckTasks = MODELCHECK_TESTS.map { testCase ->
         tasks.register("modelcheckTest${testCase.name.capitalize()}WithMps$mpsVersion", JavaExec::class) {
+            dependsOn(modelcheck)
             mpsBackendLauncher.forMpsHome(mpsHome)
                 .withMpsVersion(mpsVersion)
                 .withJetBrainsJvm()
@@ -328,6 +330,7 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
     val executeTasks: List<TaskProvider<out Task>> = EXECUTE_TESTS.map { testCase ->
         tasks.register("executeTest${testCase.name.capitalize()}WithMps$mpsVersion") {
             dependsOn(unpackTask)
+            dependsOn(execute, executeGenerators)
 
             doLast {
                 cleanBeforeGeneration(testCase.projectDir)
