@@ -21,7 +21,7 @@ dependencies {
     execute(project(":execute"))
 }
 
-val SUPPORTED_MPS_VERSIONS = arrayOf("2021.3.5", "2022.2.2", "2022.3")
+val SUPPORTED_MPS_VERSIONS = arrayOf("2021.3.5", "2022.2.2", "2022.3", "2023.2", "2023.3")
 
 val GENERATION_TESTS = listOf(
     GenerationTest("generateBuildSolution", "generate-build-solution", listOf("--model", "my.build.script"),
@@ -232,10 +232,10 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
             .withJetBrainsJvm()
             .withTemporaryDirectory(temporaryDir)
             .configure(this)
-        classpath(executeGenerators)
         classpath(fileTree(mpsHome) {
             include("lib/**/*.jar")
         })
+        classpath(executeGenerators)
 
         mainClass.set("de.itemis.mps.gradle.generate.MainKt")
 
@@ -297,13 +297,13 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
 
             dependsOn(unpackTask)
             group = LifecycleBasePlugin.VERIFICATION_GROUP
-            classpath(modelcheck)
             classpath(fileTree(mpsHome) {
                 include("lib/**/*.jar")
                 // modelcheck uses HttpSupportUtil#getURL()
                 include("plugins/mps-httpsupport/**/*.jar")
                 include("plugins/mps-modelchecker/**/*.jar")
             })
+            classpath(modelcheck)
 
             mainClass.set("de.itemis.mps.gradle.modelcheck.MainKt")
 
@@ -335,8 +335,11 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
             doLast {
                 cleanBeforeGeneration(testCase.projectDir)
 
-                javaexec {
+                val generationResult = javaexec {
                     configureGenerateTaskForSpec(testCase.projectDir, temporaryDir)
+                }
+                if (generationResult.exitValue != 0) {
+                    throw GradleException("Generation failed with exit code ${generationResult.exitValue}")
                 }
 
                 val executionResult = javaexec {
@@ -347,10 +350,10 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
                         .configure(this)
 
                     group = LifecycleBasePlugin.VERIFICATION_GROUP
-                    classpath(execute)
                     classpath(fileTree(mpsHome) {
                         include("lib/**/*.jar")
                     })
+                    classpath(execute)
 
                     mainClass.set("de.itemis.mps.gradle.execute.MainKt")
 
