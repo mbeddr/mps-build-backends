@@ -3,10 +3,6 @@ package de.itemis.mps.gradle.migrate
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.SystemExitException
 import com.xenomachina.argparser.mainBody
-import de.itemis.mps.gradle.migrate.MigrateArgs
-import de.itemis.mps.gradle.migrate.logging
-import de.itemis.mps.gradle.migrate.migrate
-import java.awt.Window
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>): Unit = mainBody("rerun-migrations") {

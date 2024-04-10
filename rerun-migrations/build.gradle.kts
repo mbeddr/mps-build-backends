@@ -1,3 +1,5 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
 plugins {
     id("backend-conventions")
 }
@@ -13,4 +15,8 @@ mpsZips {
     include("lib/util.jar")
 
     include("plugins/mps-migration/lib/*.jar")
+}
+
+tasks.processResources {
+    filter(ReplaceTokens::class, "tokens" to mapOf("version" to project.version))
 }

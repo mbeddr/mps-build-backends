@@ -1,5 +1,6 @@
 package de.itemis.mps.gradle.migrate
 
+import com.intellij.openapi.util.Pair
 import com.xenomachina.argparser.ArgParser
 import de.itemis.mps.gradle.project.loader.EnvironmentArgs
 import de.itemis.mps.gradle.project.loader.Plugin
@@ -12,23 +13,27 @@ class MigrateArgs(parser: ArgParser) : EnvironmentArgs(parser) {
         help = "module migration to exclude from execution or check. Format is language:version"
     ) {
         val (ns, ver) = this.split(":", limit = 2)
-        ModuleMigration(ns, ver.toInt())
+        Pair(ns, ver.toInt())
     }
 
     val excludeProjectMigrations by parser.adding(
         "--exclude-project-migration",
         help = "ID of project migration to exclude from execution."
-    ) {
-        ProjectMigration(this)
-    }
+    )
 
     override fun configureProjectLoader(builder: ProjectLoader.Builder) {
         builder.environmentConfig {
             plugins.add(Plugin("jetbrains.mps.ide.mpsmigration", "mps-migration"))
         }
         super.configureProjectLoader(builder)
+
+        if (!builder.environmentConfigBuilder.plugins.any { it.id == PLUGIN_ID }) {
+            logger.warn(
+                "Plugin ${PLUGIN_ID} is missing, the process will likely fail. " +
+                        "Specify the plugin location using --plugin=${PLUGIN_ID}::<backend jar path>"
+            )
+        }
     }
 }
 
-data class ProjectMigration(val id: String)
-data class ModuleMigration(val languageNamespace: String, val version: Int)
+internal const val PLUGIN_ID = "de.itemis.mps.buildbackends.rerun-migrations"
