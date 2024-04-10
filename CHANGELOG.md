@@ -9,7 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- `modelcheck`: updates jackson-dataformat-xml to 2.13.4 which is the latest non-vulnerable version compatible with MPS 2022.2
+- `modelcheck`: updates jackson-dataformat-xml to 2.13.+ which is the latest non-vulnerable version compatible with MPS 2022.2
 
 ## 1.15.0
 
