@@ -40,7 +40,7 @@ dependencies {
 
     mpsZip(libs.mps)
 
-    testImplementation("junit:junit:4.13.1")
+    testImplementation("junit:junit:4.13.2")
 }
 
 java {
