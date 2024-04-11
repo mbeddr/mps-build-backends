@@ -25,4 +25,21 @@ publishing {
             }
         }
     }
+
+    publications.withType<MavenPublication>().configureEach {
+        pom {
+            url = "https://github.com/mbeddr/mps-build-backends"
+            licenses {
+                license {
+                    name = "The Apache License, Version 2.0"
+                    url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                }
+            }
+            scm {
+                connection = "scm:git:git://github.com/mbeddr/mps-build-backends.git"
+                developerConnection = "scm:git:ssh://github.com/mbeddr/mps-build-backends.git"
+                url = "https://github.com/mbeddr/mps-build-backends"
+            }
+        }
+    }
 }
