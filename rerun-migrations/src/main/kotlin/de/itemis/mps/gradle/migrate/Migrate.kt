@@ -5,6 +5,9 @@ import com.intellij.openapi.extensions.PluginId
 import de.itemis.mps.gradle.logging.detectLogging
 import jetbrains.mps.project.Project
 import java.io.File
+import java.io.IOException
+import java.util.concurrent.TimeUnit
+import kotlin.math.log
 
 val logging = detectLogging()
 val logger = logging.getLogger("de.itemis.mps.gradle.migrate")

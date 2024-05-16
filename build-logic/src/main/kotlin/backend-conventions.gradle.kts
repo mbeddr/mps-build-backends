@@ -7,7 +7,7 @@ plugins {
 
 version = "${project.extra["version.backend"]}${computeVersionSuffix()}"
 
-val mpsZip by configurations.creating
+//val mpsZip by configurations.creating
 
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
@@ -15,10 +15,13 @@ val mpsZips = extensions.create("mpsZips", PatternSet::class)
 
 dependencies {
     compileOnly(libs.findLibrary("commons.logging").get())
-    mpsZip(libs.findLibrary("mps").get())
+    //mpsZip(libs.findLibrary("mps").get())
     implementation(project(":project-loader"))
 
-    addProvider("compileOnly", provider { zipTree(mpsZip.singleFile).matching(mpsZips) })
+    addProvider(
+        "compileOnly",
+        provider { fileTree("/Users/skoscejev/Projects/MPS-prereleases/MPS-222.4554.1654/MPS 2022.2").matching(mpsZips) })
+
 }
 
 publishing {
