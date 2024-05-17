@@ -12,7 +12,7 @@ include("execute-generators")
 include("project-loader")
 include("modelcheck")
 include("execute")
-include("rerun-migrations")
+include("remigrate")
 
 include("integration-tests")
 

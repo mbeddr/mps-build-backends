@@ -1,8 +1,7 @@
-package de.itemis.mps.gradle.migrate
+package de.itemis.mps.gradle.remigrate
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ex.ApplicationManagerEx
-import com.intellij.openapi.util.Pair
 import jetbrains.mps.lang.migration.runtime.base.MigrationModuleUtil
 import jetbrains.mps.lang.migration.runtime.base.MigrationScript
 import jetbrains.mps.lang.migration.runtime.base.MigrationScriptReference

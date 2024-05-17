@@ -1,12 +1,11 @@
-package de.itemis.mps.gradle.migrate
+package de.itemis.mps.gradle.remigrate
 
-import com.intellij.openapi.util.Pair
 import com.xenomachina.argparser.ArgParser
 import de.itemis.mps.gradle.project.loader.EnvironmentArgs
 import de.itemis.mps.gradle.project.loader.Plugin
 import de.itemis.mps.gradle.project.loader.ProjectLoader
 
-class MigrateArgs(parser: ArgParser) : EnvironmentArgs(parser) {
+class RemigrateArgs(parser: ArgParser) : EnvironmentArgs(parser) {
     val projects by parser.adding("--project", help = "project to migrate.")
     val excludeModuleMigrations by parser.adding(
         "--exclude-module-migration",
@@ -29,11 +28,9 @@ class MigrateArgs(parser: ArgParser) : EnvironmentArgs(parser) {
 
         if (!builder.environmentConfigBuilder.plugins.any { it.id == PLUGIN_ID }) {
             logger.warn(
-                "Plugin ${PLUGIN_ID} is missing, the process will likely fail. " +
-                        "Specify the plugin location using --plugin=${PLUGIN_ID}::<backend jar path>"
+                "Plugin $PLUGIN_ID is missing, the process will likely fail. " +
+                        "Specify the plugin location using --plugin=$PLUGIN_ID::<backend jar path>"
             )
         }
     }
 }
-
-internal const val PLUGIN_ID = "de.itemis.mps.buildbackends.rerun-migrations"

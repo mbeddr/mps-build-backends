@@ -1,4 +1,4 @@
-package de.itemis.mps.gradle.migrate
+package de.itemis.mps.gradle.remigrate
 
 import com.intellij.ide.plugins.PluginManager
 import com.intellij.openapi.extensions.PluginId
@@ -9,7 +9,7 @@ import java.io.File
 val logging = detectLogging()
 val logger = logging.getLogger("de.itemis.mps.gradle.migrate")
 
-fun migrate(args: MigrateArgs) {
+fun remigrate(args: RemigrateArgs) {
     val loader = args.buildLoader()
     val moduleMigrationsToExclude = args.excludeModuleMigrations.toSet()
     val projectMigrationsToExclude = args.excludeProjectMigrations.toSet()
@@ -42,3 +42,5 @@ fun migrate(args: MigrateArgs) {
         }
     }
 }
+
+internal const val PLUGIN_ID = "de.itemis.mps.buildbackends.remigrate"

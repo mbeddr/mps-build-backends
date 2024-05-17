@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <idea-plugin>
     <!-- This JAR is also an IDEA plugin -->
-    <id>de.itemis.mps.buildbackends.rerun-migrations</id>
-    <name>Rerun Migrations Backend</name>
+    <id>de.itemis.mps.buildbackends.remigrate</id>
+    <name>Remigrate Backend</name>
     <version>@version@</version>
     <vendor url="https://itemis.com">itemis AG</vendor>
     <depends>jetbrains.mps.core</depends>
