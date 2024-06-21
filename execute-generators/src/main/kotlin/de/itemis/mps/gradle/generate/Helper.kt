@@ -5,14 +5,16 @@ import com.intellij.openapi.util.IconLoader
 import de.itemis.mps.gradle.logging.detectLogging
 import de.itemis.mps.gradle.project.loader.EnvironmentKind
 import de.itemis.mps.gradle.project.loader.ModuleAndModelMatcher
-import jetbrains.mps.generator.GenerationOptions
 import jetbrains.mps.generator.GenerationSettingsProvider
 import jetbrains.mps.generator.runtime.TemplateModule
+import jetbrains.mps.internal.make.cfg.JavaCompileFacetInitializer
+import jetbrains.mps.internal.make.cfg.MakeFacetInitializer
 import jetbrains.mps.make.MakeSession
 import jetbrains.mps.make.facet.FacetRegistry
 import jetbrains.mps.make.facet.IFacet
 import jetbrains.mps.make.facet.ITarget
 import jetbrains.mps.make.script.IScript
+import jetbrains.mps.make.script.IScriptController
 import jetbrains.mps.make.script.ScriptBuilder
 import jetbrains.mps.messages.IMessage
 import jetbrains.mps.messages.IMessageHandler
@@ -163,7 +165,7 @@ private fun getFacetsForLanguages(facetRegistry: FacetRegistry, languages: Set<S
 private fun getFacetsForLanguagesMps20213(facetRegistry: FacetRegistry, allUsedLanguages: Set<SLanguage>): Iterable<IFacet> =
     facetRegistry.javaClass.getMethod("getFacetsForLanguages", java.lang.Iterable::class.java).invoke(facetRegistry, allUsedLanguages) as Iterable<IFacet>
 
-private fun makeModels(proj: Project, models: List<SModel>): GenerationResult {
+private fun makeModels(proj: Project, models: List<SModel>, bypassReconcile: Boolean = false, bypassCompilation: Boolean = false): GenerationResult {
     val session = MakeSession(proj, MsgHandler(), true)
     val res = ModelsToResources(models).resources().toList()
     val makeService = BuildMakeService()
@@ -173,7 +175,14 @@ private fun makeModels(proj: Project, models: List<SModel>): GenerationResult {
         return GenerationResult.NothingToGenerate
     }
     logger.info("starting generation")
-    val future = makeService.make(session, res, createScript(proj, models))
+
+    val scriptController = IScriptController.Stub2(session,
+        MakeFacetInitializer().skipReconcile(bypassReconcile),
+        JavaCompileFacetInitializer().skipCompilation(bypassCompilation)
+    )
+
+    val future = makeService.make(session, res, createScript(proj, models), scriptController)
+
     try {
         val result = future.get()
         logger.info("generation finished")
@@ -233,5 +242,5 @@ fun generateProject(parsed: GenerateArgs, project: Project): GenerationResult {
         IconLoader.activate()
     }
 
-    return makeModels(project, modelsToGenerate)
+    return makeModels(project, modelsToGenerate, parsed.skipReconciliation, parsed.skipCompilation)
 }

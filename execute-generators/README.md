@@ -63,6 +63,11 @@ optional arguments:
   --parallel-generation-threads THREADS   Number of threads to use for parallel generation. Value
                                           of 0 means that parallel generation is disabled.
                                           Default: 0
+                                          
+  --skip-reconciliation                   skips the Make.reconcile target.
+  
+  --skip-compilation                      skips the Javacompile.compile target.                     
+                                          
 ```
 
 ## Error exit codes
