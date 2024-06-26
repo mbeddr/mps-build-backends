@@ -13,6 +13,7 @@ import org.gradle.jvm.toolchain.JavaLauncher;
 import org.gradle.jvm.toolchain.JavaToolchainService;
 import org.gradle.jvm.toolchain.JvmVendorSpec;
 import org.gradle.jvm.toolchain.internal.DefaultJvmVendorSpec;
+import org.gradle.jvm.toolchain.internal.SpecificInstallationToolchainSpec;
 import org.gradle.process.CommandLineArgumentProvider;
 import org.gradle.process.JavaExecSpec;
 
@@ -22,25 +23,32 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class MpsBackendBuilder {
+    private final ObjectFactory objects;
     private final JavaToolchainService javaToolchainService;
     private final ProjectLayout layout;
 
     private final DirectoryProperty mpsHome;
     private final Property<String> mpsVersion;
     private final Property<JvmVendorSpec> jvmVendorSpec;
-    private final Property<String> javaExecutable;
+    private final Property<JavaLauncher> javaLauncher;
 
     private File temporaryDirectory;
 
     @Inject
     public MpsBackendBuilder(JavaToolchainService javaToolchainService, ProjectLayout layout, ProviderFactory providers, ObjectFactory objects) {
+        this.objects = objects;
         this.javaToolchainService = javaToolchainService;
         this.layout = layout;
 
         mpsHome = objects.directoryProperty();
         mpsVersion = objects.property(String.class).convention(MpsVersionDetection.fromMpsHome(layout, providers, mpsHome.getAsFile()));
         jvmVendorSpec = objects.property(JvmVendorSpec.class).convention(DefaultJvmVendorSpec.any());
-        javaExecutable = objects.property(String.class);
+        Provider<JavaLauncher> javaLauncherConvention = javaToolchainService.launcherFor(spec -> {
+            spec.getVendor().set(jvmVendorSpec);
+            spec.getLanguageVersion().set(
+                    mpsVersion.map(v -> JavaLanguageVersion.of(v.compareTo("2022") < 0 ? 11 : 17)));
+        });
+        javaLauncher = objects.property(JavaLauncher.class).convention(javaLauncherConvention);
     }
 
     public MpsBackendBuilder withMpsHome(File mpsHome) {
@@ -78,7 +86,19 @@ public class MpsBackendBuilder {
     }
 
     public MpsBackendBuilder withJavaExecutable(Provider<String> javaExecutable) {
-        this.javaExecutable.set(javaExecutable);
+        this.javaLauncher.set(javaExecutable
+                .map(path -> SpecificInstallationToolchainSpec.fromJavaExecutable(objects, path))
+                .flatMap(javaToolchainService::launcherFor));
+        return this;
+    }
+
+    public MpsBackendBuilder withJavaLauncher(Provider<JavaLauncher> javaLauncher) {
+        this.javaLauncher.set(javaLauncher);
+        return this;
+    }
+
+    public MpsBackendBuilder withJavaLauncher(JavaLauncher javaLauncher) {
+        this.javaLauncher.set(javaLauncher);
         return this;
     }
 
@@ -103,25 +123,10 @@ public class MpsBackendBuilder {
     }
 
     private void configureJavaExecutableOrLauncher(JavaExecSpec javaExec) {
-        if (javaExecutable.isPresent()) {
-            if (javaExec instanceof JavaExec) {
-                ((JavaExec) javaExec).getJavaLauncher().set((JavaLauncher) null);
-            }
-
-            javaExec.setExecutable(new LazyToString(javaExecutable));
+        if (javaExec instanceof JavaExec) {
+            ((JavaExec) javaExec).getJavaLauncher().set(javaLauncher);
         } else {
-
-            Provider<JavaLauncher> launcher = mpsVersion.flatMap((mpsVersionValue) ->
-                    javaToolchainService.launcherFor((spec) -> {
-                        spec.getVendor().set(jvmVendorSpec);
-                        spec.getLanguageVersion().set(JavaLanguageVersion.of(mpsVersionValue.compareTo("2022") < 0 ? 11 : 17));
-                    }));
-
-            if (javaExec instanceof JavaExec) {
-                ((JavaExec) javaExec).getJavaLauncher().set(launcher);
-            } else {
-                javaExec.setExecutable(launcher.get().getExecutablePath());
-            }
+            javaExec.setExecutable(new LazyToString(javaLauncher.map(l -> l.getExecutablePath().toString())));
         }
     }
 
