@@ -17,7 +17,6 @@ public class MpsVersionDetectionTest {
     @Test
     public void readsVersionFromBuildProperties(@TempDir File tempDir) throws IOException {
         final Project project = ProjectBuilder.builder().withProjectDir(tempDir).build();
-        final MpsVersionDetection detector = project.getObjects().newInstance(MpsVersionDetection.class);
 
         File mpsDir = new File(tempDir, "build/mps");
         File buildProperties = new File(mpsDir, "build.properties");
