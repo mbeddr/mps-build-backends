@@ -124,7 +124,7 @@ public class MpsBackendBuilder {
 
     private void configureJavaExecutableOrLauncher(JavaExecSpec javaExec) {
         if (javaExec instanceof JavaExec) {
-            ((JavaExec) javaExec).getJavaLauncher().convention(javaLauncher);
+            ((JavaExec) javaExec).getJavaLauncher().set(javaLauncher);
         } else {
             javaExec.setExecutable(new LazyToString(javaLauncher.map(l -> l.getExecutablePath().toString())));
         }

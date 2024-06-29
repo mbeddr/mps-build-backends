@@ -40,3 +40,35 @@ For all versions of MPS:
 2. `idea.config.path` and `idea.system.path` JVM properties are set to subdirectories within the temporary directory.
 
 These changes help isolate individual tasks from each other, potentially enabling parallel execution of tasks.
+
+# Overriding the configured JVM
+
+If you need to override the JVM after it was configured by the backend builder, you have the following options.
+
+* For `JavaExec` task:
+   1. Set `javaLauncher` to a different launcher:
+      ```java
+      mpsBackendBuilder
+        .withMpsHome(...)
+        ...
+        .configure(task);
+      task.getJavaLauncher().set(newLauncher);
+      ```
+   2. Alternatively, set `javaLauncher` to null, then set `executable`:
+      ```java
+      mpsBackendBuilder
+        .withMpsHome(...)
+        ...
+        .configure(task);
+      task.getJavaLauncher().set((JavaLauncher) null);
+      task.executable(newExecutable);
+      ```
+      If `javaLauncher` is not explicitly reset, it takes precedence over `executable`.
+
+* For `project.javaexec` action, set `executable`:
+  ```java
+  project.javaexec(it -> {
+    mpsBackendBuilder...configure(it);
+    executable(newExecutable);
+  });
+  ```
