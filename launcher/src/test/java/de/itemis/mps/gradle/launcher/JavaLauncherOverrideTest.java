@@ -12,8 +12,9 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.File;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-public class JavaExecTaskTest {
+public class JavaLauncherOverrideTest {
 
     @Test
     public void overridesDefaultJavaLauncher(@TempDir File tempDir) {
@@ -46,6 +47,25 @@ public class JavaExecTaskTest {
         launcher.builder().withJavaLauncher(javaLauncherOfBackendBuilder).configure(task);
 
         Assertions.assertSame(javaLauncherOfTask, task.getJavaLauncher().get(),
+                "java launcher of backend builder should not override java launcher of task");
+    }
+
+    @Test
+    public void keepsExplicitJavaExecutable(@TempDir File tempDir) {
+        final Project project = ProjectBuilder.builder().withProjectDir(tempDir).build();
+        project.getPluginManager().apply(LauncherPlugin.class);
+
+        final String executableOfTask = "executable of task";
+        final JavaExec task = project.getTasks().create("javaExec", JavaExec.class);
+        task.executable(executableOfTask);
+
+        final JavaLauncher javaLauncherOfBackendBuilder = mock(JavaLauncher.class, "java launcher of backend builder");
+        final MpsBackendLauncher launcher = project.getExtensions().getByType(MpsBackendLauncher.class);
+        launcher.builder().withJavaLauncher(javaLauncherOfBackendBuilder).configure(task);
+
+        when(javaLauncherOfBackendBuilder.getExecutablePath()).thenReturn(project.getLayout().getProjectDirectory().file("backend java"));
+
+        Assertions.assertEquals(executableOfTask, task.getExecutable(),
                 "java launcher of backend builder should not override java launcher of task");
     }
 }
