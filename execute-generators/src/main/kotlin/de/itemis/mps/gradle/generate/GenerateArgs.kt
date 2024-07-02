@@ -10,6 +10,8 @@ class GenerateArgs(parser: ArgParser) : Args(parser) {
     val modules by parser.adding("--module", help = "list of modules to generate")
     val excludeModels by parser.adding("--exclude-model", help = "list of models to exclude from generation")
     val excludeModules by parser.adding("--exclude-module", help = "list of modules to exclude from generation")
+    val skipReconciliation by parser.flagging("--skip-reconciliation", help = "skips the Make.reconcile target")
+    val skipCompilation by parser.flagging("--skip-compilation", help = "skips the JavaCompile.compile target")
     val noStrictMode by parser.flagging(
         "--no-strict-mode",
         help = "Disable strict generation mode. Strict mode places additional limitations on generators, but is required for parallel generation"
