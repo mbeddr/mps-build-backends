@@ -1,6 +1,5 @@
 package de.itemis.mps.gradle.execute
 
-import com.intellij.util.containers.orNull
 import de.itemis.mps.gradle.logging.detectLogging
 import jetbrains.mps.project.Project
 import jetbrains.mps.tool.environment.Environment
@@ -43,7 +42,7 @@ internal fun executeGeneratedCode(arguments: ExecuteArgs, environment: Environme
 
     val methodName = arguments.method
     fun getMethod(vararg parameterTypes: KClass<*>): Method? {
-        return classCode.staticMethod(methodName, *parameterTypes.map { it.java }.toTypedArray()).orNull()
+        return classCode.staticMethod(methodName, *parameterTypes.map { it.java }.toTypedArray()).orElse(null)
     }
 
     getMethod(Project::class, Array<String>::class)?.apply {
