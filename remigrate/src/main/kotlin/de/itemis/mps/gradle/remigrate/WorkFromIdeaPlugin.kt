@@ -2,6 +2,7 @@ package de.itemis.mps.gradle.remigrate
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ex.ApplicationManagerEx
+import jetbrains.mps.lang.migration.runtime.base.MigrationAspectDescriptor
 import jetbrains.mps.lang.migration.runtime.base.MigrationModuleUtil
 import jetbrains.mps.lang.migration.runtime.base.MigrationScript
 import jetbrains.mps.lang.migration.runtime.base.MigrationScriptReference
@@ -87,6 +88,11 @@ private fun runProjectMigrations(project: Project, migrationsToExclude: Set<Stri
 @Suppress("DEPRECATION", "removal")
 private fun getName(project: Project) = project.name
 
+private fun resolve(languageRegistry: LanguageRegistry, reference: MigrationScriptReference): MigrationScript? =
+    languageRegistry.getLanguage(reference.language)
+        ?.getAspect(MigrationAspectDescriptor::class.java)
+        ?.getScript(reference.fromVersion)
+
 private fun runRerunnableModuleMigrations(
     project: Project,
     migrationsToExclude: Set<Pair<String, Int>>
@@ -103,7 +109,7 @@ private fun runRerunnableModuleMigrations(
                 @Suppress("DEPRECATION")
                 for (ver in 0 until language.languageVersion) {
                     val reference = MigrationScriptReference(language, ver)
-                    val script: MigrationScript? = reference.resolve(project, true)
+                    val script: MigrationScript? = resolve(languageRegistry, reference)
                     if (script != null && !script.requiresData().any() && script.isRerunnable) {
                         if (migrationsToExclude.contains(Pair(language.qualifiedName, ver))) {
                             logger.info("Not executing excluded $reference on ${module.moduleName}")

@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) after reaching version 1.0.0. Until then any version may
 contain breaking changes.
 
+# 0.0.5
+
+## Fixed
+
+- Updated to run on the current MPS master (2024.2 prerelease).
+
 # 0.0.4
 
-* Renamed from `rerun-migrations` to `remigrate`.
+- Renamed from `rerun-migrations` to `remigrate`.
