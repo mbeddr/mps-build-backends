@@ -9,6 +9,7 @@ buildscript {
 plugins {
     id("kotlin-conventions")
     id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.13.2"
+    id("de.itemis.mps.gradle.launcher")
 }
 
 version = "${project.extra["version.project-loader"]}${computeVersionSuffix()}"
@@ -68,7 +69,6 @@ publishing {
 
 tasks {
     val mpsHome = layout.buildDirectory.dir("mps")
-    val mpsZip by configurations.getting
     val unpackMps by registering(Sync::class) {
         dependsOn(mpsZip)
         from({ mpsZip.resolve().map(project::zipTree) })
@@ -77,5 +77,6 @@ tasks {
     test {
         dependsOn(unpackMps)
         classpath += mpsHome.get().dir("lib").asFileTree.matching { include("*.jar") }
+        mpsBackendLauncher.forMpsHome(unpackMps.map { it.destinationDir }).configure(this)
     }
 }
