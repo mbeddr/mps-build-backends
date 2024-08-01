@@ -23,8 +23,9 @@ tasks.register("myBackendTask", JavaExec::class.java) {
 }
 ```
 
-Besides configuring a `JavaExec` task, it is also possible to configure the  `project.javaexec` operation. In this case,
-the MPS temporary directory needs to be set explicitly by calling `withTemporaryDirectory()`.
+The `configure` method accepts any `JavaForkOptions` implementation, such as a `JavaExec` or `Test` task, or
+the `project.javaexec` operation. When a task is configured, the temporary directory of the task is used by default
+for MPS caches and logs, otherwise it must be set explicitly by `withTemporaryDirectory()`.
 
 # Effect
 

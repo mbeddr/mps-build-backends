@@ -15,7 +15,7 @@ import org.gradle.jvm.toolchain.JvmVendorSpec;
 import org.gradle.jvm.toolchain.internal.DefaultJvmVendorSpec;
 import org.gradle.jvm.toolchain.internal.SpecificInstallationToolchainSpec;
 import org.gradle.process.CommandLineArgumentProvider;
-import org.gradle.process.JavaExecSpec;
+import org.gradle.process.JavaForkOptions;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -102,11 +102,11 @@ public class MpsBackendBuilder {
         return this;
     }
 
-    public void configure(JavaExecSpec javaExec) {
-        configureJavaExecutableOrLauncher(javaExec);
-        configureVersionSpecificProperties(javaExec);
-        configureOpens(javaExec);
-        configureWorkspace(javaExec);
+    public void configure(JavaForkOptions options) {
+        configureJavaExecutableOrLauncher(options);
+        configureVersionSpecificProperties(options);
+        configureOpens(options);
+        configureWorkspace(options);
     }
 
     private static class LazyToString {
@@ -122,18 +122,18 @@ public class MpsBackendBuilder {
         }
     }
 
-    private void configureJavaExecutableOrLauncher(JavaExecSpec javaExec) {
-        if (javaExec instanceof JavaExec) {
-            ((JavaExec) javaExec).getJavaLauncher().set(javaLauncher);
+    private void configureJavaExecutableOrLauncher(JavaForkOptions options) {
+        if (options instanceof JavaExec) {
+            ((JavaExec) options).getJavaLauncher().set(javaLauncher);
         } else {
-            javaExec.setExecutable(new LazyToString(javaLauncher.map(l -> l.getExecutablePath().toString())));
+            options.setExecutable(new LazyToString(javaLauncher.map(l -> l.getExecutablePath().toString())));
         }
     }
 
-    private void configureVersionSpecificProperties(JavaExecSpec javaExec) {
+    private void configureVersionSpecificProperties(JavaForkOptions options) {
         // Gradle needs this to be an inner class rather than a lambda so that it can be properly cached.
         //noinspection Convert2Lambda
-        javaExec.getJvmArgumentProviders().add(new CommandLineArgumentProvider() {
+        options.getJvmArgumentProviders().add(new CommandLineArgumentProvider() {
             @Override
             public Iterable<String> asArguments() {
                 ArrayList<String> result = new ArrayList<>();
@@ -148,7 +148,7 @@ public class MpsBackendBuilder {
         });
     }
 
-    private static void configureOpens(JavaExecSpec javaExec) {
+    private static void configureOpens(JavaForkOptions options) {
         final String[] modules = new String[]{
                 "java.base/java.io",
                 "java.base/java.lang",
@@ -192,29 +192,29 @@ public class MpsBackendBuilder {
         };
 
         for (String module : modules) {
-            javaExec.jvmArgs("--add-opens=" + module + "=ALL-UNNAMED");
+            options.jvmArgs("--add-opens=" + module + "=ALL-UNNAMED");
         }
     }
 
-    private void configureWorkspace(JavaExecSpec javaExec) {
-        File tmpDir = getTemporaryDirectory(javaExec);
+    private void configureWorkspace(JavaForkOptions options) {
+        File tmpDir = getTemporaryDirectory(options);
 
         // MPS versions up to and including 2021.x create logs under their working directory so set it to a temporary
         // directory to avoid polluting the checkout directory or MPS home.
-        javaExec.setWorkingDir(tmpDir);
-        javaExec.systemProperty("idea.config.path", new File(tmpDir, "config"));
-        javaExec.systemProperty("idea.system.path", new File(tmpDir, "system"));
+        options.setWorkingDir(tmpDir);
+        options.systemProperty("idea.config.path", new File(tmpDir, "config"));
+        options.systemProperty("idea.system.path", new File(tmpDir, "system"));
     }
 
     @Nonnull
-    private File getTemporaryDirectory(JavaExecSpec spec) {
+    private File getTemporaryDirectory(JavaForkOptions options) {
         if (temporaryDirectory != null) {
             // Explicitly set directory overrides heuristics
             return temporaryDirectory;
         }
 
-        if (spec instanceof JavaExec) {
-            return ((JavaExec) spec).getTemporaryDir();
+        if (options instanceof JavaExec) {
+            return ((JavaExec) options).getTemporaryDir();
         }
 
         throw new IllegalStateException("Temporary directory for MPS should be specified");

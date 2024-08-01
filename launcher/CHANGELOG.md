@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.5.0
+
+### Changed
+
+- `MpsBackendBuilder#configure` now accepts the more general interface `JavaForkOptions` instead of `JavaExecSpec`. It
+  now can be used to configure the Gradle `Test` task, for example.
+
 ## 2.4.2
 
 ### Fixed
