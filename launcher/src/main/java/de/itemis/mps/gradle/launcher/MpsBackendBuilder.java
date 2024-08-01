@@ -1,5 +1,6 @@
 package de.itemis.mps.gradle.launcher;
 
+import org.gradle.api.Task;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.ProjectLayout;
@@ -213,8 +214,8 @@ public class MpsBackendBuilder {
             return temporaryDirectory;
         }
 
-        if (options instanceof JavaExec) {
-            return ((JavaExec) options).getTemporaryDir();
+        if (options instanceof Task) {
+            return ((Task) options).getTemporaryDir();
         }
 
         throw new IllegalStateException("Temporary directory for MPS should be specified");
