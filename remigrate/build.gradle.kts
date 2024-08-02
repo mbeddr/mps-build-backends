@@ -5,6 +5,7 @@ plugins {
 }
 
 mpsZips {
+    include("lib/app.jar")
     include("lib/mps-core.jar")
     include("lib/mps-environment.jar")
     include("lib/mps-platform.jar")
