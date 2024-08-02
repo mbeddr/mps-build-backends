@@ -16,6 +16,7 @@ import org.gradle.jvm.toolchain.JvmVendorSpec;
 import org.gradle.jvm.toolchain.internal.DefaultJvmVendorSpec;
 import org.gradle.jvm.toolchain.internal.SpecificInstallationToolchainSpec;
 import org.gradle.process.CommandLineArgumentProvider;
+import org.gradle.process.JavaExecSpec;
 import org.gradle.process.JavaForkOptions;
 
 import javax.annotation.Nonnull;
@@ -101,6 +102,10 @@ public class MpsBackendBuilder {
     public MpsBackendBuilder withJavaLauncher(JavaLauncher javaLauncher) {
         this.javaLauncher.set(javaLauncher);
         return this;
+    }
+
+    public void configure(JavaExecSpec javaExec) {
+        configure((JavaForkOptions) javaExec);
     }
 
     public void configure(JavaForkOptions options) {
