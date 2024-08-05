@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.16.0
+
+### Fixed
+
+- `modelcheck`: use `IdeaPlatformTaskScheduler` for parallel model checking when available, so that IDEA read action is
+  started during model checks. This makes it possible to use 'find usages' without having an error about 'Read access is
+  allowed from inside read-action (or EDT) only' logged.
+
 ## 1.15.1
 
 ### Changed

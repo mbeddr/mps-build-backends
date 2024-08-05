@@ -12,6 +12,7 @@ import jetbrains.mps.errors.CheckerRegistry
 import jetbrains.mps.errors.MessageStatus
 import jetbrains.mps.errors.item.IssueKindReportItem
 import jetbrains.mps.ide.httpsupport.runtime.base.HttpSupportUtil
+import jetbrains.mps.ide.modelchecker.platform.actions.IdeaPlatformReadExecutor
 import jetbrains.mps.ide.modelchecker.platform.actions.UnresolvedReferencesChecker
 import jetbrains.mps.progress.EmptyProgressMonitor
 import jetbrains.mps.project.Project
@@ -19,17 +20,17 @@ import jetbrains.mps.smodel.ModelAccessBase
 import jetbrains.mps.smodel.SModelStereotype
 import jetbrains.mps.tool.environment.Environment
 import jetbrains.mps.util.CollectConsumer
+import jetbrains.mps.workbench.progress.IdeaPlatformTaskScheduler
 import jetbrains.mps.workbench.progress.SystemBackgroundTaskScheduler
 import org.jetbrains.mps.openapi.model.SModel
 import org.jetbrains.mps.openapi.model.SNode
 import org.jetbrains.mps.openapi.module.SModule
 import java.io.File
-import java.lang.IllegalArgumentException
-import java.lang.UnsupportedOperationException
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.*
 import kotlin.math.min
 import kotlin.test.fail
+
 
 val logging = detectLogging()
 val logger = logging.getLogger("de.itemis.mps.gradle.modelcheck")
@@ -284,15 +285,32 @@ private fun oneTestCasePerModule(modules: Iterable<SModule>, errorsPerModule: Ma
 
 private fun ModelCheckerBuilder.setParallelTaskScheduler(project: Project) {
     try {
+        setParallelTaskSchedulerV3(project)
+    } catch (e: LinkageError) {
         try {
-            val executor = (project.repository.modelAccess as ModelAccessBase).shareRead()
-            withTaskScheduler(SystemBackgroundTaskScheduler(project, executor))
-        } catch (e: NoSuchMethodError) {
-            withTaskScheduler(SystemBackgroundTaskScheduler(project))
+            setParallelTaskSchedulerV2(project)
+        } catch (e: LinkageError) {
+            try {
+                setParallelTaskSchedulerV1(project)
+            } catch (e: LinkageError) {
+                logger.warn("Parallel model checking is not supported in this version of MPS", e)
+            }
         }
-    } catch (e: NoClassDefFoundError) {
-        logger.warn("Parallel model checking is not supported in this version of MPS", e)
     }
+}
+
+private fun ModelCheckerBuilder.setParallelTaskSchedulerV3(project: Project) {
+    val executor = IdeaPlatformReadExecutor(project.repository.modelAccess)
+    withTaskScheduler(IdeaPlatformTaskScheduler(project, executor))
+}
+
+private fun ModelCheckerBuilder.setParallelTaskSchedulerV2(project: Project) {
+    val executor = (project.repository.modelAccess as ModelAccessBase).shareRead()
+    withTaskScheduler(SystemBackgroundTaskScheduler(project, executor))
+}
+
+private fun ModelCheckerBuilder.setParallelTaskSchedulerV1(project: Project) {
+    withTaskScheduler(SystemBackgroundTaskScheduler(project))
 }
 
 fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: Project): Boolean {
