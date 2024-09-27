@@ -222,34 +222,28 @@ private fun oneTestCasePerMessage(item: IssueKindReportItem, model: SModel, proj
 private fun oneTestCasePerModel(models: Iterable<SModel>, errorsPerModel: Map<SModel, List<IssueKindReportItem>>, project: Project): List<Testcase> {
     return models.map {
         val errors = errorsPerModel.getOrDefault(it, emptyList())
-        fun reportItemToContent(s: Failure, item: IssueKindReportItem): Failure {
-            return when (val path = item.path) {
-                is IssueKindReportItem.PathObject.ModelPathObject -> {
-                    val model = path.resolve(project.repository)!!
-                    val message = "${item.message} [${model.name.longName}]"
-                    Failure(
-                        message = "${s.message}\n $message",
-                        type = s.type
-                    )
+        val message = buildString {
+            for (item in errors) {
+                when (val path = item.path) {
+                    is IssueKindReportItem.PathObject.ModelPathObject -> {
+                        val model = path.resolve(project.repository)!!
+                        append("\n ${item.message} [${model.name.longName}]")
+                    }
+                    is IssueKindReportItem.PathObject.NodePathObject -> {
+                        val node = path.resolve(project.repository)
+                        append("\n ${item.message} [${node.url}]")
+                    }
+                    else -> fail("unexpected issue kind")
                 }
-                is IssueKindReportItem.PathObject.NodePathObject -> {
-                    val node = path.resolve(project.repository)
-                    val message = "${item.message} [${node.url}]"
-                    Failure(
-                        message = "${s.message}\n $message",
-                        type = s.type
-                    )
-                }
-                else -> fail("unexpected issue kind")
             }
         }
 
-        val accumulatedFailure = errors.fold(Failure(message = "", type = "model checking"), ::reportItemToContent)
+        val failure = Failure(message = message, content = message, type = "model checking")
 
         Testcase(
             name = it.name.simpleName,
             classname = it.name.longName,
-            failure = if (errors.isEmpty()) null else accumulatedFailure,
+            failure = if (errors.isEmpty()) null else failure,
             time = 0
         )
     }
@@ -258,26 +252,24 @@ private fun oneTestCasePerModel(models: Iterable<SModel>, errorsPerModel: Map<SM
 private fun oneTestCasePerModule(modules: Iterable<SModule>, errorsPerModule: Map<SModule, List<IssueKindReportItem>>, project: Project): List<Testcase> {
     return modules.map {
         val errors = errorsPerModule.getOrDefault(it, emptyList())
-        fun reportItemToContent(s: Failure, item: IssueKindReportItem): Failure {
-            return when (val path = item.path) {
-                is IssueKindReportItem.PathObject.ModulePathObject -> {
-                    val module = path.resolve(project.repository)!!
-                    val message = "${item.message} [${module.moduleName}]"
-                    Failure(
-                        message = "${s.message}\n $message",
-                        type = s.type
-                    )
+        val message = buildString {
+            for (item in errors) {
+                when (val path = item.path) {
+                    is IssueKindReportItem.PathObject.ModulePathObject -> {
+                        val module = path.resolve(project.repository)!!
+                        append("\n ${item.message} [${module.moduleName}]")
+                    }
+                    else -> fail("unexpected issue kind")
                 }
-                else -> fail("unexpected issue kind")
             }
         }
 
-        val accumulatedFailure = errors.fold(Failure(message = "", type = "model checking"), ::reportItemToContent)
+        val failure = Failure(message = message, content = message, type = "model checking")
 
         Testcase(
             name = "module ${it.moduleName!!}",
             classname = it.moduleName!!,
-            failure = if (errors.isEmpty()) null else accumulatedFailure,
+            failure = if (errors.isEmpty()) null else failure,
             time = 0
         )
     }
