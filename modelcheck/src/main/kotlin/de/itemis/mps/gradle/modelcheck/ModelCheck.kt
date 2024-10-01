@@ -330,8 +330,6 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
     val itemsToCheck = ModelCheckerBuilder.ItemsToCheck()
 
     project.modelAccess.runReadAction {
-        println("MATCHING MODULES")
-
         if (args.models.isNotEmpty() || args.excludeModels.isNotEmpty()) {
             itemsToCheck.models.addAll(
                 project.projectModulesWithGenerators
@@ -352,8 +350,6 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
                 }
             }
             .createChecker(checkers)
-
-        println("CHECKING")
 
         checker.check(itemsToCheck, project.repository, errorCollector, EmptyProgressMonitor())
 
