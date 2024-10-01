@@ -227,11 +227,11 @@ private fun oneTestCasePerModel(models: Iterable<SModel>, errorsPerModel: Map<SM
                 when (val path = item.path) {
                     is IssueKindReportItem.PathObject.ModelPathObject -> {
                         val model = path.resolve(project.repository)!!
-                        append("\n ${item.message} [${model.name.longName}]")
+                        appendLine(" ${item.message} [${model.name.longName}]")
                     }
                     is IssueKindReportItem.PathObject.NodePathObject -> {
                         val node = path.resolve(project.repository)
-                        append("\n ${item.message} [${node.url}]")
+                        appendLine(" ${item.message} [${node.url}]")
                     }
                     else -> fail("unexpected issue kind")
                 }
@@ -257,7 +257,7 @@ private fun oneTestCasePerModule(modules: Iterable<SModule>, errorsPerModule: Ma
                 when (val path = item.path) {
                     is IssueKindReportItem.PathObject.ModulePathObject -> {
                         val module = path.resolve(project.repository)!!
-                        append("\n ${item.message} [${module.moduleName}]")
+                        appendLine(" ${item.message} [${module.moduleName}]")
                     }
                     else -> fail("unexpected issue kind")
                 }
@@ -330,6 +330,8 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
     val itemsToCheck = ModelCheckerBuilder.ItemsToCheck()
 
     project.modelAccess.runReadAction {
+        println("MATCHING MODULES")
+
         if (args.models.isNotEmpty() || args.excludeModels.isNotEmpty()) {
             itemsToCheck.models.addAll(
                 project.projectModulesWithGenerators
@@ -350,6 +352,8 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
                 }
             }
             .createChecker(checkers)
+
+        println("CHECKING")
 
         checker.check(itemsToCheck, project.repository, errorCollector, EmptyProgressMonitor())
 
