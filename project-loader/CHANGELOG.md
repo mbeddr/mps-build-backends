@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 2.3.1
+
+### Fixed
+
+- Any exception caught while disposing the environment is now logged and swallowed.
+
 ## 2.3.0
 
 ### Added

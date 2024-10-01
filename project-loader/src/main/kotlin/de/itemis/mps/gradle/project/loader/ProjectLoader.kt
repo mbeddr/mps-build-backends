@@ -124,8 +124,12 @@ public class ProjectLoader private constructor(
                 logger.info("flushing events before environment disposal")
                 environment.flushAllEvents()
                 logger.info("disposing environment")
-                environment.dispose()
-                logger.info("environment disposed")
+                try {
+                    environment.dispose()
+                    logger.info("environment disposed")
+                } catch (e: Exception) {
+                    logger.info("an exception was caught while disposing environment, it will be logged here and ignored", e)
+                }
             }
 
         } finally {
