@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.18.0
+
+- `modelcheck`: Work around an indexing problem in MPS 2023.2 and above (build number 232.xxx or higher) by triggering
+  full indexing in IDEA environment after the project is opened. Can be disabled by `--force-indexing=never`.
+  See [MPS-37926](https://youtrack.jetbrains.com/issue/MPS-37926/Indices-not-built-properly-in-IdeaEnvironment).
+
 ## 1.17.0
 
 ### Added

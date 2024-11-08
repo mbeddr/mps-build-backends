@@ -22,7 +22,7 @@ usage: modelcheck [-h] [--plugin PLUGIN]... [--macro MACRO]... [--plugin-locatio
                   --project PROJECT [--model MODEL]... [--module MODULE]...
                   [--exclude-model EXCLUDE_MODEL]... [--exclude-module EXCLUDE_MODULE]...
                   [--parallel] [--warning-as-error] [--error-no-fail] [--result-file RESULT_FILE]
-                  [--result-format RESULT_FORMAT]
+                  [--result-format RESULT_FORMAT] [--force-indexing FORCE_INDEXING]
 
 required arguments:
   --project PROJECT                   project to generate from
@@ -69,6 +69,10 @@ optional arguments:
   --result-file RESULT_FILE           stores the result as an JUnit xml file
 
   --result-format RESULT_FORMAT       reporting format for the JUnit file
+
+  --force-indexing FORCE_INDEXING     whether to force full indexing at startup to work around
+                                      MPS-37926. Supported values: always, never, auto. Default:
+                                      auto.
 ```
 
 The `--result-format` option takes one of three values: `model` produces one test per tested model (the default,
