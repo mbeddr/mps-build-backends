@@ -1,6 +1,11 @@
 package de.itemis.mps.gradle.modelcheck
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.project.RootsChangeRescanningInfo
+import com.intellij.openapi.roots.ex.ProjectRootManagerEx
+import com.intellij.openapi.util.BuildNumber
 import de.itemis.mps.gradle.junit.Failure
 import de.itemis.mps.gradle.junit.Testcase
 import de.itemis.mps.gradle.junit.Testsuite
@@ -15,6 +20,7 @@ import jetbrains.mps.ide.httpsupport.runtime.base.HttpSupportUtil
 import jetbrains.mps.ide.modelchecker.platform.actions.IdeaPlatformReadExecutor
 import jetbrains.mps.ide.modelchecker.platform.actions.UnresolvedReferencesChecker
 import jetbrains.mps.progress.EmptyProgressMonitor
+import jetbrains.mps.project.MPSProject
 import jetbrains.mps.project.Project
 import jetbrains.mps.smodel.ModelAccessBase
 import jetbrains.mps.smodel.SModelStereotype
@@ -329,6 +335,18 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
     modelExtractor.includeStubs(false)
     val itemsToCheck = ModelCheckerBuilder.ItemsToCheck()
 
+    // Workaround for https://youtrack.jetbrains.com/issue/MPS-37926/Indices-not-built-properly-in-IdeaEnvironment
+    if (project is MPSProject && shouldForceIndexing(args, BuildNumber.currentVersion())) {
+        logger.info("Forcing full indexing to work around MPS-37926")
+        ApplicationManager.getApplication().invokeAndWait({
+            ApplicationManager.getApplication().runWriteAction {
+                ProjectRootManagerEx.getInstanceEx(project.project)
+                    .makeRootsChange({}, RootsChangeRescanningInfo.TOTAL_RESCAN)
+            }
+        }, ModalityState.defaultModalityState())
+        logger.info("Full indexing complete")
+    }
+
     project.modelAccess.runReadAction {
         if (args.models.isNotEmpty() || args.excludeModels.isNotEmpty()) {
             itemsToCheck.models.addAll(
@@ -374,4 +392,8 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
 
     val minSeverity = if (args.warningAsError) MessageStatus.WARNING else MessageStatus.ERROR
     return errorCollector.result.any { it.severity >= minSeverity }
+}
+
+fun shouldForceIndexing(args: ModelCheckArgs, buildNumber: BuildNumber): Boolean {
+    return args.forceIndexing ?: (buildNumber.baselineVersion >= 232)
 }

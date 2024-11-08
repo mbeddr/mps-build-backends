@@ -25,4 +25,15 @@ class ModelCheckArgs(parser: ArgParser) : Args(parser) {
             else -> fail("unsupported result format")
         }
     }.default(ReportFormat.ONE_TEST_PER_MODEL)
+
+    val forceIndexing by parser.storing(
+        "--force-indexing", help = "whether to force full indexing at startup to work around MPS-37926." +
+                " Supported values: always, never, auto. Default: auto.") {
+        when (this) {
+            "always" -> true
+            "never" -> false
+            "auto" -> null
+            else -> fail("Unsupported value '$this'. Supported values are always, never, auto")
+        }
+    }.default(null)
 }
