@@ -3,6 +3,8 @@ package de.itemis.mps.gradle.modelcheck
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.default
 import de.itemis.mps.gradle.project.loader.Args
+import de.itemis.mps.gradle.project.loader.Plugin
+import de.itemis.mps.gradle.project.loader.ProjectLoader
 import kotlin.test.fail
 
 @Suppress("DEPRECATION")
@@ -36,4 +38,10 @@ class ModelCheckArgs(parser: ArgParser) : Args(parser) {
             else -> fail("Unsupported value '$this'. Supported values are always, never, auto")
         }
     }.default(null)
+
+    override fun configureProjectLoader(builder: ProjectLoader.Builder) {
+        builder.environmentConfig {
+            plugins.add(Plugin("jetbrains.mps.ide.modelchecker", "mps-modelchecker"))
+        }
+    }
 }
