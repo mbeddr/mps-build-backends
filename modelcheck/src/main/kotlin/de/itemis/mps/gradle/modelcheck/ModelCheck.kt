@@ -18,7 +18,6 @@ import jetbrains.mps.errors.MessageStatus
 import jetbrains.mps.errors.item.IssueKindReportItem
 import jetbrains.mps.ide.httpsupport.runtime.base.HttpSupportUtil
 import jetbrains.mps.ide.modelchecker.platform.actions.IdeaPlatformReadExecutor
-import jetbrains.mps.ide.modelchecker.platform.actions.UnresolvedReferencesChecker
 import jetbrains.mps.progress.EmptyProgressMonitor
 import jetbrains.mps.project.MPSProject
 import jetbrains.mps.project.Project
@@ -313,9 +312,6 @@ private fun ModelCheckerBuilder.setParallelTaskSchedulerV1(project: Project) {
 
 fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: Project): Boolean {
     val checkers = environment.platform.findComponent(CheckerRegistry::class.java)!!.checkers
-    if (checkers.all { it !is UnresolvedReferencesChecker }) {
-        checkers.add(UnresolvedReferencesChecker())
-    }
 
     if (logger.isInfoEnabled) {
         logger.info(checkers.joinToString(prefix = "Found the following checkers in CheckerRegistry: "))
