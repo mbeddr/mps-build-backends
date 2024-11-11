@@ -337,7 +337,7 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
 
     // Workaround for https://youtrack.jetbrains.com/issue/MPS-37926/Indices-not-built-properly-in-IdeaEnvironment
     if (project is MPSProject && shouldForceIndexing(args, BuildNumber.currentVersion())) {
-        logger.info("Forcing full indexing to work around MPS-37926")
+        logger.info("Forcing full indexing to work around MPS-37926. Can be disabled with --force-indexing=never.")
         ApplicationManager.getApplication().invokeAndWait({
             ApplicationManager.getApplication().runWriteAction {
                 ProjectRootManagerEx.getInstanceEx(project.project)
