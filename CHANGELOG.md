@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.19.1
+
+- `modelcheck`: fix a bug that caused most command line options to be ignored.
+
 ## 1.19.0
 
 - The backends are now tested against MPS 2024.1.1 and MPS 2024.3 and not tested anymore for versions before 2022.3.

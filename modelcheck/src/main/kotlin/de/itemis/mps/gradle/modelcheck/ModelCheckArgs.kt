@@ -40,6 +40,7 @@ class ModelCheckArgs(parser: ArgParser) : Args(parser) {
     }.default(null)
 
     override fun configureProjectLoader(builder: ProjectLoader.Builder) {
+        super.configureProjectLoader(builder)
         builder.environmentConfig {
             plugins.add(Plugin("jetbrains.mps.ide.modelchecker", "mps-modelchecker"))
         }
