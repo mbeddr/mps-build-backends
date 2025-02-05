@@ -37,6 +37,7 @@ dependencies {
         include("lib/mps-logging.jar")
         include("lib/platform-api.jar")
         include("lib/util.jar")
+        include("lib/app.jar")
     })
 
     mpsZip(libs.mps)

@@ -64,6 +64,11 @@ public final class de/itemis/mps/gradle/project/loader/EnvironmentKind : java/la
 	public static fun values ()[Lde/itemis/mps/gradle/project/loader/EnvironmentKind;
 }
 
+public final class de/itemis/mps/gradle/project/loader/IndexingWorkaroundKt {
+	public static final fun forceIndexing (Ljetbrains/mps/project/MPSProject;)V
+	public static final fun hasIndexingBug (Lcom/intellij/openapi/util/BuildNumber;)Z
+}
+
 public final class de/itemis/mps/gradle/project/loader/LoaderKt {
 	public static final fun buildEnvironmentConfig (Ljava/util/List;Ljava/io/File;Ljava/util/List;Z)Ljetbrains/mps/tool/environment/EnvironmentConfig;
 	public static synthetic fun buildEnvironmentConfig$default (Ljava/util/List;Ljava/io/File;Ljava/util/List;ZILjava/lang/Object;)Ljetbrains/mps/tool/environment/EnvironmentConfig;

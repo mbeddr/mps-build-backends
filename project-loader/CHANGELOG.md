@@ -7,6 +7,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 2.4.0
+
+### Added
+
+- Helper methods to implement workaround for
+  the [MPS-37926](https://youtrack.jetbrains.com/issue/MPS-37926/Indices-not-built-properly-in-IdeaEnvironment) indexing
+  bug.
+
 ## 2.3.1
 
 ### Fixed
@@ -17,7 +25,7 @@ Changes in versions before 2.0.0 are documented in the [root changelog](../CHANG
 
 ### Added
 
-- Load project libraries from `.mps/libraries.xml` under the project directory when using MPS environment (can be 
+- Load project libraries from `.mps/libraries.xml` under the project directory when using MPS environment (can be
   disabled via `--no-libraries`).
 - New `--plugin-root` argument. Automatically detect plugins in subdirectories of plugin roots.
 
