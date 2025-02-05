@@ -1,10 +1,13 @@
 package de.itemis.mps.gradle.generate
 
 
+import com.intellij.openapi.util.BuildNumber
 import com.intellij.openapi.util.IconLoader
 import de.itemis.mps.gradle.logging.detectLogging
 import de.itemis.mps.gradle.project.loader.EnvironmentKind
 import de.itemis.mps.gradle.project.loader.ModuleAndModelMatcher
+import de.itemis.mps.gradle.project.loader.forceIndexing
+import de.itemis.mps.gradle.project.loader.hasIndexingBug
 import jetbrains.mps.generator.GenerationOptions
 import jetbrains.mps.generator.GenerationSettingsProvider
 import jetbrains.mps.generator.runtime.TemplateModule
@@ -17,6 +20,7 @@ import jetbrains.mps.make.script.ScriptBuilder
 import jetbrains.mps.messages.IMessage
 import jetbrains.mps.messages.IMessageHandler
 import jetbrains.mps.messages.MessageKind
+import jetbrains.mps.project.MPSProject
 import jetbrains.mps.project.Project
 import jetbrains.mps.smodel.ModelAccessHelper
 import jetbrains.mps.smodel.SLanguageHierarchy
@@ -194,6 +198,13 @@ private fun makeModels(proj: Project, models: List<SModel>): GenerationResult {
 
 fun generateProject(parsed: GenerateArgs, project: Project): GenerationResult {
 
+    // Workaround for https://youtrack.jetbrains.com/issue/MPS-37926/Indices-not-built-properly-in-IdeaEnvironment
+    if (project is MPSProject && shouldForceIndexing(parsed, BuildNumber.currentVersion())) {
+        logger.info("Forcing full indexing to work around MPS-37926. Can be disabled with --force-indexing=never.")
+        forceIndexing(project)
+        logger.info("Full indexing complete")
+    }
+
     val generationSettings = project.getComponent(GenerationSettingsProvider::class.java).generationSettings
     parsed.parallelGenerationThreads.let {
         when {
@@ -234,4 +245,8 @@ fun generateProject(parsed: GenerateArgs, project: Project): GenerationResult {
     }
 
     return makeModels(project, modelsToGenerate)
+}
+
+private fun shouldForceIndexing(args: GenerateArgs, buildNumber: BuildNumber): Boolean {
+    return args.forceIndexing ?: hasIndexingBug(buildNumber)
 }

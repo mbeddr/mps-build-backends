@@ -1,6 +1,7 @@
 package de.itemis.mps.gradle.generate
 
 import com.xenomachina.argparser.ArgParser
+import com.xenomachina.argparser.InvalidArgumentException
 import com.xenomachina.argparser.default
 import de.itemis.mps.gradle.project.loader.Args
 import de.itemis.mps.gradle.project.loader.checkArgument
@@ -24,4 +25,14 @@ class GenerateArgs(parser: ArgParser) : Args(parser) {
         .addValidator {
             checkArgument(!noStrictMode || value == 0) { "strict mode is required for parallel generation" }
         }
+    val forceIndexing by parser.storing(
+        "--force-indexing", help = "whether to force full indexing at startup to work around MPS-37926." +
+                " Supported values: always, never, auto. Default: auto.") {
+        when (this) {
+            "always" -> true
+            "never" -> false
+            "auto" -> null
+            else -> throw InvalidArgumentException("Unsupported value '$this'. Supported values are always, never, auto")
+        }
+    }.default(null)
 }

@@ -16,7 +16,7 @@ usage: execute-generators [-h] [--plugin PLUGIN]... [--macro MACRO]...
                           [--log-level LOG_LEVEL] [--no-libraries] --project PROJECT
                           [--model MODEL]... [--module MODULE]... [--exclude-model EXCLUDE_MODEL]...
                           [--exclude-module EXCLUDE_MODULE]... [--no-strict-mode]
-                          [--parallel-generation-threads THREADS]
+                          [--parallel-generation-threads THREADS] [--force-indexing FORCE_INDEXING]
 
 required arguments:
   --project PROJECT                       project to generate from
@@ -63,6 +63,10 @@ optional arguments:
   --parallel-generation-threads THREADS   Number of threads to use for parallel generation. Value
                                           of 0 means that parallel generation is disabled.
                                           Default: 0
+
+  --force-indexing FORCE_INDEXING         whether to force full indexing at startup to work around
+                                          MPS-37926. Supported values: always, never, auto.
+                                          Default: auto.
 ```
 
 ## Error exit codes
