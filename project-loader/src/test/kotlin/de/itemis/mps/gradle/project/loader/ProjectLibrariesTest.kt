@@ -93,6 +93,32 @@ class ProjectLibrariesTest {
             getLibraries(AllMacros))
     }
 
+    @Test
+    fun projectDirRelative() {
+        val projectDir = "\$PROJECT_DIR$"
+        writeFile(text = """<map>
+            <Library>
+                <option name="name" value="deps" />
+                <option name="path" value="$projectDir/deps" />
+            </Library>
+        </map>""")
+
+        assertEquals(listOf(folder.root.resolve("deps").path), getLibraries())
+    }
+
+    @Test
+    fun projectDir() {
+        val projectDir = "\$PROJECT_DIR$"
+        writeFile(text = """<map>
+            <Library>
+                <option name="name" value="deps" />
+                <option name="path" value="$projectDir" />
+            </Library>
+        </map>""")
+
+        assertEquals(listOf(folder.root.path), getLibraries())
+    }
+
     private fun getLibraries(macros: List<Macro> = emptyList()): List<String> {
         var result: List<String> = emptyList()
         findProjectLibraries(folder.root, macros) { result = it.toList() }

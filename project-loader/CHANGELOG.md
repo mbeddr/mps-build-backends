@@ -7,6 +7,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 2.4.1
+
+### Fixed
+
+- Project libraries with path relative to `$PROJECT_DIR$` are now correctly processed.
+- Found project libraries are now properly logged.
+
 ## 2.4.0
 
 ### Added

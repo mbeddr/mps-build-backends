@@ -5,7 +5,7 @@ import java.io.File
 
 private val logger = detectLogging().getLogger("de.itemis.mps.gradle.project.loader.ProjectLibraries")
 
-internal fun findProjectLibraries(projectLocation: File, macros: List<Macro>, onFound: (Sequence<String>) -> Unit) {
+internal fun findProjectLibraries(projectLocation: File, macros: List<Macro>, onFound: (Collection<String>) -> Unit) {
     val librariesXml = projectLocation.resolve(".mps/libraries.xml")
     if (!librariesXml.exists()) return
 
@@ -14,14 +14,21 @@ internal fun findProjectLibraries(projectLocation: File, macros: List<Macro>, on
     librariesXml.useLines { lines ->
         val libraryPaths = lines
             .mapNotNull { pathRegex.find(it)?.groupValues?.get(1) }
-            .map { expandMacros(macroMap, it) }
+            .map { expandMacros(macroMap, projectLocation, it) }
+            .toList()
 
         logger.info("Found libraries in $librariesXml: $libraryPaths")
         onFound(libraryPaths)
     }
 }
 
-private fun expandMacros(macros: Map<String, String>, input: String): String {
+private fun expandMacros(macros: Map<String, String>, projectLocation: File, input: String): String {
+    val projectDirPrefix = "\$PROJECT_DIR$"
+
+    if (input.startsWith(projectDirPrefix)) {
+        return input.replace(projectDirPrefix, projectLocation.path)
+    }
+
     if (!input.startsWith("\${")) return input
 
     val macroLastChar = input.indexOf('}')
