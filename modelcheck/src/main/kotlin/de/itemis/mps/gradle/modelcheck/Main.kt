@@ -2,8 +2,9 @@ package de.itemis.mps.gradle.modelcheck
 
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.mainBody
+import kotlin.system.exitProcess
 
-fun main(args: Array<String>) = mainBody("modelcheck") {
+fun main(args: Array<String>): Unit = mainBody("modelcheck") {
 
     val parsed = ArgParser(args).parseInto(::ModelCheckArgs)
     logging.configure(parsed.logLevel)
@@ -20,9 +21,9 @@ fun main(args: Array<String>) = mainBody("modelcheck") {
     }
 
     if (hasErrors && !parsed.dontFailOnError) {
-        System.exit(-1)
+        exitProcess(-1)
     }
 
-    System.exit(0)
+    exitProcess(0)
 
 }
