@@ -7,9 +7,9 @@ plugins {
 
 version = "${project.extra["version.backend"]}${computeVersionSuffix()}"
 
-val mpsZip by configurations.creating
+val mpsZip: Configuration by configurations.creating
 
-val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
+val libs: VersionCatalog = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
 val mpsZips = extensions.create("mpsZips", PatternSet::class)
 

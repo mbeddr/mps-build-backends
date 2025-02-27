@@ -1,6 +1,3 @@
-import com.google.common.collect.ImmutableMultimap
-import com.google.common.collect.Multimap
-import com.google.common.collect.Multimaps
 import java.nio.file.Files
 import java.util.*
 
@@ -10,9 +7,9 @@ plugins {
     id("de.itemis.mps.gradle.launcher")
 }
 
-val executeGenerators by configurations.creating
-val modelcheck by configurations.creating
-val execute by configurations.creating
+val executeGenerators: Configuration by configurations.creating
+val modelcheck: Configuration by configurations.creating
+val execute: Configuration by configurations.creating
 
 dependencies {
     executeGenerators(project(":execute-generators"))
@@ -214,10 +211,11 @@ fun String.capitalize() = replaceFirstChar { if (it.isLowerCase()) it.titlecase(
  * Creates and returns the Gradle tasks to perform all the tests with a single MPS version.
  * Also creates any necessary Gradle objects (configurations, dependencies, etc.)
  */
-fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out Task>> {
+fun tasksForMpsVersion(mpsVersion: String): Map<TestKind, List<TaskProvider<out Task>>> {
     val configuration = configurations.create("mps$mpsVersion")
     dependencies.add(configuration.name, "com.jetbrains:mps:$mpsVersion@zip")
 
+    val buildDir = project.layout.buildDirectory.get().asFile
     val mpsHome = File(buildDir, "mps-$mpsVersion")
     val unpackTask = tasks.register("unpackMps$mpsVersion", Sync::class) {
         dependsOn(configuration)
@@ -374,39 +372,37 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
         }
     }
 
-    return ImmutableMultimap.builder<TestKind, TaskProvider<out Task>>()
-        .putAll(TestKind.EXECUTE, executeTasks)
-        .putAll(TestKind.GENERATE, generateTasks)
-        .putAll(TestKind.MODELCHECK, modelcheckTasks)
-        .build()
+    return mapOf(
+        TestKind.EXECUTE to executeTasks,
+        TestKind.GENERATE to generateTasks,
+        TestKind.MODELCHECK to modelcheckTasks,
+    )
 }
 
 data class Key(val kind: TestKind, val mpsVersion: String)
 
-fun buildTestMatrix(): Multimap<Key, TaskProvider<out Task>> {
-    val builder = ImmutableMultimap.builder<Key, TaskProvider<out Task>>()
-
+fun buildTestMatrix(): Map<Key, List<TaskProvider<out Task>>> {
+    val result = mutableMapOf<Key, List<TaskProvider<out Task>>>()
     for (mpsVersion in SUPPORTED_MPS_VERSIONS) {
         val tasksForThisVersion = tasksForMpsVersion(mpsVersion)
-        for (entry in tasksForThisVersion.entries()) {
-            builder.put(Key(entry.key, mpsVersion), entry.value)
+        for (entry in tasksForThisVersion.entries) {
+            result.put(Key(entry.key, mpsVersion), entry.value)
         }
     }
-
-    return builder.build()
+    return result.toMap()
 }
 
 val testMatrix = buildTestMatrix()
 
 tasks.named("check") {
-    dependsOn(testMatrix.values())
+    dependsOn(testMatrix.values.flatten())
 }
 
 for (kind in TestKind.values()) {
     tasks.register("test${kind.name.lowercase().capitalize()}") {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
         description = "Run all '${kind.name.lowercase()}' tests"
-        dependsOn(Multimaps.filterKeys(testMatrix) { it!!.kind == kind }.values())
+        dependsOn(testMatrix.filter { it.key.kind == kind }.values.flatten())
     }
 }
 
@@ -414,6 +410,6 @@ for (mpsVersion in SUPPORTED_MPS_VERSIONS) {
     tasks.register("testMps$mpsVersion") {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
         description = "Run all tests with MPS $mpsVersion"
-        dependsOn(Multimaps.filterKeys(testMatrix) { it!!.mpsVersion == mpsVersion }.values())
+        dependsOn(testMatrix.filter { it.key.mpsVersion == mpsVersion }.values.flatten())
     }
 }
