@@ -1,5 +1,4 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm")
@@ -11,9 +10,10 @@ java {
     withSourcesJar()
 }
 
-kotlin {
-    compilerOptions {
-        jvmTarget = JvmTarget.JVM_11
-        apiVersion = KotlinVersion.KOTLIN_1_6
+tasks.withType<KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = "11"
+        apiVersion = "1.6"
+        allWarningsAsErrors = true
     }
 }
