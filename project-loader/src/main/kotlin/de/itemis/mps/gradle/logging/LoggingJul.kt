@@ -5,7 +5,7 @@ import org.apache.commons.logging.impl.Jdk14Logger
 import java.util.logging.*
 
 internal class LoggingJul : Logging {
-    val logger = Logger.getLogger("de.itemis.mps")
+    val logger: Logger = Logger.getLogger("de.itemis.mps")
 
     override fun getLogger(name: String): Log = Jdk14Logger(name)
 

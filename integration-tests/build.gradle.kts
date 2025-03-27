@@ -10,9 +10,15 @@ plugins {
     id("de.itemis.mps.gradle.launcher")
 }
 
-val executeGenerators by configurations.creating
-val modelcheck by configurations.creating
-val execute by configurations.creating
+buildscript {
+    dependencies {
+        classpath("com.google.guava:guava:33.4.0-jre")
+    }
+}
+
+val executeGenerators: Configuration by configurations.creating
+val modelcheck: Configuration by configurations.creating
+val execute: Configuration by configurations.creating
 
 dependencies {
     executeGenerators(project(":execute-generators"))
@@ -218,6 +224,7 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
     val configuration = configurations.create("mps$mpsVersion")
     dependencies.add(configuration.name, "com.jetbrains:mps:$mpsVersion@zip")
 
+    val buildDir = project.layout.buildDirectory.get().asFile
     val mpsHome = File(buildDir, "mps-$mpsVersion")
     val unpackTask = tasks.register("unpackMps$mpsVersion", Sync::class) {
         dependsOn(configuration)

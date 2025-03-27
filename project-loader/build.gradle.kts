@@ -15,9 +15,10 @@ plugins {
 version = "${project.extra["version.project-loader"]}${computeVersionSuffix()}"
 
 // MPS runtime JARs should be available for compiling code and tests but not propagated to consumers.
-val mpsRuntime by configurations.creating
-val mpsZip by configurations.creating
+val mpsRuntime: Configuration by configurations.creating
+val mpsZip: Configuration by configurations.creating
 
+@Suppress("UnstableApiUsage")
 configurations {
     compileOnly.get().extendsFrom(mpsRuntime)
     testCompileOnly.get().extendsFrom(mpsRuntime)

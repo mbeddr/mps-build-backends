@@ -25,7 +25,6 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testImplementation("org.xmlunit:xmlunit-core:2.6.+")
-
 }
 
 tasks.test {
