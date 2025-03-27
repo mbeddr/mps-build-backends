@@ -4,6 +4,7 @@ import org.gradle.api.Task;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.ProjectLayout;
+import org.gradle.api.internal.provider.PropertyFactory;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
@@ -25,7 +26,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class MpsBackendBuilder {
-    private final ObjectFactory objects;
+    private final PropertyFactory propertyFactory;
     private final JavaToolchainService javaToolchainService;
     private final ProjectLayout layout;
 
@@ -37,8 +38,8 @@ public class MpsBackendBuilder {
     private File temporaryDirectory;
 
     @Inject
-    public MpsBackendBuilder(JavaToolchainService javaToolchainService, ProjectLayout layout, ProviderFactory providers, ObjectFactory objects) {
-        this.objects = objects;
+    public MpsBackendBuilder(JavaToolchainService javaToolchainService, ProjectLayout layout, ProviderFactory providers, ObjectFactory objects, PropertyFactory propertyFactory) {
+        this.propertyFactory = propertyFactory;
         this.javaToolchainService = javaToolchainService;
         this.layout = layout;
 
@@ -89,7 +90,7 @@ public class MpsBackendBuilder {
 
     public MpsBackendBuilder withJavaExecutable(Provider<String> javaExecutable) {
         this.javaLauncher.set(javaExecutable
-                .map(path -> SpecificInstallationToolchainSpec.fromJavaExecutable(objects, path))
+                .map(path -> SpecificInstallationToolchainSpec.fromJavaExecutable(propertyFactory, path))
                 .flatMap(javaToolchainService::launcherFor));
         return this;
     }
