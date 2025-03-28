@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 2.5.0
+
+### Changed
+
+- Upgraded to Kotlin 2.1, keeping compatibility with 1.6.
+
 ## 2.4.1
 
 ### Fixed

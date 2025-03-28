@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) after reaching version 1.0.0. Until then any version may
 contain breaking changes.
 
+# 0.1.0
+
+## Changed
+
+- Upgraded to Kotlin 2.1, keeping compatibility with 1.6. 
+
 # 0.0.5
 
 ## Fixed
