@@ -22,7 +22,7 @@ includeBuild("launcher")
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            library("mps", "com.jetbrains:mps:2022.3.2")
+            library("mps", "com.jetbrains:mps:2024.3.1")
             library("commons-logging", "commons-logging:commons-logging:1.2")
         }
     }

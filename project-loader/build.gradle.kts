@@ -25,7 +25,6 @@ configurations {
 }
 
 dependencies {
-    compileOnly("log4j:log4j:1.2.17")
     compileOnly("commons-logging:commons-logging:1.2")
 
     api("com.xenomachina:kotlin-argparser:2.0.7")
@@ -38,6 +37,7 @@ dependencies {
         include("lib/mps-logging.jar")
         include("lib/platform-api.jar")
         include("lib/util.jar")
+        include("lib/util-8.jar")
         include("lib/app.jar")
     })
 
@@ -78,7 +78,7 @@ tasks {
     }
     test {
         dependsOn(unpackMps)
-        classpath += mpsHome.get().dir("lib").asFileTree.matching { include("*.jar") }
+        classpath += mpsHome.get().dir("lib").asFileTree.matching { include("*.jar", "modules/*.jar") }
         mpsBackendLauncher.forMpsHome(unpackMps.map { it.destinationDir }).configure(this)
     }
 }
