@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 3.0.0
+
+- Support for Log4J logging (in MPS 2021.3 and below) removed.
+- Indexing workaround updated to support 2024.1+ API (`IndexingTestUtil#waitUntilIndexesAreReady`).
+
 ## 2.5.0
 
 ### Changed

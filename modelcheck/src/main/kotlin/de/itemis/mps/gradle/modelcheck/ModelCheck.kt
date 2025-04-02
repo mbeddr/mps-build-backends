@@ -330,9 +330,10 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
     val itemsToCheck = ModelCheckerBuilder.ItemsToCheck()
 
     // Workaround for https://youtrack.jetbrains.com/issue/MPS-37926/Indices-not-built-properly-in-IdeaEnvironment
-    if (project is MPSProject && shouldForceIndexing(args, BuildNumber.currentVersion())) {
-        logger.info("Forcing full indexing to work around MPS-37926. Can be disabled with --force-indexing=never.")
-        forceIndexing(project)
+    val buildNumber = BuildNumber.currentVersion()
+    if (project is MPSProject && shouldForceIndexing(args, buildNumber)) {
+        logger.info("Forcing full indexing. Can be disabled with --force-indexing=never.")
+        forceIndexing(project, buildNumber)
         logger.info("Full indexing complete")
     }
 

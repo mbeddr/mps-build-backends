@@ -65,7 +65,7 @@ public final class de/itemis/mps/gradle/project/loader/EnvironmentKind : java/la
 }
 
 public final class de/itemis/mps/gradle/project/loader/IndexingWorkaroundKt {
-	public static final fun forceIndexing (Ljetbrains/mps/project/MPSProject;)V
+	public static final fun forceIndexing (Ljetbrains/mps/project/MPSProject;Lcom/intellij/openapi/util/BuildNumber;)V
 	public static final fun hasIndexingBug (Lcom/intellij/openapi/util/BuildNumber;)Z
 }
 
