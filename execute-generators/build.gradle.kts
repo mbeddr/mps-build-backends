@@ -11,6 +11,7 @@ mpsZips {
     include("lib/mps-logging.jar")
     include("lib/platform-api.jar")
     include("lib/util.jar")
+    include("lib/util-8.jar")
 
     include("lib/mps-messaging.jar")
     include("lib/app.jar")
