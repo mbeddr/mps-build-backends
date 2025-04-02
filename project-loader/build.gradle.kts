@@ -38,6 +38,7 @@ dependencies {
         include("lib/platform-api.jar")
         include("lib/util.jar")
         include("lib/util-8.jar")
+        include("lib/testFramework.jar")
         include("lib/app.jar")
     })
 

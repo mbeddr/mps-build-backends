@@ -199,9 +199,10 @@ private fun makeModels(proj: Project, models: List<SModel>): GenerationResult {
 fun generateProject(parsed: GenerateArgs, project: Project): GenerationResult {
 
     // Workaround for https://youtrack.jetbrains.com/issue/MPS-37926/Indices-not-built-properly-in-IdeaEnvironment
-    if (project is MPSProject && shouldForceIndexing(parsed, BuildNumber.currentVersion())) {
+    val buildNumber = BuildNumber.currentVersion()
+    if (project is MPSProject && shouldForceIndexing(parsed, buildNumber)) {
         logger.info("Forcing full indexing to work around MPS-37926. Can be disabled with --force-indexing=never.")
-        forceIndexing(project)
+        forceIndexing(project, buildNumber)
         logger.info("Full indexing complete")
     }
 
