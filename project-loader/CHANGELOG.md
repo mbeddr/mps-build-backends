@@ -7,10 +7,22 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 3.0.1
+
+### Fixed
+
+- Indexing workaround no longer triggers `java.lang.NoClassDefFoundError: com/intellij/testFramework/IndexingTestUtil`
+  on older MPS versions.
+
 ## 3.0.0
 
-- Support for Log4J logging (in MPS 2021.3 and below) removed.
+### Added
+
 - Indexing workaround updated to support 2024.1+ API (`IndexingTestUtil#waitUntilIndexesAreReady`).
+
+### Removed
+
+- Support for Log4J logging (in MPS 2021.3 and below).
 
 ## 2.5.0
 

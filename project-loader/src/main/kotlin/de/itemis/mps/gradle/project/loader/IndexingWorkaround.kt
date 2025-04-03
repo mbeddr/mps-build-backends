@@ -5,13 +5,14 @@ import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.project.RootsChangeRescanningInfo
 import com.intellij.openapi.roots.ex.ProjectRootManagerEx
 import com.intellij.openapi.util.BuildNumber
-import com.intellij.testFramework.IndexingTestUtil
+import de.itemis.mps.gradle.project.loader.internal.waitUntilIndexesAreReadyOn241
 import jetbrains.mps.project.MPSProject
 
 /**
  * Indicates whether the given MPS version has the indexing bug.
  */
 public fun hasIndexingBug(buildNumber: BuildNumber): Boolean {
+    println("build number: $buildNumber, baseline version: ${buildNumber.baselineVersion}")
     // For 2023.2 we need to force indexing, for 2024.1 we only wait for indexing to complete using IndexingTestUtils.
     return buildNumber.baselineVersion >= 232
 }
@@ -21,7 +22,7 @@ public fun hasIndexingBug(buildNumber: BuildNumber): Boolean {
  */
 public fun forceIndexing(project: MPSProject, buildNumber: BuildNumber) {
     if (buildNumber.baselineVersion >= 241) {
-        IndexingTestUtil.waitUntilIndexesAreReady(project.project)
+        waitUntilIndexesAreReadyOn241(project)
     } else {
         val application = ApplicationManager.getApplication()
         application.invokeAndWait({
