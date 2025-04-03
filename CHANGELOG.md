@@ -8,6 +8,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## 1.22.0
 
 - Backends are now built against MPS 2024.3.1 but tested with 2022.3 and above.
+- `modelcheck` now runs in EDT (in the IDEA environment) to avoid interference from various UI tasks and periodic
+  updates.
 
 ## 1.21.0
 

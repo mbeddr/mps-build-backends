@@ -1,6 +1,8 @@
 package de.itemis.mps.gradle.modelcheck
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.util.BuildNumber
 import de.itemis.mps.gradle.junit.Failure
 import de.itemis.mps.gradle.junit.Testcase
@@ -22,6 +24,7 @@ import jetbrains.mps.project.Project
 import jetbrains.mps.smodel.ModelAccessBase
 import jetbrains.mps.smodel.SModelStereotype
 import jetbrains.mps.tool.environment.Environment
+import jetbrains.mps.tool.environment.IdeaEnvironment
 import jetbrains.mps.util.CollectConsumer
 import jetbrains.mps.workbench.progress.IdeaPlatformTaskScheduler
 import jetbrains.mps.workbench.progress.SystemBackgroundTaskScheduler
@@ -337,46 +340,59 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
         logger.info("Full indexing complete")
     }
 
-    project.modelAccess.runReadAction {
-        if (args.models.isNotEmpty() || args.excludeModels.isNotEmpty()) {
-            itemsToCheck.models.addAll(
-                project.projectModulesWithGenerators
-                    .filter(moduleAndModelMatcher::isModuleIncluded)
-                    .flatMap { module -> module.models }
-                    .filter(moduleAndModelMatcher::isModelIncluded))
-        } else {
-            itemsToCheck.modules.addAll(
-                project.projectModulesWithGenerators
-                    .filter(moduleAndModelMatcher::isModuleIncluded)
-            )
+    // In the IDEA environment run the model check in EDT to avoid interference from other code that may want to run
+    // a write or read action, such as 'run in smart mode' callbacks triggered by completed indexing, context assistant
+    // updates, etc.
+    val runInEdt = if (environment is IdeaEnvironment) {
+        { r: Runnable ->
+            @Suppress("DEPRECATION") // nonModal() is not available in MPS 2022.3
+            ApplicationManager.getApplication().invokeAndWait(r, ModalityState.NON_MODAL)
         }
+    } else Runnable::run
 
-        val checker = ModelCheckerBuilder(modelExtractor)
-            .also {
-                if (args.parallel) {
-                    it.setParallelTaskScheduler(project)
-                }
+    runInEdt {
+        project.modelAccess.runReadAction {
+            if (args.models.isNotEmpty() || args.excludeModels.isNotEmpty()) {
+                itemsToCheck.models.addAll(
+                    project.projectModulesWithGenerators
+                        .filter(moduleAndModelMatcher::isModuleIncluded)
+                        .flatMap { module -> module.models }
+                        .filter(moduleAndModelMatcher::isModelIncluded))
+            } else {
+                itemsToCheck.modules.addAll(
+                    project.projectModulesWithGenerators
+                        .filter(moduleAndModelMatcher::isModuleIncluded)
+                )
             }
-            .createChecker(checkers)
 
-        checker.check(itemsToCheck, project.repository, errorCollector, EmptyProgressMonitor())
+            val checker = ModelCheckerBuilder(modelExtractor)
+                .also {
+                    if (args.parallel) {
+                        it.setParallelTaskScheduler(project)
+                    }
+                }
+                .createChecker(checkers)
 
-        // We need read access here to resolve the node pointers in the report items
-        errorCollector.result.map { printResult(it, project, args) }
+            checker.check(itemsToCheck, project.repository, errorCollector, EmptyProgressMonitor())
 
-        if (args.xmlFile != null) {
-            val allCheckedModules = itemsToCheck.modules
-            val allCheckedModels = itemsToCheck.modules.flatMap { module ->
-                module.models.filter { !SModelStereotype.isDescriptorModel(it) }
-            }.union(itemsToCheck.models)
-            writeJunitXml(
-                modules = allCheckedModules,
-                models = allCheckedModels,
-                results = errorCollector.result,
-                project = project,
-                warnAsErrors = args.warningAsError,
-                format = args.xmlReportFormat,
-                file = File(args.xmlFile!!))
+            // We need read access here to resolve the node pointers in the report items
+            errorCollector.result.map { printResult(it, project, args) }
+
+            if (args.xmlFile != null) {
+                val allCheckedModules = itemsToCheck.modules
+                val allCheckedModels = itemsToCheck.modules.flatMap { module ->
+                    module.models.filter { !SModelStereotype.isDescriptorModel(it) }
+                }.union(itemsToCheck.models)
+                writeJunitXml(
+                    modules = allCheckedModules,
+                    models = allCheckedModels,
+                    results = errorCollector.result,
+                    project = project,
+                    warnAsErrors = args.warningAsError,
+                    format = args.xmlReportFormat,
+                    file = File(args.xmlFile!!)
+                )
+            }
         }
     }
 
