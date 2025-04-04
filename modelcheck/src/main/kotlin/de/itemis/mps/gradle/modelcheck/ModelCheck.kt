@@ -1,6 +1,7 @@
 package de.itemis.mps.gradle.modelcheck
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper
+import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.util.BuildNumber
@@ -333,11 +334,13 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
     val itemsToCheck = ModelCheckerBuilder.ItemsToCheck()
 
     // Workaround for https://youtrack.jetbrains.com/issue/MPS-37926/Indices-not-built-properly-in-IdeaEnvironment
-    val buildNumber = BuildNumber.currentVersion()
-    if (project is MPSProject && shouldForceIndexing(args, buildNumber)) {
-        logger.info("Forcing full indexing. Can be disabled with --force-indexing=never.")
-        forceIndexing(project, buildNumber)
-        logger.info("Full indexing complete")
+    if (environment is IdeaEnvironment) {
+        val buildNumber = ApplicationInfo.getInstance().build
+        if (shouldForceIndexing(args, buildNumber)) {
+            logger.info("Forcing full indexing. Can be disabled with --force-indexing=never.")
+            forceIndexing(project as MPSProject, buildNumber)
+            logger.info("Full indexing complete")
+        }
     }
 
     // In the IDEA environment run the model check in EDT to avoid interference from other code that may want to run

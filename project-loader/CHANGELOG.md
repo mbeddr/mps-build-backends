@@ -7,6 +7,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 3.0.2
+
+### Fixed
+
+- Use `Application.getInstance().getBuild()` build number for detecting necessary workarounds instead of
+  `BuildNumber.currentVersion()` because the former appears to be more correct.
+
 ## 3.0.1
 
 ### Fixed

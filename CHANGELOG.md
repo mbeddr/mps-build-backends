@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.22.2
+
+- Upgrade to project-loader 3.0.2 to get the latest bug fix.
+
 ## 1.22.1
 
 - `java.lang.NoClassDefFoundError: com/intellij/testFramework/IndexingTestUtil` no longer occurs on older MPS versions.
