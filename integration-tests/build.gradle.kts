@@ -26,7 +26,7 @@ dependencies {
     execute(project(":execute"))
 }
 
-val SUPPORTED_MPS_VERSIONS = arrayOf("2023.2.2", "2024.1.2", "2024.3.1")
+val SUPPORTED_MPS_VERSIONS = arrayOf("2024.1.2", "2024.3.1")
 
 val GENERATION_TESTS = listOf(
     GenerationTest("generateBuildSolution", "generate-build-solution", listOf("--model", "my.build.script"),
