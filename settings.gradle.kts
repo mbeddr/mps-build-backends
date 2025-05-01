@@ -15,6 +15,7 @@ include("modelcheck")
 include("execute")
 include("remigrate")
 
+include("integration-tests-old")
 include("integration-tests")
 
 includeBuild("launcher")
