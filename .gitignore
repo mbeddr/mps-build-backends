@@ -10,3 +10,6 @@ build/
 # MPS stuff
 .mps-caches/
 workspace.xml
+
+# Kotlin
+.kotlin/
