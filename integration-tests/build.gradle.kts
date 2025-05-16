@@ -141,47 +141,37 @@ val EXECUTE_TESTS = run {
  * @param args additional arguments to the command
  */
 data class GenerationTest(val name: String, val project: String, val args: List<Any>,
-                          val expectation: GenerationTestExpectation = GenerationTestExpectation.Success) {
-    val projectDir = file("projects/$project")
-}
+                          val expectation: GenerationTestExpectation = GenerationTestExpectation.Success)
 
 interface GenerationTestExpectation {
-    fun verify(testCase: GenerationTest, exitCode: Int): String?
-    fun prepare(testCase: GenerationTest) {}
+    fun verify(projectDir: File, exitCode: Int): String?
 
     object Success : GenerationTestExpectation {
-        override fun verify(testCase: GenerationTest, exitCode: Int): String? =
+        override fun verify(projectDir: File, exitCode: Int): String? =
             if (exitCode == 0) null else "generation failed unexpectedly (exit value $exitCode)"
     }
 
     object Failure : GenerationTestExpectation {
-        override fun verify(testCase: GenerationTest, exitCode: Int): String? =
+        override fun verify(projectDir: File, exitCode: Int): String? =
             if (exitCode == 255) null else "generation did not fail unexpectedly (exit value $exitCode)"
     }
 
     object Empty : GenerationTestExpectation {
-        override fun verify(testCase: GenerationTest, exitCode: Int): String? =
+        override fun verify(projectDir: File, exitCode: Int): String? =
             if (exitCode == 254) null else "generation was not empty unexpectedly (exit value $exitCode)"
     }
 
     data class SuccessWithFiles(val files: Set<File>) : GenerationTestExpectation {
         constructor(vararg fileNames: String) : this(fileNames.map { File(it) }.toSet())
 
-        override fun verify(testCase: GenerationTest, exitCode: Int): String? {
+        override fun verify(projectDir: File, exitCode: Int): String? {
             if (exitCode != 0) return "generation failed unexpectedly (actual exit value $exitCode)"
 
-            val missingFiles = files.filter { !testCase.projectDir.resolve(it).exists() }
+            val missingFiles = files.filter { !projectDir.resolve(it).exists() }
 
             if (missingFiles.isEmpty()) return null
 
-            return missingFiles.joinToString(prefix = "the following files were not generated in ${testCase.projectDir}: ")
-        }
-
-        override fun prepare(testCase: GenerationTest) {
-            files.forEach {
-                val absolutePath = testCase.projectDir.resolve(it).toPath()
-                if (Files.exists(absolutePath)) Files.delete(absolutePath)
-            }
+            return missingFiles.joinToString(prefix = "the following files were not generated in ${projectDir}: ")
         }
     }
 }
@@ -193,9 +183,7 @@ interface GenerationTestExpectation {
  * @param project project folder name (in `projects/`)
  * @param args additional arguments to the command
  */
-data class ModelCheckTest(val name: String, val project: String, val args: List<Any>, val expectSuccess: Boolean = true) {
-    val projectDir = file("projects/$project")
-}
+data class ModelCheckTest(val name: String, val project: String, val args: List<Any>, val expectSuccess: Boolean = true)
 
 /**
  * Describes a project to execute code in generated classes with the supported MPS versions
@@ -204,9 +192,7 @@ data class ModelCheckTest(val name: String, val project: String, val args: List<
  * @param project project folder name (in `projects/`)
  * @param args additional arguments to the command
  */
-data class ExecuteTest(val name: String, val project: String, val args: List<Any>, val expectSuccess: Boolean = true) {
-    val projectDir = file("projects/$project")
-}
+data class ExecuteTest(val name: String, val project: String, val args: List<Any>, val expectSuccess: Boolean = true)
 
 enum class TestKind {
     GENERATE,
@@ -215,6 +201,16 @@ enum class TestKind {
 }
 
 fun String.capitalize() = replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
+
+fun copyTestProjectTo(project: String, copiedProjectDir: File) {
+    if (copiedProjectDir.exists()) {
+        copiedProjectDir.deleteRecursively()
+    }
+    Files.createDirectories(copiedProjectDir.toPath())
+
+    val originalProjectDir = layout.settingsDirectory.dir("test-projects/$project").asFile
+    originalProjectDir.copyRecursively(copiedProjectDir)
+}
 
 /**
  * Creates and returns the Gradle tasks to perform all the tests with a single MPS version.
@@ -248,44 +244,35 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
         args("--project", projectDir)
     }
 
-    fun cleanBeforeGeneration(projectDir: File) {
-        println("Deleting generated sources in $projectDir")
-        delete(fileTree(projectDir) {
-            include("**/source_gen/**")
-            include("**/source_gen.caches/**")
-            include("**/classes_gen/**")
-        })
-
-        println("Deleting MPS caches in ${mpsHome}/system")
-        delete(fileTree(mpsHome) { include("system/**") })
-    }
-
     fun JavaExec.configureGenerateTask(projectDir: File) {
-        configureGenerateTaskForSpec(projectDir, this.temporaryDir)
+        val mpsTmpDir = this.temporaryDir.resolve("mps-tmp")
+        Files.createDirectories(mpsTmpDir.toPath())
+
+        configureGenerateTaskForSpec(projectDir, mpsTmpDir)
         dependsOn(unpackTask)
-        doFirst {
-            cleanBeforeGeneration(projectDir)
-        }
     }
 
     val generateTasks = GENERATION_TESTS.map { testCase ->
         tasks.register("generate${testCase.name.capitalize()}WithMps$mpsVersion", JavaExec::class) {
             dependsOn(executeGenerators)
-            configureGenerateTask(testCase.projectDir)
+            val projectDir = temporaryDir.resolve("project")
+
+            configureGenerateTask(projectDir)
 
             group = LifecycleBasePlugin.VERIFICATION_GROUP
 
             args(testCase.args)
 
             doFirst {
-                testCase.expectation.prepare(testCase)
+                copyTestProjectTo(testCase.project, projectDir)
             }
 
             // Check exit value manually
             isIgnoreExitValue = true
+
             doLast {
                 val actualExitValue = executionResult.get().exitValue
-                val message = testCase.expectation.verify(testCase, actualExitValue)
+                val message = testCase.expectation.verify(projectDir, actualExitValue)
                 if (message != null) {
                     throw GradleException("Generation test ${testCase.name} failed: $message")
                 }
@@ -296,9 +283,15 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
     val modelcheckTasks = MODELCHECK_TESTS.map { testCase ->
         tasks.register("modelcheckTest${testCase.name.capitalize()}WithMps$mpsVersion", JavaExec::class) {
             dependsOn(modelcheck)
+            val projectDir = temporaryDir.resolve("project")
+            doFirst {
+                copyTestProjectTo(testCase.project, projectDir)
+            }
+
             mpsBackendLauncher.forMpsHome(mpsHome)
                 .withMpsVersion(mpsVersion)
                 .withJetBrainsJvm()
+                .withTemporaryDirectory(temporaryDir.resolve("mps-tmp").also { Files.createDirectories(it.toPath()) })
                 .configure(this)
 
             dependsOn(unpackTask)
@@ -312,7 +305,7 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
 
             mainClass.set("de.itemis.mps.gradle.modelcheck.MainKt")
 
-            args("--project", testCase.projectDir)
+            args("--project", projectDir)
             args("--result-file", file("$buildDir/TEST-${testCase.name}-mps-${mpsVersion}-results.xml"))
 
             args(testCase.args)
@@ -338,11 +331,16 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
             dependsOn(execute, executeGenerators)
 
             doLast {
-                cleanBeforeGeneration(testCase.projectDir)
+                val projectDir = temporaryDir.resolve("project")
+                copyTestProjectTo(testCase.project, projectDir)
 
                 val generationResult = javaexec {
-                    configureGenerateTaskForSpec(testCase.projectDir, temporaryDir)
+                    val mpsTmpDir = this@register.temporaryDir.resolve("mps-tmp")
+                    Files.createDirectories(mpsTmpDir.toPath())
+
+                    configureGenerateTaskForSpec(projectDir, mpsTmpDir)
                 }
+
                 if (generationResult.exitValue != 0) {
                     throw GradleException("Generation failed with exit code ${generationResult.exitValue}")
                 }
@@ -362,7 +360,7 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
 
                     mainClass.set("de.itemis.mps.gradle.execute.MainKt")
 
-                    args("--project", testCase.projectDir)
+                    args("--project", projectDir)
                     args(testCase.args)
 
                     isIgnoreExitValue = true
