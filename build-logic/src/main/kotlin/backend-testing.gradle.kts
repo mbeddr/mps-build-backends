@@ -39,3 +39,22 @@ val integrationTest by tasks.registering {
 tasks.check {
     dependsOn(integrationTest)
 }
+
+// Save space (assuming that all JavaExec tasks are integration tests).
+tasks.withType(JavaExec::class.java).configureEach {
+    doLast {
+        if (!project.hasProperty("keepMpsDirs")) {
+            val systemPath = systemProperties["idea.system.path"]?.toString()
+            if (systemPath != null && systemPath.startsWith(temporaryDir.toString())) {
+                logger.info("Deleting MPS system directory $systemPath")
+                File(systemPath).deleteRecursively()
+            }
+
+            val configPath = systemProperties["idea.config.path"]?.toString()
+            if (configPath != null && configPath.startsWith(temporaryDir.toString())) {
+                logger.info("Deleting MPS config directory $configPath")
+                File(configPath).deleteRecursively()
+            }
+        }
+    }
+}
