@@ -1,3 +1,4 @@
+import com.specificlanguages.mps.ArtifactTransforms
 import de.itemis.mps.buildbackends.computeVersionSuffix
 
 buildscript {
@@ -10,6 +11,7 @@ plugins {
     id("kotlin-conventions")
     id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.13.2"
     id("de.itemis.mps.gradle.launcher")
+    id("com.specificlanguages.mps.artifact-transforms")
 }
 
 version = "${project.extra["version.project-loader"]}${computeVersionSuffix()}"
@@ -71,15 +73,9 @@ publishing {
 }
 
 tasks {
-    val mpsHome = layout.buildDirectory.dir("mps")
-    val unpackMps by registering(Sync::class) {
-        dependsOn(mpsZip)
-        from({ mpsZip.resolve().map(project::zipTree) })
-        into(mpsHome)
-    }
+    val mpsHome = ArtifactTransforms.getMpsRoot(mpsZip)
     test {
-        dependsOn(unpackMps)
-        classpath += mpsHome.get().dir("lib").asFileTree.matching { include("*.jar", "modules/*.jar") }
-        mpsBackendLauncher.forMpsHome(unpackMps.map { it.destinationDir }).configure(this)
+        classpath += fileTree(mpsHome) { include("lib/*.jar", "lib/modules/*.jar") }
+        mpsBackendLauncher.forMpsHome(mpsHome).configure(this)
     }
 }
