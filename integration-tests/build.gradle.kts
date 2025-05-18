@@ -1,6 +1,7 @@
 import com.google.common.collect.ImmutableMultimap
 import com.google.common.collect.Multimap
 import com.google.common.collect.Multimaps
+import de.itemis.mps.buildbackends.MpsPlatform
 import java.nio.file.Files
 import java.util.*
 
@@ -8,6 +9,7 @@ plugins {
     base
     id("base-conventions")
     id("de.itemis.mps.gradle.launcher")
+    id("backend-testing")
 }
 
 buildscript {
@@ -25,8 +27,6 @@ dependencies {
     modelcheck(project(":modelcheck"))
     execute(project(":execute"))
 }
-
-val SUPPORTED_MPS_VERSIONS = arrayOf("2022.3.3", "2023.2.2", "2024.1.2", "2024.3.1")
 
 val GENERATION_TESTS = listOf(
     GenerationTest("generateBuildSolution", "generate-build-solution", listOf("--model", "my.build.script"),
@@ -216,25 +216,16 @@ fun copyTestProjectTo(project: String, copiedProjectDir: File) {
  * Creates and returns the Gradle tasks to perform all the tests with a single MPS version.
  * Also creates any necessary Gradle objects (configurations, dependencies, etc.)
  */
-fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out Task>> {
-    val configuration = configurations.create("mps$mpsVersion")
-    dependencies.add(configuration.name, "com.jetbrains:mps:$mpsVersion@zip")
-
+fun tasksForMpsPlatform(mpsPlatform: MpsPlatform): Multimap<TestKind, TaskProvider<out Task>> {
     val buildDir = project.layout.buildDirectory.get().asFile
-    val mpsHome = File(buildDir, "mps-$mpsVersion")
-    val unpackTask = tasks.register("unpackMps$mpsVersion", Sync::class) {
-        dependsOn(configuration)
-        from({ configuration.resolve().map(project::zipTree) })
-        into(mpsHome)
-    }
 
     fun JavaExecSpec.configureGenerateTaskForSpec(projectDir: File, temporaryDir: File) {
-        mpsBackendLauncher.forMpsHome(mpsHome)
-            .withMpsVersion(mpsVersion)
+        mpsBackendLauncher.forMpsHome(mpsPlatform.mpsHome)
+            .withMpsVersion(mpsPlatform.mpsVersion)
             .withJetBrainsJvm()
             .withTemporaryDirectory(temporaryDir)
             .configure(this)
-        classpath(fileTree(mpsHome) {
+        classpath(fileTree(mpsPlatform.mpsHome) {
             include("lib/**/*.jar")
         })
         classpath(executeGenerators)
@@ -249,11 +240,10 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
         Files.createDirectories(mpsTmpDir.toPath())
 
         configureGenerateTaskForSpec(projectDir, mpsTmpDir)
-        dependsOn(unpackTask)
     }
 
     val generateTasks = GENERATION_TESTS.map { testCase ->
-        tasks.register("generate${testCase.name.capitalize()}WithMps$mpsVersion", JavaExec::class) {
+        tasks.register("generate${testCase.name.capitalize()}WithMps${mpsPlatform.mpsVersion}", JavaExec::class) {
             dependsOn(executeGenerators)
             val projectDir = temporaryDir.resolve("project")
 
@@ -281,22 +271,21 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
     }
 
     val modelcheckTasks = MODELCHECK_TESTS.map { testCase ->
-        tasks.register("modelcheckTest${testCase.name.capitalize()}WithMps$mpsVersion", JavaExec::class) {
+        tasks.register("modelcheckTest${testCase.name.capitalize()}WithMps${mpsPlatform.mpsVersion}", JavaExec::class) {
             dependsOn(modelcheck)
             val projectDir = temporaryDir.resolve("project")
             doFirst {
                 copyTestProjectTo(testCase.project, projectDir)
             }
 
-            mpsBackendLauncher.forMpsHome(mpsHome)
-                .withMpsVersion(mpsVersion)
+            mpsBackendLauncher.forMpsHome(mpsPlatform.mpsHome)
+                .withMpsVersion(mpsPlatform.mpsVersion)
                 .withJetBrainsJvm()
                 .withTemporaryDirectory(temporaryDir.resolve("mps-tmp").also { Files.createDirectories(it.toPath()) })
                 .configure(this)
 
-            dependsOn(unpackTask)
             group = LifecycleBasePlugin.VERIFICATION_GROUP
-            classpath(fileTree(mpsHome) {
+            classpath(fileTree(mpsPlatform.mpsHome) {
                 include("lib/**/*.jar")
                 // modelcheck uses HttpSupportUtil#getURL()
                 include("plugins/mps-httpsupport/**/*.jar")
@@ -306,7 +295,7 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
             mainClass.set("de.itemis.mps.gradle.modelcheck.MainKt")
 
             args("--project", projectDir)
-            args("--result-file", file("$buildDir/TEST-${testCase.name}-mps-${mpsVersion}-results.xml"))
+            args("--result-file", file("$buildDir/TEST-${testCase.name}-mps-${mpsPlatform.mpsVersion}-results.xml"))
 
             args(testCase.args)
 
@@ -326,8 +315,7 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
     }
 
     val executeTasks: List<TaskProvider<out Task>> = EXECUTE_TESTS.map { testCase ->
-        tasks.register("executeTest${testCase.name.capitalize()}WithMps$mpsVersion") {
-            dependsOn(unpackTask)
+        tasks.register("executeTest${testCase.name.capitalize()}WithMps${mpsPlatform.mpsVersion}") {
             dependsOn(execute, executeGenerators)
 
             doLast {
@@ -346,14 +334,14 @@ fun tasksForMpsVersion(mpsVersion: String): Multimap<TestKind, TaskProvider<out 
                 }
 
                 val executionResult = javaexec {
-                    mpsBackendLauncher.forMpsHome(mpsHome)
-                        .withMpsVersion(mpsVersion)
+                    mpsBackendLauncher.forMpsHome(mpsPlatform.mpsHome)
+                        .withMpsVersion(mpsPlatform.mpsVersion)
                         .withJetBrainsJvm()
                         .withTemporaryDirectory(temporaryDir)
                         .configure(this)
 
                     group = LifecycleBasePlugin.VERIFICATION_GROUP
-                    classpath(fileTree(mpsHome) {
+                    classpath(fileTree(mpsPlatform.mpsHome) {
                         include("lib/**/*.jar")
                     })
                     classpath(execute)
@@ -391,10 +379,10 @@ data class Key(val kind: TestKind, val mpsVersion: String)
 fun buildTestMatrix(): Multimap<Key, TaskProvider<out Task>> {
     val builder = ImmutableMultimap.builder<Key, TaskProvider<out Task>>()
 
-    for (mpsVersion in SUPPORTED_MPS_VERSIONS) {
-        val tasksForThisVersion = tasksForMpsVersion(mpsVersion)
-        for (entry in tasksForThisVersion.entries()) {
-            builder.put(Key(entry.key, mpsVersion), entry.value)
+    for (mpsPlatform in backendTesting.mpsPlatforms) {
+        val tasksForThisPlatform = tasksForMpsPlatform(mpsPlatform)
+        for (entry in tasksForThisPlatform.entries()) {
+            builder.put(Key(entry.key, mpsPlatform.mpsVersion), entry.value)
         }
     }
 
@@ -415,10 +403,8 @@ for (kind in TestKind.values()) {
     }
 }
 
-for (mpsVersion in SUPPORTED_MPS_VERSIONS) {
-    tasks.register("testMps$mpsVersion") {
-        group = LifecycleBasePlugin.VERIFICATION_GROUP
-        description = "Run all tests with MPS $mpsVersion"
-        dependsOn(Multimaps.filterKeys(testMatrix) { it!!.mpsVersion == mpsVersion }.values())
+for (mpsPlatform in backendTesting.mpsPlatforms) {
+    mpsPlatform.testTask {
+        dependsOn(Multimaps.filterKeys(testMatrix) { it!!.mpsVersion == mpsPlatform.mpsVersion }.values())
     }
 }
