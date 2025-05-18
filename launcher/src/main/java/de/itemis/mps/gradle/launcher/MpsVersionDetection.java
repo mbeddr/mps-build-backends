@@ -39,6 +39,12 @@ public class MpsVersionDetection {
     }
 
     private static String buildNumberToVersion(String buildNumber) {
-        return buildNumber.replaceFirst("^(?:.*-)?(\\d{2})(\\d)\\..*", "20$1.$2");
+        String buildNumberWithoutPrefix = buildNumber.replaceFirst("^\\p{Alpha}+-", "");
+        if (buildNumberWithoutPrefix.compareTo("251.23774.10000") >= 0 && buildNumberWithoutPrefix.compareTo("252") < 0) {
+            // 251.23774.10000 and above are pre-releases of 2025.2
+            return "2025.2";
+        }
+
+        return buildNumberWithoutPrefix.replaceFirst("^(\\d{2})(\\d)\\..*", "20$1.$2");
     }
 }

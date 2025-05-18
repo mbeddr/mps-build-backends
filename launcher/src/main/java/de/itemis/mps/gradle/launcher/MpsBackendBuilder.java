@@ -49,7 +49,20 @@ public class MpsBackendBuilder {
         Provider<JavaLauncher> javaLauncherConvention = javaToolchainService.launcherFor(spec -> {
             spec.getVendor().set(jvmVendorSpec);
             spec.getLanguageVersion().set(
-                    mpsVersion.map(v -> JavaLanguageVersion.of(v.compareTo("2022") < 0 ? 11 : 17)));
+                    mpsVersion.map(v -> {
+                            final int version;
+                            if (v.compareTo("2025") >= 0) {
+                                // 2025.1 and above run on Java 21
+                                version = 21;
+                            } else if (v.compareTo("2022") >= 0) {
+                                // 2022.1 and above run on Java 17
+                                version = 17;
+                            } else {
+                                // Previous versions used Java 11
+                                version = 11;
+                            }
+                            return JavaLanguageVersion.of(version);
+                    }));
         });
         javaLauncher = objects.property(JavaLauncher.class).convention(javaLauncherConvention);
     }
@@ -144,12 +157,18 @@ public class MpsBackendBuilder {
             @Override
             public Iterable<String> asArguments() {
                 ArrayList<String> result = new ArrayList<>();
-                if (mpsVersion.get().compareTo("2023.3") >= 0) {
+                final String mpsVersionValue = mpsVersion.get();
+
+                if (mpsVersionValue.compareTo("2025.2") >= 0) {
+                    result.add("-Didea.platform.prefix=MPS");
+                }
+                if (mpsVersionValue.compareTo("2023.3") >= 0) {
                     result.add("-Dintellij.platform.load.app.info.from.resources=true");
                 }
-                if (mpsVersion.get().compareTo("2022.3") >= 0) {
+                if (mpsVersionValue.compareTo("2022.3") >= 0) {
                     result.add("-Djna.boot.library.path=" + mpsHome.get().file("lib/jna/" + System.getProperty("os.arch")).getAsFile());
                 }
+
                 return result;
             }
         });
@@ -195,7 +214,8 @@ public class MpsBackendBuilder {
                 "java.desktop/sun.lwawt.macosx",
                 "java.desktop/com.apple.laf",
                 "java.desktop/com.apple.eawt",
-                "java.desktop/com.apple.eawt.event"
+                "java.desktop/com.apple.eawt.event",
+                "java.management/sun.management"
         };
 
         for (String module : modules) {
