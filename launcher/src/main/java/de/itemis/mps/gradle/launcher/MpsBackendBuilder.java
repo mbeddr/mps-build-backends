@@ -23,6 +23,7 @@ import org.gradle.process.JavaForkOptions;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 public class MpsBackendBuilder {
@@ -124,6 +125,7 @@ public class MpsBackendBuilder {
 
     public void configure(JavaForkOptions options) {
         configureJavaExecutableOrLauncher(options);
+        configureCommonProperties(options);
         configureVersionSpecificProperties(options);
         configureOpens(options);
         configureWorkspace(options);
@@ -148,6 +150,10 @@ public class MpsBackendBuilder {
         } else {
             options.setExecutable(new LazyToString(javaLauncher.map(l -> l.getExecutablePath().toString())));
         }
+    }
+
+    private void configureCommonProperties(JavaForkOptions options) {
+        options.systemProperty("idea.max.intellisense.filesize", "100000");
     }
 
     private void configureVersionSpecificProperties(JavaForkOptions options) {
