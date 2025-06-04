@@ -29,6 +29,20 @@ public class MpsVersionDetectionTest {
     }
 
     @Test
+    public void version251(@TempDir File tempDir) throws IOException {
+        final Project project = ProjectBuilder.builder().withProjectDir(tempDir).build();
+
+        File mpsDir = new File(tempDir, "build/mps");
+        File buildProperties = new File(mpsDir, "build.properties");
+
+        FileUtils.writeStringToFile(buildProperties, "mps.build.number=MPS-251.23774.541\n",
+                StandardCharsets.ISO_8859_1);
+
+        assertEquals("2025.1", MpsVersionDetection.fromMpsHome(project.getLayout(), project.getProviders(),
+                project.provider(() -> mpsDir)).get());
+    }
+
+    @Test
     public void prereleaseOf252(@TempDir File tempDir) throws IOException {
         final Project project = ProjectBuilder.builder().withProjectDir(tempDir).build();
 

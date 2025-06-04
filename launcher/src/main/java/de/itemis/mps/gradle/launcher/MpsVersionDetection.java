@@ -34,17 +34,34 @@ public class MpsVersionDetection {
                 throw new GradleException("Could not read mps.build.number property from file " + buildPropertiesFile.getAsFile());
             }
 
-            return buildNumberToVersion(buildNumber);
+            String buildNumberWithoutPrefix = buildNumber.replaceFirst("^\\p{Alpha}+-", "");
+            return buildNumberToVersion(buildNumberWithoutPrefix);
         });
     }
 
     private static String buildNumberToVersion(String buildNumber) {
-        String buildNumberWithoutPrefix = buildNumber.replaceFirst("^\\p{Alpha}+-", "");
-        if (buildNumberWithoutPrefix.compareTo("251.23774.10000") >= 0 && buildNumberWithoutPrefix.compareTo("252") < 0) {
-            // 251.23774.10000 and above are pre-releases of 2025.2
-            return "2025.2";
+        if (!Character.isDigit(buildNumber.charAt(0))) {
+            throw new IllegalArgumentException("build number must start with a digit");
         }
 
-        return buildNumberWithoutPrefix.replaceFirst("^(\\d{2})(\\d)\\..*", "20$1.$2");
+        if (buildNumber.startsWith("251.23774.")) {
+            // 251.23774.10000 and above are actually pre-releases of 2025.2
+            String suffix = buildNumber.substring("251.23774.".length());
+            int suffixAsInt;
+            try {
+                suffixAsInt = Integer.parseInt(suffix);
+            } catch (NumberFormatException nfe) {
+                // Something unknown in the number, treat it as 2025.1
+                return "2025.1";
+            }
+
+            if (suffixAsInt >= 10000) {
+                return "2025.2";
+            } else {
+                return "2025.1";
+            }
+        }
+
+        return buildNumber.replaceFirst("^(\\d{2})(\\d)\\..*", "20$1.$2");
     }
 }
