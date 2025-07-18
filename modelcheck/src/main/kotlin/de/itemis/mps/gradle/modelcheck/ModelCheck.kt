@@ -1,11 +1,11 @@
 package de.itemis.mps.gradle.modelcheck
 
-import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.util.BuildNumber
 import de.itemis.mps.gradle.junit.Failure
+import de.itemis.mps.gradle.junit.JUnitXmlSerializer
 import de.itemis.mps.gradle.junit.Testcase
 import de.itemis.mps.gradle.junit.Testsuite
 import de.itemis.mps.gradle.junit.Testsuites
@@ -36,7 +36,6 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.min
-import kotlin.test.fail
 
 
 val logging = detectLogging()
@@ -136,64 +135,69 @@ fun writeJunitXml(modules: Iterable<SModule>,
 
     val modelsToReport = models.union(errorsPerModel.keys)
 
-    val xmlMapper = XmlMapper()
+    val value: Any =
+        @Suppress("DEPRECATION")
+        when (format) {
+            ReportFormat.ONE_TEST_PER_MODEL -> {
+                val message =
+                    "The option `--result-format model` is deprecated as it doesn't report module level errors, " +
+                            "please use `--result-format module-and-model` instead."
+                printError(message)
+                System.err.println(message)
 
-    @Suppress("DEPRECATION")
-    when (format) {
-        ReportFormat.ONE_TEST_PER_MODEL -> {
-            val message = "The option `--result-format model` is deprecated as it doesn't report module level errors, " +
-                    "please use `--result-format module-and-model` instead."
-            printError(message)
-            System.err.println(message)
-
-            val testsuite = Testsuite(name = "model checking",
+                Testsuite(
+                    name = "model checking",
                     failures = errorsPerModel.values.sumOf { it.size },
                     testcases = oneTestCasePerModel(modelsToReport, errorsPerModel, project),
                     tests = modelsToReport.count(),
-                    timestamp = getCurrentTimeStamp())
-            xmlMapper.writeValue(file, testsuite)
-        }
-
-        ReportFormat.ONE_TEST_PER_MODULE_AND_MODEL -> {
-            val errorsPerModule = allErrors
-                .mapNotNull { error ->
-                    val module = error.path.asModule(project)
-                    module?.to(error)
-                }
-                .groupBy({ it.first }, { it.second })
-
-            val modulesToReport = modules.union(errorsPerModule.keys)
-
-            val moduleTestcases = oneTestCasePerModule(modulesToReport, errorsPerModule, project)
-            val modelTestcases = oneTestCasePerModel(modelsToReport, errorsPerModel, project)
-            val testcases = moduleTestcases + modelTestcases
-            val testsuite = Testsuite(name = "model checking",
-                failures = allErrors.size,
-                testcases = testcases,
-                tests = modulesToReport.count() + modelsToReport.count(),
-                timestamp = getCurrentTimeStamp())
-            xmlMapper.writeValue(file, testsuite)
-        }
-
-        ReportFormat.ONE_TEST_PER_FAILED_MESSAGE -> {
-            val testsuits = modelsToReport.mapIndexed { i: Int, mdl: SModel ->
-                val errorsInModel = errorsPerModel[mdl] ?: emptyList()
-                val effectiveErrorsInModel = errorsInModel.map { item -> oneTestCasePerMessage(item, mdl, project) }
-                    // some issues are reported multiple times per node for some reason -> filter out such issues
-                    .distinctBy { "${it.classname}.${it.name}" }
-                    // some build servers doesn't process/group tests per package/class -> provide default sort order
-                    .sortedBy { it.classname }
-                Testsuite(name = mdl.name.simpleName,
-                    pkg = mdl.name.namespace,
-                    failures = effectiveErrorsInModel.size,
-                    id = i,
-                    tests = effectiveErrorsInModel.size,
                     timestamp = getCurrentTimeStamp(),
-                    testcases = effectiveErrorsInModel)
+                )
             }
-            xmlMapper.writeValue(file, Testsuites(testsuits))
+
+            ReportFormat.ONE_TEST_PER_MODULE_AND_MODEL -> {
+                val errorsPerModule = allErrors
+                    .mapNotNull { error ->
+                        val module = error.path.asModule(project)
+                        module?.to(error)
+                    }
+                    .groupBy({ it.first }, { it.second })
+
+                val modulesToReport = modules.union(errorsPerModule.keys)
+
+                val moduleTestcases = oneTestCasePerModule(modulesToReport, errorsPerModule, project)
+                val modelTestcases = oneTestCasePerModel(modelsToReport, errorsPerModel, project)
+                val testcases = moduleTestcases + modelTestcases
+
+                Testsuite(
+                    name = "model checking",
+                    failures = allErrors.size,
+                    testcases = testcases,
+                    tests = modulesToReport.count() + modelsToReport.count(),
+                    timestamp = getCurrentTimeStamp()
+                )
+            }
+
+            ReportFormat.ONE_TEST_PER_FAILED_MESSAGE -> {
+                val testsuites = modelsToReport.mapIndexed { i: Int, mdl: SModel ->
+                    val errorsInModel = errorsPerModel[mdl] ?: emptyList()
+                    val effectiveErrorsInModel = errorsInModel.map { item -> oneTestCasePerMessage(item, mdl, project) }
+                        // some issues are reported multiple times per node for some reason -> filter out such issues
+                        .distinctBy { "${it.classname}.${it.name}" }
+                        // some build servers doesn't process/group tests per package/class -> provide default sort order
+                        .sortedBy { it.classname }
+                    Testsuite(name = mdl.name.simpleName,
+                        pkg = mdl.name.namespace,
+                        failures = effectiveErrorsInModel.size,
+                        id = i,
+                        tests = effectiveErrorsInModel.size,
+                        timestamp = getCurrentTimeStamp(),
+                        testcases = effectiveErrorsInModel)
+                }
+                Testsuites(testsuites)
+            }
         }
-    }
+
+    file.writeBytes(JUnitXmlSerializer.documentToByteArray(JUnitXmlSerializer.toDocument(value)))
 }
 
 private fun oneTestCasePerMessage(item: IssueKindReportItem, model: SModel, project: Project): Testcase {
@@ -221,7 +225,7 @@ private fun oneTestCasePerMessage(item: IssueKindReportItem, model: SModel, proj
                 time = 0
             )
         }
-        else -> fail("unexpected issue kind")
+        else -> throw IllegalArgumentException("unexpected issue kind")
     }
 }
 
@@ -240,7 +244,7 @@ private fun oneTestCasePerModel(models: Iterable<SModel>, errorsPerModel: Map<SM
                         val node = path.resolve(project.repository)
                         appendLine(" ${item.message} [${node.url}]")
                     }
-                    else -> fail("unexpected issue kind")
+                    else -> throw IllegalArgumentException("unexpected issue kind")
                 }
             }
         }
@@ -266,7 +270,7 @@ private fun oneTestCasePerModule(modules: Iterable<SModule>, errorsPerModule: Ma
                         val module = path.resolve(project.repository)!!
                         appendLine(" ${item.message} [${module.moduleName}]")
                     }
-                    else -> fail("unexpected issue kind")
+                    else -> throw IllegalArgumentException("unexpected issue kind")
                 }
             }
         }
@@ -285,10 +289,10 @@ private fun oneTestCasePerModule(modules: Iterable<SModule>, errorsPerModule: Ma
 private fun ModelCheckerBuilder.setParallelTaskScheduler(project: Project) {
     try {
         setParallelTaskSchedulerV3(project)
-    } catch (e: LinkageError) {
+    } catch (_: LinkageError) {
         try {
             setParallelTaskSchedulerV2(project)
-        } catch (e: LinkageError) {
+        } catch (_: LinkageError) {
             try {
                 setParallelTaskSchedulerV1(project)
             } catch (e: LinkageError) {
@@ -319,7 +323,7 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
         logger.info(checkers.joinToString(prefix = "Found the following checkers in CheckerRegistry: "))
     }
 
-    // We don't use ModelCheckerIssueFinder because it has strange dependency on the ModelCheckerSettings which we
+    // We don't use ModelCheckerIssueFinder because it has a strange dependency on ModelCheckerSettings which we
     // want to avoid when running in headless mode
     val errorCollector = CollectConsumer<IssueKindReportItem>()
 

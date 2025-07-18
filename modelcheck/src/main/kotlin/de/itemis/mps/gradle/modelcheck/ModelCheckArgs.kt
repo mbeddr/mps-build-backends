@@ -5,7 +5,6 @@ import com.xenomachina.argparser.default
 import de.itemis.mps.gradle.project.loader.Args
 import de.itemis.mps.gradle.project.loader.Plugin
 import de.itemis.mps.gradle.project.loader.ProjectLoader
-import kotlin.test.fail
 
 @Suppress("DEPRECATION")
 class ModelCheckArgs(parser: ArgParser) : Args(parser) {
@@ -24,7 +23,7 @@ class ModelCheckArgs(parser: ArgParser) : Args(parser) {
             "model" -> ReportFormat.ONE_TEST_PER_MODEL
             "module-and-model" -> ReportFormat.ONE_TEST_PER_MODULE_AND_MODEL
             "message" -> ReportFormat.ONE_TEST_PER_FAILED_MESSAGE
-            else -> fail("unsupported result format")
+            else -> throw IllegalArgumentException("unsupported result format: $this")
         }
     }.default(ReportFormat.ONE_TEST_PER_MODEL)
 
@@ -35,7 +34,7 @@ class ModelCheckArgs(parser: ArgParser) : Args(parser) {
             "always" -> true
             "never" -> false
             "auto" -> null
-            else -> fail("Unsupported value '$this'. Supported values are always, never, auto")
+            else -> throw IllegalArgumentException("Unsupported value '$this'. Supported values are always, never, auto")
         }
     }.default(null)
 
