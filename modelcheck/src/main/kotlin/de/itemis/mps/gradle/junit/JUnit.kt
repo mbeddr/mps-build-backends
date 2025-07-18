@@ -1,11 +1,11 @@
 package de.itemis.mps.gradle.junit
 
-public data class Skipped(val content: String)
+data class Skipped(val content: String)
 
 /**
  * Indicates that the test errored.  An errored test is one that had an unanticipated problem. e.g., an unchecked throwable; or a problem with the implementation of the test. Contains as a text node relevant data for the error, e.g., a stack trace
  */
-public data class Error(
+data class Error(
         /**
          * The error message. e.g., if a java exception is thrown, the return value of getMessage()
          */
@@ -20,7 +20,7 @@ public data class Error(
 /**
  * Indicates that the test failed. A failure is a test which the code has explicitly failed by using the mechanisms for that purpose. e.g., via an assertEquals. Contains as a text node relevant data for the failure, e.g., a stack trace
  */
-public data class Failure(
+data class Failure(
         /**
          * The message specified in the assert
          */
@@ -32,12 +32,12 @@ public data class Failure(
         val content: String? = null
 )
 
-public data class SystemOut(val content: String)
+data class SystemOut(val content: String)
 
-public data class SystemErr(val content: String)
+data class SystemErr(val content: String)
 
 
-public data class Testcase(
+data class Testcase(
         /**
          * Name of the test method
          */
@@ -55,7 +55,7 @@ public data class Testcase(
         val failure: Failure? = null
 )
 
-public data class Testsuite(
+data class Testsuite(
         /**
          * Full class name of the test for non-aggregated testsuite documents. Class name without the package for aggregated testsuites documents
          */
@@ -112,6 +112,6 @@ public data class Testsuite(
         val systemError: SystemErr = SystemErr("")
 )
 
-public data class Property(val name: String, val value: String)
+data class Property(val name: String, val value: String)
 
-public data class Testsuites(val testsuites: List<Testsuite>)
+data class Testsuites(val testsuites: List<Testsuite>)
