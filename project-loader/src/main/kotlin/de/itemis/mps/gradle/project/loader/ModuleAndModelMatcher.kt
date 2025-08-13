@@ -29,7 +29,7 @@ public class ModuleAndModelMatcher public constructor(
      * Whether the model should be included, according to include/exclude rules. Does NOT check module inclusion rules.
      */
     public fun isModelNameIncluded(modelName: SModelName): Boolean {
-        val name = modelName.longName
+        val name = modelName.value
         if (includeModelRegex != null && !includeModelRegex.matches(name)) {
             return false
         }

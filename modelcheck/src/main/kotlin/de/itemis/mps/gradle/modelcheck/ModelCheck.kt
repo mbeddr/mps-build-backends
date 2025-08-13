@@ -105,7 +105,7 @@ fun printResult(item: IssueKindReportItem, project: Project, args: ModelCheckArg
         is IssueKindReportItem.PathObject.ModulePathObject ->
             print(item.severity, "${item.message} [${path.asModule(project)?.moduleName}]")
         is IssueKindReportItem.PathObject.ModelPathObject ->
-            print(item.severity, "${item.message} [${path.asModel(project)?.name?.longName}]")
+            print(item.severity, "${item.message} [${path.asModel(project)?.name?.value}]")
         is IssueKindReportItem.PathObject.NodePathObject ->
             print(item.severity, "${item.message} [${path.asNode(project)?.url}]")
         else -> print(item.severity, item.message)
@@ -205,8 +205,8 @@ private fun oneTestCasePerMessage(item: IssueKindReportItem, model: SModel, proj
     val testCaseName = item.message.replace(Regex("[:\\s]"), "_").substring(0, min(item.message.length, 120))
     return when (val path = item.path) {
         is IssueKindReportItem.PathObject.ModelPathObject -> {
-            val message = "${item.message} [${model.name.longName}]"
-            val className = model.name.longName
+            val message = "${item.message} [${model.name.value}]"
+            val className = model.name.value
             Testcase(
                 name = testCaseName,
                 classname = className,
@@ -238,7 +238,7 @@ private fun oneTestCasePerModel(models: Iterable<SModel>, errorsPerModel: Map<SM
                 when (val path = item.path) {
                     is IssueKindReportItem.PathObject.ModelPathObject -> {
                         val model = path.resolve(project.repository)!!
-                        appendLine(" ${item.message} [${model.name.longName}]")
+                        appendLine(" ${item.message} [${model.name.value}]")
                     }
                     is IssueKindReportItem.PathObject.NodePathObject -> {
                         val node = path.resolve(project.repository)
@@ -253,7 +253,7 @@ private fun oneTestCasePerModel(models: Iterable<SModel>, errorsPerModel: Map<SM
 
         Testcase(
             name = it.name.simpleName,
-            classname = it.name.longName,
+            classname = it.name.value,
             failure = if (errors.isEmpty()) null else failure,
             time = 0
         )
