@@ -48,11 +48,15 @@ val logger = logging.getLogger("de.itemis.mps.gradle.generate")
 
 private class MsgHandler : IMessageHandler {
     val logger = logging.getLogger("de.itemis.mps.gradle.generate.messages")
+    val errors = mutableListOf<IMessage>()
     override fun handle(msg: IMessage) {
         when (msg.kind) {
             MessageKind.INFORMATION -> logger.info(msg.text, msg.exception)
             MessageKind.WARNING -> logger.warn(msg.text, msg.exception)
-            MessageKind.ERROR -> logger.error(msg.text, msg.exception)
+            MessageKind.ERROR -> {
+                errors.add(msg)
+                logger.error(msg.text, msg.exception)
+            }
             null -> logger.error(msg.text, msg.exception)
         }
     }
@@ -168,7 +172,8 @@ private fun getFacetsForLanguagesMps20213(facetRegistry: FacetRegistry, allUsedL
     facetRegistry.javaClass.getMethod("getFacetsForLanguages", java.lang.Iterable::class.java).invoke(facetRegistry, allUsedLanguages) as Iterable<IFacet>
 
 private fun makeModels(proj: Project, models: List<SModel>): GenerationResult {
-    val session = MakeSession(proj, MsgHandler(), true)
+    val msgHandler = MsgHandler()
+    val session = MakeSession(proj, msgHandler, true)
     val res = ModelsToResources(models).resources().toList()
     val makeService = BuildMakeService()
 
@@ -181,13 +186,20 @@ private fun makeModels(proj: Project, models: List<SModel>): GenerationResult {
     try {
         val result = future.get()
         logger.info("generation finished")
-        return if (result.isSucessful) {
-            logger.info("generation result: successful")
-            GenerationResult.Success
-        } else {
-            logger.error("generation result: failed")
-            logger.error(result)
-            GenerationResult.Error
+        return when {
+            result.isSucessful && msgHandler.errors.isEmpty() -> {
+                logger.info("generation result: successful")
+                GenerationResult.Success
+            }
+            result.isSucessful && msgHandler.errors.isNotEmpty() -> {
+                logger.error("generation result: successful, but errors were reported")
+                GenerationResult.Error
+            }
+            else -> {
+                logger.error("generation result: failed")
+                logger.error(result)
+                GenerationResult.Error
+            }
         }
     } catch (ex: Exception) {
         logger.error("failed to generate", ex)
