@@ -48,13 +48,14 @@ val logger = logging.getLogger("de.itemis.mps.gradle.generate")
 
 private class MsgHandler : IMessageHandler {
     val logger = logging.getLogger("de.itemis.mps.gradle.generate.messages")
-    val errors = mutableListOf<IMessage>()
+    // explicitly store error occurrence, since MPS generation IResult is not reliable enough (might be successful despite errors)
+    var errorOccurred = false
     override fun handle(msg: IMessage) {
         when (msg.kind) {
             MessageKind.INFORMATION -> logger.info(msg.text, msg.exception)
             MessageKind.WARNING -> logger.warn(msg.text, msg.exception)
             MessageKind.ERROR -> {
-                errors.add(msg)
+                errorOccurred = true
                 logger.error(msg.text, msg.exception)
             }
             null -> logger.error(msg.text, msg.exception)
@@ -187,11 +188,11 @@ private fun makeModels(proj: Project, models: List<SModel>): GenerationResult {
         val result = future.get()
         logger.info("generation finished")
         return when {
-            result.isSucessful && msgHandler.errors.isEmpty() -> {
+            result.isSucessful && !msgHandler.errorOccurred -> {
                 logger.info("generation result: successful")
                 GenerationResult.Success
             }
-            result.isSucessful && msgHandler.errors.isNotEmpty() -> {
+            result.isSucessful && msgHandler.errorOccurred -> {
                 logger.error("generation result: successful, but errors were reported")
                 GenerationResult.Error
             }
