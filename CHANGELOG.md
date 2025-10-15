@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.24.2
+
+- `execute` now applies the indexing workaround like `modelcheck` and `generate`.
+- `project-loader` dependency bumped to 4.0.0.
+
 ## 1.24.1
 
 - `execute-generators`: return generation failed status in case of any reported errors during the generation, 

@@ -1,7 +1,10 @@
 package de.itemis.mps.gradle.project.loader
 
+import com.intellij.openapi.application.ApplicationInfo
+import com.intellij.openapi.util.BuildNumber
 import de.itemis.mps.gradle.logging.LogLevel
 import de.itemis.mps.gradle.logging.detectLogging
+import jetbrains.mps.project.MPSProject
 import jetbrains.mps.project.Project
 import jetbrains.mps.tool.environment.Environment
 import jetbrains.mps.tool.environment.EnvironmentConfig
@@ -17,7 +20,8 @@ public class ProjectLoader private constructor(
     private val environmentKind: EnvironmentKind,
     private val pluginLocation: File?,
     private val buildNumber: String?,
-    private val logLevel: LogLevel
+    private val logLevel: LogLevel,
+    private val forceIndexing: Boolean?
 ) {
     private val logger = detectLogging().getLogger("de.itemis.mps.gradle.project.loader")
 
@@ -40,12 +44,19 @@ public class ProjectLoader private constructor(
 
         public var logLevel: LogLevel = LogLevel.WARN
 
+        /**
+         * Whether to wait for indexing to complete after opening the project. Only has an effect in IDEA environments.
+         * When null, only wait if running a buggy MPS version (currently 2023.2 and above).
+         */
+        public var forceIndexing: Boolean? = null
+
         public fun build(): ProjectLoader = ProjectLoader(
             environmentConfigBuilder.build(),
             environmentKind,
             environmentConfigBuilder.pluginLocation,
             buildNumber,
-            logLevel
+            logLevel,
+            forceIndexing
         )
 
         /**
@@ -165,10 +176,20 @@ public class ProjectLoader private constructor(
 
         val project = environment.openProject(projectDir)
 
-        logger.info("flushing events")
-        environment.flushAllEvents()
-
         try {
+            logger.info("flushing events")
+            environment.flushAllEvents()
+
+            // Workaround for https://youtrack.jetbrains.com/issue/MPS-37926/Indices-not-built-properly-in-IdeaEnvironment
+            if (environment is IdeaEnvironment) {
+                val buildNumber = ApplicationInfo.getInstance().build
+                if (shouldForceIndexing(buildNumber)) {
+                    logger.info("Forcing full indexing. Can be disabled with --force-indexing=never.")
+                    forceIndexing(project as MPSProject, buildNumber)
+                    logger.info("Full indexing complete")
+                }
+            }
+
             return action(environment, project)
         } finally {
             logger.info("disposing project")
@@ -176,4 +197,9 @@ public class ProjectLoader private constructor(
             logger.info("project disposed")
         }
     }
+
+    private fun shouldForceIndexing(buildNumber: BuildNumber): Boolean {
+        return forceIndexing ?: hasIndexingBug(buildNumber)
+    }
 }
+

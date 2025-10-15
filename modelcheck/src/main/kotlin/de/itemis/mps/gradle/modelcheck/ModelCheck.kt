@@ -1,18 +1,10 @@
 package de.itemis.mps.gradle.modelcheck
 
-import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
-import com.intellij.openapi.util.BuildNumber
-import de.itemis.mps.gradle.junit.Failure
-import de.itemis.mps.gradle.junit.JUnitXmlSerializer
-import de.itemis.mps.gradle.junit.Testcase
-import de.itemis.mps.gradle.junit.Testsuite
-import de.itemis.mps.gradle.junit.Testsuites
+import de.itemis.mps.gradle.junit.*
 import de.itemis.mps.gradle.logging.detectLogging
 import de.itemis.mps.gradle.project.loader.ModuleAndModelMatcher
-import de.itemis.mps.gradle.project.loader.forceIndexing
-import de.itemis.mps.gradle.project.loader.hasIndexingBug
 import jetbrains.mps.checkers.ModelCheckerBuilder
 import jetbrains.mps.errors.CheckerRegistry
 import jetbrains.mps.errors.MessageStatus
@@ -20,7 +12,6 @@ import jetbrains.mps.errors.item.IssueKindReportItem
 import jetbrains.mps.ide.httpsupport.runtime.base.HttpSupportUtil
 import jetbrains.mps.ide.modelchecker.platform.actions.IdeaPlatformReadExecutor
 import jetbrains.mps.progress.EmptyProgressMonitor
-import jetbrains.mps.project.MPSProject
 import jetbrains.mps.project.Project
 import jetbrains.mps.smodel.ModelAccessBase
 import jetbrains.mps.smodel.SModelStereotype
@@ -337,16 +328,6 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
     modelExtractor.includeStubs(false)
     val itemsToCheck = ModelCheckerBuilder.ItemsToCheck()
 
-    // Workaround for https://youtrack.jetbrains.com/issue/MPS-37926/Indices-not-built-properly-in-IdeaEnvironment
-    if (environment is IdeaEnvironment) {
-        val buildNumber = ApplicationInfo.getInstance().build
-        if (shouldForceIndexing(args, buildNumber)) {
-            logger.info("Forcing full indexing. Can be disabled with --force-indexing=never.")
-            forceIndexing(project as MPSProject, buildNumber)
-            logger.info("Full indexing complete")
-        }
-    }
-
     // In the IDEA environment run the model check in EDT to avoid interference from other code that may want to run
     // a write or read action, such as 'run in smart mode' callbacks triggered by completed indexing, context assistant
     // updates, etc.
@@ -405,8 +386,4 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
 
     val minSeverity = if (args.warningAsError) MessageStatus.WARNING else MessageStatus.ERROR
     return errorCollector.result.any { it.severity >= minSeverity }
-}
-
-fun shouldForceIndexing(args: ModelCheckArgs, buildNumber: BuildNumber): Boolean {
-    return args.forceIndexing ?: hasIndexingBug(buildNumber)
 }

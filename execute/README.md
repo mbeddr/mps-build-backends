@@ -16,7 +16,8 @@ read and write locks itself, for example with `jetbrains.mps.lang.access`.
 usage: execute [-h] [--plugin PLUGIN]... [--macro MACRO]... [--plugin-location PLUGIN_LOCATION]
                [--plugin-root PLUGIN_ROOT]... [--build-number BUILD_NUMBER] [--test-mode]
                [--environment ENVIRONMENT] [--log-level LOG_LEVEL] [--no-libraries]
-               --project PROJECT --module MODULE --class CLASS --method METHOD [--arg ARG]...
+               --project PROJECT [--force-indexing FORCE_INDEXING] --module MODULE --class CLASS
+               --method METHOD [--arg ARG]...
 
 required arguments:
   --project PROJECT                   project to generate from
@@ -53,6 +54,10 @@ optional arguments:
                                       Default: warn.
 
   --no-libraries                      do not load project libraries under MPS environment
+
+  --force-indexing FORCE_INDEXING     whether to force full indexing at startup to work around
+                                      MPS-37926. Supported values: always, never, auto. Default:
+                                      auto.
 
   --arg ARG                           list of strings to pass to the method. Allowed only if the
                                       method signature is (Project, String[])
