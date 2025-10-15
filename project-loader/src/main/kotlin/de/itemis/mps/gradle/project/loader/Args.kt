@@ -4,7 +4,6 @@ import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.InvalidArgumentException
 import com.xenomachina.argparser.default
 import de.itemis.mps.gradle.logging.LogLevel
-import de.itemis.mps.gradle.logging.detectLogging
 import java.io.File
 import java.nio.file.Path
 
@@ -85,8 +84,21 @@ public open class Args(parser: ArgParser) : EnvironmentArgs(parser) {
     public val project: File by parser.storing("--project",
             help = "project to generate from") { File(this) }
 
+    public val forceIndexing: Boolean? by parser.storing(
+        "--force-indexing", help = "whether to force full indexing at startup to work around MPS-37926." +
+                " Supported values: always, never, auto. Default: auto.") {
+        when (this) {
+            "always" -> true
+            "never" -> false
+            "auto" -> null
+            else -> throw InvalidArgumentException("Unsupported value '$this'. Supported values are always, never, auto")
+        }
+    }.default(null)
+
     override fun configureProjectLoader(builder: ProjectLoader.Builder) {
         super.configureProjectLoader(builder)
+
+        builder.forceIndexing = forceIndexing
 
         if (!skipLibraries && environmentKind == EnvironmentKind.MPS) {
             builder.environmentConfig {

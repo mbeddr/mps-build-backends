@@ -7,6 +7,17 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 4.0.0
+
+### Added
+
+- `Args#forceIndexing` added to control the application of the indexing workaround. This unifies the behavior of all
+  backends and extends the functionality to the `execute` backend that didn't have it before.
+
+### Removed
+
+- Methods in `IndexingWorkaround.kt` related to the indexing workaround logic are no longer public.
+
 ## 3.0.2
 
 ### Fixed

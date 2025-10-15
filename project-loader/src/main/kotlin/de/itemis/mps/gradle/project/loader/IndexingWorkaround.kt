@@ -11,7 +11,7 @@ import jetbrains.mps.project.MPSProject
 /**
  * Indicates whether the given MPS version has the indexing bug.
  */
-public fun hasIndexingBug(buildNumber: BuildNumber): Boolean {
+internal fun hasIndexingBug(buildNumber: BuildNumber): Boolean {
     // For 2023.2 we need to force indexing, for 2024.1 we only wait for indexing to complete using IndexingTestUtils.
     return buildNumber.baselineVersion >= 232
 }
@@ -19,7 +19,7 @@ public fun hasIndexingBug(buildNumber: BuildNumber): Boolean {
 /**
  * Force full indexing as a workaround for https://youtrack.jetbrains.com/issue/MPS-37926/Indices-not-built-properly-in-IdeaEnvironment
  */
-public fun forceIndexing(project: MPSProject, @Suppress("UNUSED_PARAMETER") buildNumber: BuildNumber) {
+internal fun forceIndexing(project: MPSProject, @Suppress("UNUSED_PARAMETER") buildNumber: BuildNumber) {
     try {
         forceIndexing241(project)
     } catch (e: NoClassDefFoundError) {

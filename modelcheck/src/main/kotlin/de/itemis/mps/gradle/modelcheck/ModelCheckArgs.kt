@@ -27,17 +27,6 @@ class ModelCheckArgs(parser: ArgParser) : Args(parser) {
         }
     }.default(ReportFormat.ONE_TEST_PER_MODEL)
 
-    val forceIndexing by parser.storing(
-        "--force-indexing", help = "whether to force full indexing at startup to work around MPS-37926." +
-                " Supported values: always, never, auto. Default: auto.") {
-        when (this) {
-            "always" -> true
-            "never" -> false
-            "auto" -> null
-            else -> throw IllegalArgumentException("Unsupported value '$this'. Supported values are always, never, auto")
-        }
-    }.default(null)
-
     override fun configureProjectLoader(builder: ProjectLoader.Builder) {
         super.configureProjectLoader(builder)
         builder.environmentConfig {
