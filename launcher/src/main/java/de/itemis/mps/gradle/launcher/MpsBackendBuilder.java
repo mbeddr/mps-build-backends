@@ -23,7 +23,6 @@ import org.gradle.process.JavaForkOptions;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 
 public class MpsBackendBuilder {
@@ -193,6 +192,7 @@ public class MpsBackendBuilder {
                 "java.base/java.util",
                 "java.base/java.util.concurrent",
                 "java.base/java.util.concurrent.atomic",
+                "java.base/jdk.internal.ref",
                 "java.base/jdk.internal.vm",
                 "java.base/sun.nio.ch",
                 "java.base/sun.nio.fs",
