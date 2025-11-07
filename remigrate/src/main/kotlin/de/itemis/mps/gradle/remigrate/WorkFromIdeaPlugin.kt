@@ -85,7 +85,7 @@ private fun runProjectMigrations(project: Project, migrationsToExclude: Set<Stri
 }
 
 // A helper function to avoid deprecation warnings everywhere we need the project name
-@Suppress("DEPRECATION", "removal")
+@Suppress("DEPRECATION")
 private fun getName(project: Project) = project.name
 
 private fun resolve(languageRegistry: LanguageRegistry, reference: MigrationScriptReference): MigrationScript? =
