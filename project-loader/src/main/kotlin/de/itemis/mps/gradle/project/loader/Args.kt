@@ -56,6 +56,17 @@ public open class EnvironmentArgs(parser: ArgParser) {
     public val skipLibraries: Boolean by parser.flagging("--no-libraries",
         help = "do not load project libraries under MPS environment")
 
+    public val forceIndexing: Boolean? by parser.storing(
+        "--force-indexing", help = "whether to force full indexing at startup to work around MPS-37926." +
+                " Supported values: always, never, auto. Default: auto.") {
+        when (this) {
+            "always" -> true
+            "never" -> false
+            "auto" -> null
+            else -> throw InvalidArgumentException("Unsupported value '$this'. Supported values are always, never, auto")
+        }
+    }.default(null)
+
     public open fun configureProjectLoader(builder: ProjectLoader.Builder) {
         builder.environmentConfig {
             plugins.addAll(this@EnvironmentArgs.plugins)
@@ -69,6 +80,8 @@ public open class EnvironmentArgs(parser: ArgParser) {
         builder.environmentKind = environmentKind
         builder.buildNumber = buildNumber
         builder.logLevel = de.itemis.mps.gradle.logging.LogLevel.valueOf(logLevel.toString())
+
+        builder.forceIndexing = forceIndexing
     }
 
     public fun buildLoader(): ProjectLoader = ProjectLoader.build(this::configureProjectLoader)
@@ -84,21 +97,8 @@ public open class Args(parser: ArgParser) : EnvironmentArgs(parser) {
     public val project: File by parser.storing("--project",
             help = "project to generate from") { File(this) }
 
-    public val forceIndexing: Boolean? by parser.storing(
-        "--force-indexing", help = "whether to force full indexing at startup to work around MPS-37926." +
-                " Supported values: always, never, auto. Default: auto.") {
-        when (this) {
-            "always" -> true
-            "never" -> false
-            "auto" -> null
-            else -> throw InvalidArgumentException("Unsupported value '$this'. Supported values are always, never, auto")
-        }
-    }.default(null)
-
     override fun configureProjectLoader(builder: ProjectLoader.Builder) {
         super.configureProjectLoader(builder)
-
-        builder.forceIndexing = forceIndexing
 
         if (!skipLibraries && environmentKind == EnvironmentKind.MPS) {
             builder.environmentConfig {

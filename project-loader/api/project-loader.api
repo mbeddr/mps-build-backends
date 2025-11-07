@@ -20,7 +20,6 @@ public final class de/itemis/mps/gradle/logging/LoggingFactoryKt {
 public class de/itemis/mps/gradle/project/loader/Args : de/itemis/mps/gradle/project/loader/EnvironmentArgs {
 	public fun <init> (Lcom/xenomachina/argparser/ArgParser;)V
 	public fun configureProjectLoader (Lde/itemis/mps/gradle/project/loader/ProjectLoader$Builder;)V
-	public final fun getForceIndexing ()Ljava/lang/Boolean;
 	public final fun getProject ()Ljava/io/File;
 }
 
@@ -34,6 +33,7 @@ public class de/itemis/mps/gradle/project/loader/EnvironmentArgs {
 	public fun configureProjectLoader (Lde/itemis/mps/gradle/project/loader/ProjectLoader$Builder;)V
 	public final fun getBuildNumber ()Ljava/lang/String;
 	public final fun getEnvironmentKind ()Lde/itemis/mps/gradle/project/loader/EnvironmentKind;
+	public final fun getForceIndexing ()Ljava/lang/Boolean;
 	public final fun getLogLevel ()Lde/itemis/mps/gradle/logging/LogLevel;
 	public final fun getMacros ()Ljava/util/List;
 	public final fun getPluginLocation ()Ljava/io/File;
@@ -120,6 +120,7 @@ public final class de/itemis/mps/gradle/project/loader/ProjectLoader {
 	public static final field Companion Lde/itemis/mps/gradle/project/loader/ProjectLoader$Companion;
 	public synthetic fun <init> (Ljetbrains/mps/tool/environment/EnvironmentConfig;Lde/itemis/mps/gradle/project/loader/EnvironmentKind;Ljava/io/File;Ljava/lang/String;Lde/itemis/mps/gradle/logging/LogLevel;Ljava/lang/Boolean;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun execute (Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
+	public final fun executeForEachProject (Ljava/util/List;Lkotlin/jvm/functions/Function2;)Ljava/util/List;
 	public final fun executeWithProject (Ljava/io/File;Lkotlin/jvm/functions/Function2;)Ljava/lang/Object;
 }
 

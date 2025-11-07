@@ -159,13 +159,31 @@ public class ProjectLoader private constructor(
 
     /**
      * Execute [action] in the context of an initialized MPS/IDEA environment and project located in [projectDir].
-     * Closes the project and shuts down the environment after the action finishes, even if it throws an exception.
+     * Closes the project after the action even if it throws an exception. Shuts down the environment after actions
+     * finish, even if it throws an exception.
+     *
+     * If an action for a project throws an exception, actions for further projects in the list are not performed.
      *
      * @param projectDir the directory to open as a MPS project
      * @param action action to execute.
      */
     public fun <T> executeWithProject(projectDir: File, action: (Environment, Project) -> T): T =
         execute { env -> withOpenProject(env, projectDir, action) }
+
+    /**
+     * Execute [action] in the manner of [executeWithProject] for each project in [projectDirs]. The environment is
+     * opened once, projects are opened sequentially, each project being closed before opening the next one.
+     *
+     * If [action] throws an exception for one of the projects, further projects in the list will not be processed.
+     * Closes the project and shuts down the environment after the action finishes, even if it throws an exception.
+     *
+     * @param projectDirs the directories to open as MPS projects
+     * @param action action to execute.
+     */
+    public fun <T> executeForEachProject(projectDirs: List<File>, action: (Environment, Project) -> T): List<T> =
+        execute { env ->
+            projectDirs.map { withOpenProject(env, it, action) }
+        }
 
     /**
      * Opens the project in [projectDir], executes [action] and disposes of the project regardless of whether [action]

@@ -7,6 +7,17 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 5.0.0
+
+### Added
+
+- `ProjectLoader#executeWithProjects` to execute an action for multiple projects, applying the indexing workaround
+   to each, according to arguments.
+
+### Changed
+
+- `Args#forceIndexing` moved up to `EnvironmentArgs`.
+
 ## 4.0.0
 
 ### Added
