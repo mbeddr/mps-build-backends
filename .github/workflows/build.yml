@@ -1,17 +1,15 @@
-# This workflow will build a Java project with Gradle
-# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
-
-name: Java CI with Gradle
+name: Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: main
   pull_request:
-    branches: [ "main" ]
 
 jobs:
-  build:
+  assemble:
     runs-on: ubuntu-latest
+    outputs:
+      mps_versions: ${{ steps.mps_versions.outputs.mps_versions }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK
@@ -19,7 +17,41 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-      - name: Setup Gradle
+      - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
-      - name: Build with Gradle
-        run: ./gradlew build
+      - name: Assemble
+        run: ./gradlew --no-daemon --no-parallel assemble
+      - name: Output MPS versions
+        id: mps_versions
+        run: |
+          mps_versions=$(jq <gradle.properties --compact-output --raw-input 'select(startswith("supportedMpsVersions=")) | split("=") | .[1] | split(",")')
+          echo "mps_versions=$mps_versions" >> "$GITHUB_OUTPUT"
+
+  test:
+    needs: assemble
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        mps_version: ${{ fromJSON(needs.assemble.outputs.mps_versions) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Test
+        run: ./gradlew --no-daemon --no-parallel testMps${{ matrix.mps_version }}
+
+  # The job that acts as a required check for pull requests
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - run: exit 1
+        if: |
+          contains(needs.*.result, 'failure') ||
+          contains(needs.*.result, 'cancelled') ||
+          contains(needs.*.result, 'skipped')
