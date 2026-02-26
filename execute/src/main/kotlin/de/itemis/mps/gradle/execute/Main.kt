@@ -1,6 +1,7 @@
 package de.itemis.mps.gradle.execute
 
 import com.xenomachina.argparser.ArgParser
+import com.xenomachina.argparser.SystemExitException
 import com.xenomachina.argparser.mainBody
 import kotlin.system.exitProcess
 
@@ -9,14 +10,14 @@ fun main(args: Array<String>): Unit = mainBody("execute") {
 
     logging.configure(parsed.logLevel)
 
-    try {
+    val result = try {
         parsed.buildLoader().executeWithProject(parsed.project) { environment, project ->
             executeGeneratedCode(parsed, environment, project)
         }
     } catch (t: Throwable) {
         logger.fatal("error executing method", t)
-        exitProcess(255)
+        255
     }
 
-    exitProcess(0)
+    exitProcess(result)
 }

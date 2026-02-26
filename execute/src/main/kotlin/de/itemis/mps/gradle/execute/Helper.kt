@@ -23,7 +23,7 @@ private fun Project.getModuleReference(moduleName: String): SModuleReference {
     return moduleReference
 }
 
-internal fun executeGeneratedCode(arguments: ExecuteArgs, environment: Environment, project: Project) {
+internal fun executeGeneratedCode(arguments: ExecuteArgs, environment: Environment, project: Project): Int {
 
     val moduleReference = project.getModuleReference(arguments.module)
     val classCode = try {
@@ -46,17 +46,17 @@ internal fun executeGeneratedCode(arguments: ExecuteArgs, environment: Environme
     }
 
     getMethod(Project::class, Array<String>::class)?.apply {
-        invoke(null, project, arguments.methodArguments.toTypedArray())
-        return
+        val result = invoke(null, project, arguments.methodArguments.toTypedArray()) as? Int
+        return result ?: 0
     }
 
     getMethod(Project::class)?.apply {
         if (arguments.methodArguments.isEmpty()) {
-            invoke(null, project)
+            val result = invoke(null, project) as? Int
+            return result ?: 0
         } else {
             throw IllegalArgumentException("Method $methodName in class ${arguments.`class`} only takes a Project, but a string[] arguments provided to the backend")
         }
-        return
     }
 
     throw IllegalArgumentException("No public static method $methodName in class ${arguments.`class`} that takes a Project and optionally a string[]")

@@ -5,9 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.25.0
+
+### Added
+
+- `execute`: if the method being executed returns an integer value, use the value as the exit code of the backend.
+
+### Dependencies
+
+- Upgrade to project-loader 5.0.1.
+
 ## 1.24.3
 
-- Upgrade to project-loader 4.0.0
+- Upgrade to project-loader 5.0.0
 - Backends are now only tested against 2023.2 and above (up from 2022.2) due to a bug in MPS
   (https://youtrack.jetbrains.com/issue/MPS-39248/Cant-find-property-constraints-errors-for-base-language)
   which makes newer MPS versions break when opening projects from old MPS versions.

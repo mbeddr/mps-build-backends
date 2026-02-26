@@ -114,7 +114,7 @@ val EXECUTE_TESTS = run {
             "executeMethodWithoutArgumentsPassingArguments",
             "execute-method",
             listOf(*commonArgs, "--class", "my.solution.java.WithoutArguments", "--arg", "arg1", "--arg", "arg2"),
-            expectSuccess = false
+            expectedExitValue = 255
         ),
         ExecuteTest(
             "executeMethodWithoutArgumentsNotPassingArguments",
@@ -124,13 +124,23 @@ val EXECUTE_TESTS = run {
         ExecuteTest(
             "executeMissingMethod", "execute-method",
             listOf(*commonArgs, "--class", "my.solution.java.MissingMethod"),
-            expectSuccess = false
+            expectedExitValue = 255
         ),
         ExecuteTest(
             "executeMethodInMissingClass", "execute-method",
             listOf(*commonArgs, "--class", "my.solution.java.MissingClass"),
-            expectSuccess = false
-        )
+            expectedExitValue = 255
+        ),
+        ExecuteTest(
+            "exitCodeNoArguments", "execute-method",
+            listOf(*commonArgs, "--class", "my.solution.java.WithExitCodeNoArguments"),
+            expectedExitValue = 10
+        ),
+        ExecuteTest(
+            "exitCodeAndArguments", "execute-method",
+            listOf(*commonArgs, "--class", "my.solution.java.WithExitCodeAndArguments"),
+            expectedExitValue = 20
+        ),
     )
 }
 
@@ -192,7 +202,7 @@ data class ModelCheckTest(val name: String, val project: String, val args: List<
  * @param project project folder name (in `projects/`)
  * @param args additional arguments to the command
  */
-data class ExecuteTest(val name: String, val project: String, val args: List<Any>, val expectSuccess: Boolean = true)
+data class ExecuteTest(val name: String, val project: String, val args: List<Any>, val expectedExitValue: Int = 0)
 
 enum class TestKind {
     GENERATE,
@@ -355,12 +365,10 @@ fun tasksForMpsPlatform(mpsPlatform: MpsPlatform): Multimap<TestKind, TaskProvid
                 }
 
                 val actualExitValue = executionResult.exitValue
-                val actualSuccess = actualExitValue == 0
-                val expectedSuccess = testCase.expectSuccess
-                if (actualSuccess != expectedSuccess) {
+                val expectedExitValue = testCase.expectedExitValue
+                if (actualExitValue != expectedExitValue) {
                     throw GradleException(
-                        "Execute outcome: expected success: $expectedSuccess, but was: $actualSuccess" +
-                                " (actual exit value $actualExitValue)"
+                        "Execute outcome: expected exit value: $expectedExitValue, but was: $actualExitValue"
                     )
                 }
             }
