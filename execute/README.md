@@ -8,9 +8,15 @@ The tool is JVM-based and needs MPS libraries (`${mps_home}/lib/**/*.jar`) on it
 is by using Gradle's `JavaExec` task. See below for an example.
 
 The tool requires that the class with the method is generated beforehand. If needed the method has to acquire 
-read and write locks itself, for example with `jetbrains.mps.lang.access`.
+read and write locks itself, for example, with `jetbrains.mps.lang.access`.
 
-## Supported argumnets
+## Process exit code
+
+If the executed method returns an `int` (`java.lang.Integer`) value, it will be used as the exit code of the process.
+Otherwise, if the method runs to completion, it will be treated as a success (exit code 0) regardless of the returned
+value, and if an exception is thrown, the exit code will be 255.
+
+## Supported arguments
 
 ```
 usage: execute [-h] [--plugin PLUGIN]... [--macro MACRO]... [--plugin-location PLUGIN_LOCATION]

@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) after reaching version 1.0.0. Until then any version may
 contain breaking changes.
 
+# 1.0.1
+
+## Dependencies
+
+- Use project-loader 5.0.1.
+
 # 1.0.0
 
 ## Added
