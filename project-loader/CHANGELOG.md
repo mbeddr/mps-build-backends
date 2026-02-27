@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 5.0.1
+
+### Fixed
+
+- Eliminated a few stack traces that used to be logged during the normal course of operations.
+
 ## 5.0.0
 
 ### Added
