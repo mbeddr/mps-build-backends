@@ -1,7 +1,9 @@
 package de.itemis.mps.gradle.project.loader
 
 import com.intellij.openapi.application.ApplicationInfo
+import com.intellij.openapi.project.impl.P3SupportInstaller
 import com.intellij.openapi.util.BuildNumber
+import com.intellij.serviceContainer.AlreadyDisposedException
 import de.itemis.mps.gradle.logging.LogLevel
 import de.itemis.mps.gradle.logging.detectLogging
 import jetbrains.mps.project.MPSProject
@@ -114,6 +116,17 @@ public class ProjectLoader private constructor(
             val environment: Environment = when (environmentKind) {
                 EnvironmentKind.IDEA -> IdeaEnvironment(environmentConfig).apply {
                     logger.info("initializing IDEA environment")
+                    try {
+                        // We only need to call seal() for MPS 2025.1, other versions either don't need it or call it
+                        // themselves. However, we cannot use ApplicationInfo.getInstance() here to check the build
+                        // number because the application hasn't been initialized yet. At the same time, calling seal()
+                        // after init() is too late. So we just call it and catch any exceptions, since it appears that
+                        // calling it multiple times should do no harm.
+                        P3SupportInstaller.seal()
+                    } catch (_: NoClassDefFoundError) {
+                        // Ignore if no P3SupportInstaller present
+                    }
+
                     init()
                 }
 
@@ -211,7 +224,15 @@ public class ProjectLoader private constructor(
             return action(environment, project)
         } finally {
             logger.info("disposing project")
-            environment.closeProject(project)
+            try {
+                environment.closeProject(project)
+            } catch (re: RuntimeException) {
+                if (re.cause is AlreadyDisposedException) {
+                    // do nothing
+                } else {
+                    throw re
+                }
+            }
             logger.info("project disposed")
         }
     }
@@ -220,4 +241,3 @@ public class ProjectLoader private constructor(
         return forceIndexing ?: hasIndexingBug(buildNumber)
     }
 }
-
