@@ -171,7 +171,12 @@ public class MpsBackendBuilder {
                     result.add("-Dintellij.platform.load.app.info.from.resources=true");
                 }
                 if (mpsVersionValue.compareTo("2022.3") >= 0) {
-                    result.add("-Djna.boot.library.path=" + mpsHome.get().file("lib/jna/" + System.getProperty("os.arch")).getAsFile());
+                    Directory jnaLibBaseDir = mpsHome.get().dir("lib/jna");
+                    Directory jnaLibPlatformSpecificDir = jnaLibBaseDir.dir(System.getProperty("os.arch"));
+                    // use base JNA library directory only if it exists, but there is no platform-specific subdirectory
+                    // (-> platform-specific MPS distribution with copied JNA library, otherwise it's a generic MPS distribution with platform-specific directories)
+                    Directory jnaLibPath = (jnaLibBaseDir.getAsFile().exists() && !jnaLibPlatformSpecificDir.getAsFile().exists()) ? jnaLibBaseDir : jnaLibPlatformSpecificDir;
+                    result.add("-Djna.boot.library.path=" + jnaLibPath.getAsFile());
                 }
 
                 return result;
