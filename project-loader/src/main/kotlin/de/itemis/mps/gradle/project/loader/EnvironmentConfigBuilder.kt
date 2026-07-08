@@ -3,6 +3,7 @@ package de.itemis.mps.gradle.project.loader
 import jetbrains.mps.tool.environment.EnvironmentConfig
 import jetbrains.mps.util.PathManager
 import java.io.File
+import java.nio.file.Path
 
 public class EnvironmentConfigBuilder {
     public var initialConfig: EnvironmentConfig = basicEnvironmentConfig()
@@ -11,6 +12,15 @@ public class EnvironmentConfigBuilder {
     public var pluginLocation: File? = null
     public var macros: MutableList<Macro> = mutableListOf()
     public var testMode: Boolean = false
+
+    /**
+     * Searches [root] recursively for plugins and adds all the plugins found to [plugins]. A plugin is detected by the
+     * presence of a plugin descriptor (`META-INF/plugin.xml`, either directly or inside a JAR under `lib/`). Detection
+     * is independent from [pluginLocation]; the discovered plugins are added with their absolute paths.
+     */
+    public fun addPluginsRecursivelyFrom(root: Path) {
+        plugins.addAll(findPluginsRecursively(root))
+    }
 
     public fun build(): EnvironmentConfig {
         val cfg = initialConfig

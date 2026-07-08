@@ -70,9 +70,7 @@ public open class EnvironmentArgs(parser: ArgParser) {
     public open fun configureProjectLoader(builder: ProjectLoader.Builder) {
         builder.environmentConfig {
             plugins.addAll(this@EnvironmentArgs.plugins)
-            this@EnvironmentArgs.pluginRoots.forEach {
-                plugins.addAll(findPluginsRecursively(it))
-            }
+            this@EnvironmentArgs.pluginRoots.forEach(::addPluginsRecursivelyFrom)
             pluginLocation = this@EnvironmentArgs.pluginLocation
             macros.addAll(this@EnvironmentArgs.macros)
             testMode = this@EnvironmentArgs.testMode

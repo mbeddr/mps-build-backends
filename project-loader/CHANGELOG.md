@@ -7,6 +7,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 5.1.0
+
+### Added
+
+- `EnvironmentConfigBuilder#addPluginsRecursivelyFrom` to add plugins found recursively in a directory, making this
+  functionality available to clients that configure the project loader directly instead of via `Args`.
+
 ## 5.0.1
 
 ### Fixed
