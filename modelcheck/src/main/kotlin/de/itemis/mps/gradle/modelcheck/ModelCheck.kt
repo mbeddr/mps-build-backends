@@ -9,7 +9,6 @@ import jetbrains.mps.checkers.ModelCheckerBuilder
 import jetbrains.mps.errors.CheckerRegistry
 import jetbrains.mps.errors.MessageStatus
 import jetbrains.mps.errors.item.IssueKindReportItem
-import jetbrains.mps.ide.httpsupport.runtime.base.HttpSupportUtil
 import jetbrains.mps.ide.modelchecker.platform.actions.IdeaPlatformReadExecutor
 import jetbrains.mps.progress.EmptyProgressMonitor
 import jetbrains.mps.project.Project
@@ -70,9 +69,6 @@ fun IssueKindReportItem.PathObject.asModel(project: Project): SModel? =
 
 fun IssueKindReportItem.PathObject.asNode(project: Project): SNode? =
     (this as? IssueKindReportItem.PathObject.NodePathObject)?.resolve(project.repository)
-
-val SNode.url: String
-    get() = HttpSupportUtil.getURL(this)
 
 fun printResult(item: IssueKindReportItem, project: Project, args: ModelCheckArgs) {
     val info = ::printInfo

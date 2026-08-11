@@ -17,7 +17,6 @@ mpsZips {
     include("lib/mpsant/mps-tool.jar")
 
     include("plugins/mps-modelchecker/lib/modelchecker.jar")
-    include("plugins/mps-httpsupport/solutions/jetbrains.mps.ide.httpsupport.runtime.jar")
 }
 
 dependencies {
