@@ -51,6 +51,10 @@ public class MpsBackendBuilder {
             spec.getLanguageVersion().set(
                     mpsVersion.map(v -> {
                             final int version;
+                            if (v.compareTo("2026") >= 0) {
+                                // 2026.1 and above run on Java 25
+                                version = 25;
+                            } else
                             if (v.compareTo("2025") >= 0) {
                                 // 2025.1 and above run on Java 21
                                 version = 21;
