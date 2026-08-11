@@ -11,6 +11,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - `modelcheck` no longer needs `mps-httpsupport` plugin on the classpath. Produced node URLs will always use port 63320.
 
+### Fixed
+
+- `modelcheck` now uses a thread-safe collector to avoid under-reporting issues when running in parallel.
+
 ## 1.25.0
 
 ### Added
