@@ -16,7 +16,6 @@ import jetbrains.mps.smodel.ModelAccessBase
 import jetbrains.mps.smodel.SModelStereotype
 import jetbrains.mps.tool.environment.Environment
 import jetbrains.mps.tool.environment.IdeaEnvironment
-import jetbrains.mps.util.CollectConsumer
 import jetbrains.mps.workbench.progress.IdeaPlatformTaskScheduler
 import jetbrains.mps.workbench.progress.SystemBackgroundTaskScheduler
 import org.jetbrains.mps.openapi.model.SModel
@@ -25,6 +24,7 @@ import org.jetbrains.mps.openapi.module.SModule
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.min
 
 
@@ -312,7 +312,7 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
 
     // We don't use ModelCheckerIssueFinder because it has a strange dependency on ModelCheckerSettings which we
     // want to avoid when running in headless mode
-    val errorCollector = CollectConsumer<IssueKindReportItem>()
+    val issueCollector = ThreadSafeCollector<IssueKindReportItem>()
 
     val moduleAndModelMatcher = ModuleAndModelMatcher(args.modules, args.excludeModules, args.models, args.excludeModels)
 
@@ -333,6 +333,8 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
             ApplicationManager.getApplication().invokeAndWait(r, ModalityState.NON_MODAL)
         }
     } else Runnable::run
+
+    val collectedIssuesRef = AtomicReference<List<IssueKindReportItem>>()
 
     runInEdt {
         project.modelAccess.runReadAction {
@@ -357,10 +359,12 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
                 }
                 .createChecker(checkers)
 
-            checker.check(itemsToCheck, project.repository, errorCollector, EmptyProgressMonitor())
+            checker.check(itemsToCheck, project.repository, issueCollector, EmptyProgressMonitor())
 
             // We need read access here to resolve the node pointers in the report items
-            errorCollector.result.map { printResult(it, project, args) }
+            val collectedIssues = issueCollector.result()
+            collectedIssuesRef.set(collectedIssues)
+            collectedIssues.forEach { printResult(it, project, args) }
 
             if (args.xmlFile != null) {
                 val allCheckedModules = itemsToCheck.modules
@@ -370,7 +374,7 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
                 writeJunitXml(
                     modules = allCheckedModules,
                     models = allCheckedModels,
-                    results = errorCollector.result,
+                    results = collectedIssues,
                     project = project,
                     warnAsErrors = args.warningAsError,
                     format = args.xmlReportFormat,
@@ -381,5 +385,5 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
     }
 
     val minSeverity = if (args.warningAsError) MessageStatus.WARNING else MessageStatus.ERROR
-    return errorCollector.result.any { it.severity >= minSeverity }
+    return collectedIssuesRef.get().any { it.severity >= minSeverity }
 }
