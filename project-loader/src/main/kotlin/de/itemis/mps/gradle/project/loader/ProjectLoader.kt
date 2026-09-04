@@ -208,9 +208,6 @@ public class ProjectLoader private constructor(
         val project = environment.openProject(projectDir)
 
         try {
-            logger.info("flushing events")
-            environment.flushAllEvents()
-
             // Workaround for https://youtrack.jetbrains.com/issue/MPS-37926/Indices-not-built-properly-in-IdeaEnvironment
             if (environment is IdeaEnvironment) {
                 val buildNumber = ApplicationInfo.getInstance().build
@@ -234,6 +231,10 @@ public class ProjectLoader private constructor(
                 }
             }
             logger.info("project disposed")
+
+            // Process pending IDEA event-queue work scheduled while closing the project before continuing.
+            logger.info("flushing events after project disposal")
+            environment.flushAllEvents()
         }
     }
 
