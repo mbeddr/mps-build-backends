@@ -15,7 +15,7 @@ fun remigrate(args: RemigrateArgs) {
     val moduleMigrationsToExclude = args.excludeModuleMigrations.toSet()
     val projectMigrationsToExclude = args.excludeProjectMigrations.toSet()
 
-    loader.executeForEachProject(projectDirs) { environment, project ->
+    loader.executeForEachProject(projectDirs) { _, project ->
         val pluginId = PluginId.getId(PLUGIN_ID)
         val pluginDescriptor = PluginManager.getInstance().findEnabledPlugin(pluginId)
             ?: throw Exception("Plugin $pluginId not loaded or not enabled, cannot proceed")
@@ -24,8 +24,6 @@ fun remigrate(args: RemigrateArgs) {
         val method = helperClass.getMethod("work", Project::class.java, Set::class.java, Set::class.java)
 
         method.invoke(null, project, projectMigrationsToExclude, moduleMigrationsToExclude)
-
-        environment.flushAllEvents()
     }
 }
 

@@ -7,6 +7,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 5.1.1
+
+### Fixed
+
+- `ProjectLoader.withOpenProject`: process pending platform events after closing each project. This prevents cleanup
+  events from overlapping with opening the next project in `executeForEachProject` and causing a flood of
+  `IndexNotReadyException`.
+
 ## 5.1.0
 
 ### Added
