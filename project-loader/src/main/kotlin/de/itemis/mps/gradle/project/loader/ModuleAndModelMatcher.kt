@@ -5,7 +5,10 @@ import org.jetbrains.mps.openapi.model.SModel
 import org.jetbrains.mps.openapi.model.SModelName
 import org.jetbrains.mps.openapi.module.SModule
 
-public class ModuleAndModelMatcher public constructor(
+/**
+ * Matches modules and models using regular expressions for inclusion and exclusion. Excludes stub models.
+ */
+public class ModuleAndModelMatcher(
     modules: Collection<String>,
     excludeModules: Collection<String>,
     models: Collection<String>,
@@ -20,13 +23,12 @@ public class ModuleAndModelMatcher public constructor(
      * Whether the model should be included, according to include/exclude rules. Does NOT check module inclusion rules.
      */
     public fun isModelIncluded(model: SModel): Boolean {
-        return !SModelStereotype.isDescriptorModel(model)
-                && !SModelStereotype.isStubModel(model)
-                && isModelNameIncluded(model.name)
+        return !SModelStereotype.isStubModel(model) && isModelNameIncluded(model.name)
     }
 
     /**
      * Whether the model should be included, according to include/exclude rules. Does NOT check module inclusion rules.
+     * Does NOT check whether the model is a stub or a descriptor.
      */
     public fun isModelNameIncluded(modelName: SModelName): Boolean {
         val name = modelName.value

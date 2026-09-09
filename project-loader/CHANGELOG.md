@@ -7,6 +7,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 5.1.2
+
+### Changed
+
+- `ModuleAndModelMatcher` no longer excludes `@descriptor` models (language descriptors). Exclude them via an
+  `excludeModels` regex or in code.
+
 ## 5.1.1
 
 ### Fixed
