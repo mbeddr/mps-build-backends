@@ -1,15 +1,15 @@
 package de.itemis.mps.gradle.remigrate
 
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ex.ApplicationManagerEx
+import de.itemis.mps.gradle.migration.forceSaveAllModules
+import de.itemis.mps.gradle.migration.getProjectName
+import de.itemis.mps.gradle.migration.saveProject
 import jetbrains.mps.lang.migration.runtime.base.MigrationAspectDescriptor
 import jetbrains.mps.lang.migration.runtime.base.MigrationModuleUtil
 import jetbrains.mps.lang.migration.runtime.base.MigrationScript
 import jetbrains.mps.lang.migration.runtime.base.MigrationScriptReference
 import jetbrains.mps.migration.global.BaseProjectMigration
 import jetbrains.mps.migration.global.ProjectMigrationsRegistry
-import jetbrains.mps.project.AbstractModule
-import jetbrains.mps.project.MPSProject
 import jetbrains.mps.project.Project
 import jetbrains.mps.smodel.ModelAccessHelper
 import jetbrains.mps.smodel.SLanguageHierarchy
@@ -39,36 +39,8 @@ object WorkFromIdeaPlugin {
     }
 }
 
-private fun forceSaveAllModules(project: Project) {
-    project.modelAccess.runWriteAction {
-        val allModules = project.projectModulesWithGenerators
-        for (module in allModules.asSequence().filterIsInstance<AbstractModule>()) {
-            module.forceSaveRecursively()
-        }
-    }
-}
-
-private fun saveProject(project: Project) {
-    logger.info("Saving project ${getName(project)}")
-    project.modelAccess.runWriteAction {
-        project.repository.saveAll()
-    }
-
-    val applicationEx = ApplicationManagerEx.getApplicationEx()
-    val ideaProject = (project as MPSProject).project
-
-    val saveAllowed: Boolean = applicationEx.isSaveAllowed
-    try {
-        applicationEx.isSaveAllowed = true
-        ideaProject.save()
-    } finally {
-        applicationEx.isSaveAllowed = saveAllowed
-    }
-}
-
-
 private fun runProjectMigrations(project: Project, migrationsToExclude: Set<String>) {
-    val projectName = getName(project)
+    val projectName = getProjectName(project)
     logger.info("Executing all project migrations on $projectName")
     project.modelAccess.runWriteAction {
         for (migration in ProjectMigrationsRegistry.getInstance().getMigrations(project)) {
@@ -83,10 +55,6 @@ private fun runProjectMigrations(project: Project, migrationsToExclude: Set<Stri
     }
     logger.info("Done executing all project migrations on $projectName")
 }
-
-// A helper function to avoid deprecation warnings everywhere we need the project name
-@Suppress("DEPRECATION")
-private fun getName(project: Project) = project.name
 
 private fun resolve(languageRegistry: LanguageRegistry, reference: MigrationScriptReference): MigrationScript? =
     languageRegistry.getLanguage(reference.language)

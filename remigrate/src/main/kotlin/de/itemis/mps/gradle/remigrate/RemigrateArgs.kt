@@ -1,12 +1,11 @@
 package de.itemis.mps.gradle.remigrate
 
 import com.xenomachina.argparser.ArgParser
-import de.itemis.mps.gradle.project.loader.EnvironmentArgs
-import de.itemis.mps.gradle.project.loader.Plugin
-import de.itemis.mps.gradle.project.loader.ProjectLoader
+import de.itemis.mps.gradle.migration.MigrationBackendArgs
 
-class RemigrateArgs(parser: ArgParser) : EnvironmentArgs(parser) {
-    val projects by parser.adding("--project", help = "project to migrate.")
+class RemigrateArgs(parser: ArgParser) : MigrationBackendArgs(parser) {
+    override val backendPluginId = PLUGIN_ID
+
     val excludeModuleMigrations by parser.adding(
         "--exclude-module-migration",
         help = "module migration to exclude from execution or check. Format is language:version"
@@ -19,18 +18,4 @@ class RemigrateArgs(parser: ArgParser) : EnvironmentArgs(parser) {
         "--exclude-project-migration",
         help = "ID of project migration to exclude from execution."
     )
-
-    override fun configureProjectLoader(builder: ProjectLoader.Builder) {
-        builder.environmentConfig {
-            plugins.add(Plugin("jetbrains.mps.ide.mpsmigration", "mps-migration"))
-        }
-        super.configureProjectLoader(builder)
-
-        if (!builder.environmentConfigBuilder.plugins.any { it.id == PLUGIN_ID }) {
-            logger.warn(
-                "Plugin $PLUGIN_ID is missing, the process will likely fail. " +
-                        "Specify the plugin location using --plugin=$PLUGIN_ID::<backend jar path>"
-            )
-        }
-    }
 }

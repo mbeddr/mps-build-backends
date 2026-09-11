@@ -14,6 +14,10 @@ plugins {
     id("backend-testing")
 }
 
+dependencies {
+    implementation(project(":migration-common"))
+}
+
 mpsZips {
     include("lib/app.jar")
     include("lib/mps-core.jar")
