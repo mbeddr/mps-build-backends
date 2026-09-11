@@ -15,6 +15,7 @@ include("migration-common")
 include("modelcheck")
 include("execute")
 include("remigrate")
+include("migrate")
 
 include("integration-tests")
 
