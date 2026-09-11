@@ -12,6 +12,8 @@ This project contains the following subprojects:
   of MPS.
 * `modelcheck` – a command line tool to check given models or modules for errors.
 * `remigrate` - a command line tool to run re-runnable migrations on a project (or multiple projects).
+* `migrate` - a command line tool to run pending migrations on a project (or
+  multiple projects), headlessly.
 * `integration-tests` – tests that exercise the command line tools on sample projects.
 
 The subprojects are documented in their respective README.md files:
@@ -21,6 +23,7 @@ The subprojects are documented in their respective README.md files:
 * [`launcher`](launcher/README.md)
 * [`modelcheck`](modelcheck/README.md)
 * [`remigrate`](remigrate/README.md)
+* [`migrate`](migrate/README.md)
 
 ## Relationship to `mbeddr/mps-gradle-plugin`
 

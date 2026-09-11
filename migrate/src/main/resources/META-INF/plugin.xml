@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<idea-plugin>
+    <!-- This JAR is also an IDEA plugin -->
+    <id>de.itemis.mps.buildbackends.migrate</id>
+    <name>Migrate Backend</name>
+    <version>@version@</version>
+    <vendor url="https://itemis.com">itemis AG</vendor>
+
+    <dependencies>
+        <plugin id="jetbrains.mps.core" />
+        <plugin id="jetbrains.mps.ide.mpsmigration" />
+        <plugin id="jetbrains.mps.ide.migration.workbench" />
+    </dependencies>
+</idea-plugin>
