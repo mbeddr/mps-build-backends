@@ -24,6 +24,7 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MpsBackendBuilder {
     private final PropertyFactory propertyFactory;
@@ -244,8 +245,20 @@ public class MpsBackendBuilder {
         // MPS versions up to and including 2021.x create logs under their working directory so set it to a temporary
         // directory to avoid polluting the checkout directory or MPS home.
         options.setWorkingDir(tmpDir);
-        options.systemProperty("idea.config.path", new File(tmpDir, "config"));
-        options.systemProperty("idea.system.path", new File(tmpDir, "system"));
+
+        // Gradle needs this to be an inner class rather than a lambda so that it can be properly cached.
+        //noinspection Convert2Lambda
+        options.getJvmArgumentProviders().add(new CommandLineArgumentProvider() {
+            @Override
+            public Iterable<String> asArguments() {
+                // Add system properties from a CommandLineArgumentProvider to avoid breaking cacheability.
+                // See https://docs.gradle.org/current/userguide/caching_java_projects.html#dealing_with_file_paths
+                return List.of(
+                        "-Didea.config.path=" + new File(tmpDir, "config"),
+                        "-Didea.system.path=" + new File(tmpDir, "system")
+                );
+            }
+        });
     }
 
     @Nonnull
