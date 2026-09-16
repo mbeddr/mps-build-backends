@@ -2,8 +2,10 @@ import com.google.common.collect.ImmutableMultimap
 import com.google.common.collect.Multimap
 import com.google.common.collect.Multimaps
 import de.itemis.mps.buildbackends.MpsPlatform
+import org.gradle.kotlin.dsl.support.serviceOf
 import java.nio.file.Files
 import java.util.*
+import kotlin.io.path.createDirectories
 
 plugins {
     base
@@ -222,6 +224,14 @@ fun copyTestProjectTo(project: String, copiedProjectDir: File) {
     originalProjectDir.copyRecursively(copiedProjectDir)
 }
 
+fun Task.mpsTmpDir() = temporaryDir.resolve("mps-tmp")
+
+fun Task.recreateTempDirs() {
+    temporaryDir.deleteRecursively()
+    temporaryDir.toPath().createDirectories()
+    mpsTmpDir().toPath().createDirectories()
+}
+
 /**
  * Creates and returns the Gradle tasks to perform all the tests with a single MPS version.
  * Also creates any necessary Gradle objects (configurations, dependencies, etc.)
@@ -246,10 +256,7 @@ fun tasksForMpsPlatform(mpsPlatform: MpsPlatform): Multimap<TestKind, TaskProvid
     }
 
     fun JavaExec.configureGenerateTask(projectDir: File) {
-        val mpsTmpDir = this.temporaryDir.resolve("mps-tmp")
-        Files.createDirectories(mpsTmpDir.toPath())
-
-        configureGenerateTaskForSpec(projectDir, mpsTmpDir)
+        configureGenerateTaskForSpec(projectDir, mpsTmpDir())
     }
 
     val generateTasks = GENERATION_TESTS.map { testCase ->
@@ -264,6 +271,7 @@ fun tasksForMpsPlatform(mpsPlatform: MpsPlatform): Multimap<TestKind, TaskProvid
             args(testCase.args)
 
             doFirst {
+                recreateTempDirs()
                 copyTestProjectTo(testCase.project, projectDir)
             }
 
@@ -285,13 +293,14 @@ fun tasksForMpsPlatform(mpsPlatform: MpsPlatform): Multimap<TestKind, TaskProvid
             dependsOn(modelcheck)
             val projectDir = temporaryDir.resolve("project")
             doFirst {
+                recreateTempDirs()
                 copyTestProjectTo(testCase.project, projectDir)
             }
 
             mpsBackendLauncher.forMpsHome(mpsPlatform.mpsHome)
                 .withMpsVersion(mpsPlatform.mpsVersion)
                 .withJetBrainsJvm()
-                .withTemporaryDirectory(temporaryDir.resolve("mps-tmp").also { Files.createDirectories(it.toPath()) })
+                .withTemporaryDirectory(mpsTmpDir())
                 .configure(this)
 
             group = LifecycleBasePlugin.VERIFICATION_GROUP
@@ -330,20 +339,20 @@ fun tasksForMpsPlatform(mpsPlatform: MpsPlatform): Multimap<TestKind, TaskProvid
 
             doLast {
                 val projectDir = temporaryDir.resolve("project")
+                recreateTempDirs()
                 copyTestProjectTo(testCase.project, projectDir)
 
-                val generationResult = javaexec {
-                    val mpsTmpDir = this@register.temporaryDir.resolve("mps-tmp")
-                    Files.createDirectories(mpsTmpDir.toPath())
+                val execOperations = serviceOf<ExecOperations>()
 
-                    configureGenerateTaskForSpec(projectDir, mpsTmpDir)
+                val generationResult = execOperations.javaexec {
+                    configureGenerateTaskForSpec(projectDir, mpsTmpDir())
                 }
 
                 if (generationResult.exitValue != 0) {
                     throw GradleException("Generation failed with exit code ${generationResult.exitValue}")
                 }
 
-                val executionResult = javaexec {
+                val executionResult = execOperations.javaexec {
                     mpsBackendLauncher.forMpsHome(mpsPlatform.mpsHome)
                         .withMpsVersion(mpsPlatform.mpsVersion)
                         .withJetBrainsJvm()
