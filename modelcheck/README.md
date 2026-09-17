@@ -90,6 +90,10 @@ that will be matched against the model or module name (excluding model stereotyp
 
 All checkers that are registered in the `CheckerRegistry` of MPS will be run.
 
+Successful findings are shown only with `--verbose`. Console output contains at most 50 error and warning findings,
+with errors taking priority over warnings; a warning reports any omitted findings. The JUnit XML report is not
+truncated.
+
 ## Gradle example (Kotlin syntax)
 
 ```kotlin
