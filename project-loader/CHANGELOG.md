@@ -7,6 +7,17 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 6.0.0
+
+### Changed
+
+- Replaced the logging abstraction and its custom `LogLevel` with `java.util.logging.Logger` and
+  `java.util.logging.Level`.
+
+### Removed
+
+- The Apache Commons Logging dependency.
+
 ## 5.1.2
 
 ### Changed

@@ -9,7 +9,6 @@ version = "${project.extra["version.migration-common"]}${computeVersionSuffix()}
 val mpsZip: Configuration by configurations.creating
 
 dependencies {
-    compileOnly(libs.commons.logging)
     mpsZip(libs.mps)
     implementation(project(":project-loader"))
 

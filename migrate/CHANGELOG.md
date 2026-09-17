@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) after reaching version 1.0.0. Until then any version may
 contain breaking changes.
 
+## 0.2.0
+
+### Dependencies
+
+- Upgrade to project-loader 6.0.0 and migration-common 1.1.0.
+
 # 0.1.0
 
 - Initial version: runs the full MPS migration assistant (project migrations, cleanup migrations, module/language

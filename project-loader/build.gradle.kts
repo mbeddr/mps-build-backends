@@ -27,8 +27,6 @@ configurations {
 }
 
 dependencies {
-    compileOnly("commons-logging:commons-logging:1.2")
-
     api("com.xenomachina:kotlin-argparser:2.0.7")
 
     mpsRuntime(zipTree({ mpsZip.singleFile }).matching {

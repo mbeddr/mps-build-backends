@@ -3,11 +3,12 @@ package de.itemis.mps.gradle.remigrate
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.SystemExitException
 import com.xenomachina.argparser.mainBody
+import de.itemis.mps.gradle.logging.configureLogging
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>): Unit = mainBody("remigrate") {
     val parsedArgs = ArgParser(args).parseInto(::RemigrateArgs)
-    logging.configure(parsedArgs.logLevel)
+    configureLogging(parsedArgs.logLevel)
 
     try {
         remigrate(parsedArgs)

@@ -14,7 +14,6 @@ val libs: VersionCatalog = extensions.getByType<VersionCatalogsExtension>().name
 val mpsZips = extensions.create("mpsZips", PatternSet::class)
 
 dependencies {
-    compileOnly(libs.findLibrary("commons.logging").get())
     mpsZip(libs.findLibrary("mps").get())
     implementation(project(":project-loader"))
 
