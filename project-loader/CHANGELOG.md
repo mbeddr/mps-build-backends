@@ -9,15 +9,25 @@ Changes in versions before 2.0.0 are documented in the [root changelog](../CHANG
 
 ## 6.0.0
 
+### Added
+
+- `EnvironmentArgs#verbose` and `ProjectLoader.Builder#verbose` control whether MPS and IntelliJ Platform records are
+  written to the console. Command-line backends are quiet by default; programmatic `ProjectLoader` clients are verbose
+  by default.
+- Helpers for locating and reporting the `idea.log` file.
+
 ### Changed
 
 - Replaced the logging abstraction and its custom `LogLevel` with `java.util.logging.Logger` and
   `java.util.logging.Level`.
+- Quiet IDEA startup suppresses platform console handlers and standard-stream redirection while retaining file
+  logging. Quiet MPS-environment startup also initializes file logging explicitly on MPS 2026.1 and newer.
+- Quiet-mode console records contain only their message. Warnings and errors are written to standard error; lower
+  levels are written to standard output.
 
 ### Removed
 
 - The Apache Commons Logging dependency.
-
 ## 5.1.2
 
 ### Changed

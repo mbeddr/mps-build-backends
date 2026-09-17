@@ -1,5 +1,6 @@
-public final class de/itemis/mps/gradle/logging/LoggingKt {
-	public static final fun configureLogging (Ljava/util/logging/Level;)V
+public final class de/itemis/mps/gradle/logging/IdeaLogKt {
+	public static final fun ideaLogFile ()Ljava/io/File;
+	public static final fun printIdeaLogLocation ()V
 }
 
 public class de/itemis/mps/gradle/project/loader/Args : de/itemis/mps/gradle/project/loader/EnvironmentArgs {
@@ -26,6 +27,7 @@ public class de/itemis/mps/gradle/project/loader/EnvironmentArgs {
 	public final fun getPlugins ()Ljava/util/List;
 	public final fun getSkipLibraries ()Z
 	public final fun getTestMode ()Z
+	public final fun getVerbose ()Z
 }
 
 public final class de/itemis/mps/gradle/project/loader/EnvironmentConfigBuilder {
@@ -104,7 +106,7 @@ public final class de/itemis/mps/gradle/project/loader/Plugin {
 
 public final class de/itemis/mps/gradle/project/loader/ProjectLoader {
 	public static final field Companion Lde/itemis/mps/gradle/project/loader/ProjectLoader$Companion;
-	public synthetic fun <init> (Ljetbrains/mps/tool/environment/EnvironmentConfig;Lde/itemis/mps/gradle/project/loader/EnvironmentKind;Ljava/io/File;Ljava/lang/String;Ljava/util/logging/Level;Ljava/lang/Boolean;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljetbrains/mps/tool/environment/EnvironmentConfig;Lde/itemis/mps/gradle/project/loader/EnvironmentKind;Ljava/io/File;Ljava/lang/String;Ljava/util/logging/Level;ZLjava/lang/Boolean;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun execute (Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
 	public final fun executeForEachProject (Ljava/util/List;Lkotlin/jvm/functions/Function2;)Ljava/util/List;
 	public final fun executeWithProject (Ljava/io/File;Lkotlin/jvm/functions/Function2;)Ljava/lang/Object;
@@ -119,10 +121,12 @@ public final class de/itemis/mps/gradle/project/loader/ProjectLoader$Builder {
 	public final fun getEnvironmentKind ()Lde/itemis/mps/gradle/project/loader/EnvironmentKind;
 	public final fun getForceIndexing ()Ljava/lang/Boolean;
 	public final fun getLogLevel ()Ljava/util/logging/Level;
+	public final fun getVerbose ()Z
 	public final fun setBuildNumber (Ljava/lang/String;)V
 	public final fun setEnvironmentKind (Lde/itemis/mps/gradle/project/loader/EnvironmentKind;)V
 	public final fun setForceIndexing (Ljava/lang/Boolean;)V
 	public final fun setLogLevel (Ljava/util/logging/Level;)V
+	public final fun setVerbose (Z)V
 }
 
 public final class de/itemis/mps/gradle/project/loader/ProjectLoader$Companion {

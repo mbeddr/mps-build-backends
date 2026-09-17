@@ -30,6 +30,7 @@ import kotlin.math.min
 
 
 val logger = Logger.getLogger("de.itemis.mps.gradle.modelcheck")
+val outputLogger = Logger.getLogger("de.itemis.mps.gradle.output.modelcheck")
 
 enum class ReportFormat {
     @Deprecated(
@@ -42,15 +43,15 @@ enum class ReportFormat {
 }
 
 fun printInfo(msg: String) {
-    logger.info(msg)
+    outputLogger.info(msg)
 }
 
 fun printWarn(msg: String) {
-    logger.warning(msg)
+    outputLogger.warning(msg)
 }
 
 fun printError(msg: String) {
-    logger.severe(msg)
+    outputLogger.severe(msg)
 }
 
 fun getCurrentTimeStamp(): String {

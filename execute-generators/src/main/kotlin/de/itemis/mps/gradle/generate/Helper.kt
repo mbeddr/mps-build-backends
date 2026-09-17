@@ -40,9 +40,10 @@ enum class GenerationResult(val exitCode: Int) {
 }
 
 val logger = Logger.getLogger("de.itemis.mps.gradle.generate")
+val outputLogger = Logger.getLogger("de.itemis.mps.gradle.output.generate")
 
 private class MsgHandler : IMessageHandler {
-    val logger = Logger.getLogger("de.itemis.mps.gradle.generate.messages")
+    val logger = Logger.getLogger("de.itemis.mps.gradle.output.generate.messages")
     // explicitly store error occurrence, since MPS generation IResult is not reliable enough (might be successful despite errors)
     var errorOccurred = false
     override fun handle(msg: IMessage) {
@@ -174,31 +175,31 @@ private fun makeModels(proj: Project, models: List<SModel>): GenerationResult {
     val makeService = BuildMakeService()
 
     if (res.isEmpty()) {
-        logger.warning("nothing to generate")
+        outputLogger.warning("nothing to generate")
         return GenerationResult.NothingToGenerate
     }
-    logger.info("starting generation")
+    outputLogger.info("starting generation")
     val future = makeService.make(session, res, createScript(proj, models))
     try {
         val result = future.get()
-        logger.info("generation finished")
+        outputLogger.info("generation finished")
         return when {
             result.isSucessful && !msgHandler.errorOccurred -> {
-                logger.info("generation result: successful")
+                outputLogger.info("generation result: successful")
                 GenerationResult.Success
             }
             result.isSucessful && msgHandler.errorOccurred -> {
-                logger.severe("generation result: successful, but errors were reported")
+                outputLogger.severe("generation result: successful, but errors were reported")
                 GenerationResult.Error
             }
             else -> {
-                logger.severe("generation result: failed")
-                logger.severe(result.toString())
+                outputLogger.severe("generation result: failed")
+                outputLogger.severe(result.toString())
                 GenerationResult.Error
             }
         }
     } catch (ex: Exception) {
-        logger.log(Level.SEVERE, "failed to generate", ex)
+        outputLogger.log(Level.SEVERE, "failed to generate", ex)
     }
     return GenerationResult.Error
 }

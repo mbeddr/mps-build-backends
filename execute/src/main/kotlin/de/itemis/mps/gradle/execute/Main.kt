@@ -1,16 +1,13 @@
 package de.itemis.mps.gradle.execute
 
 import com.xenomachina.argparser.ArgParser
-import com.xenomachina.argparser.SystemExitException
 import com.xenomachina.argparser.mainBody
-import de.itemis.mps.gradle.logging.configureLogging
+import de.itemis.mps.gradle.logging.printIdeaLogLocation
 import java.util.logging.Level
 import kotlin.system.exitProcess
 
 fun main(args: Array<String>): Unit = mainBody("execute") {
     val parsed = ArgParser(args).parseInto(::ExecuteArgs)
-
-    configureLogging(parsed.logLevel)
 
     val result = try {
         parsed.buildLoader().executeWithProject(parsed.project) { environment, project ->
@@ -18,6 +15,7 @@ fun main(args: Array<String>): Unit = mainBody("execute") {
         }
     } catch (t: Throwable) {
         logger.log(Level.SEVERE, "error executing method", t)
+        printIdeaLogLocation()
         255
     }
 

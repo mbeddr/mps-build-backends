@@ -6,7 +6,7 @@ import jetbrains.mps.project.MPSProject
 import jetbrains.mps.project.Project
 import java.util.logging.Logger
 
-private val logger = Logger.getLogger("de.itemis.mps.gradle.migration")
+private val logger = Logger.getLogger("de.itemis.mps.gradle.output.migration")
 
 /**
  * Shared code used by the `remigrate` and `migrate` backends' `WorkFromIdeaPlugin.work()` implementations, which run

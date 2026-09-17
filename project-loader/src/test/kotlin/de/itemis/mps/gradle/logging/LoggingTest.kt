@@ -4,6 +4,8 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
 import java.util.logging.Handler
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -32,11 +34,45 @@ class LoggingTest {
 
     @Test
     fun `reconfigures existing handler without adding another one`() {
-        configureLogging(Level.WARNING)
-        configureLogging(Level.INFO)
+        VerboseConsoleOutput.configureLogging(Level.WARNING)
+        VerboseConsoleOutput.configureLogging(Level.INFO)
 
         assertEquals(Level.INFO, logger.level)
         assertEquals(1, logger.handlers.size)
         assertEquals(Level.INFO, logger.handlers.single().level)
+    }
+
+    @Test
+    fun `quiet logging writes messages to the appropriate stream without metadata`() {
+        val outputLogger = Logger.getLogger("de.itemis.mps.gradle.output")
+        val previousHandlers = outputLogger.handlers
+        val previousLevel = outputLogger.level
+        val previousUseParentHandlers = outputLogger.useParentHandlers
+        val originalOut = System.out
+        val originalErr = System.err
+        val standardOutput = ByteArrayOutputStream()
+        val errorOutput = ByteArrayOutputStream()
+        outputLogger.handlers.forEach(outputLogger::removeHandler)
+
+        try {
+            System.setOut(PrintStream(standardOutput))
+            System.setErr(PrintStream(errorOutput))
+            QuietConsoleOutput.configureLogging(Level.FINE)
+
+            outputLogger.fine("details")
+            outputLogger.info("progress")
+            outputLogger.warning("caution")
+            outputLogger.severe("failure")
+
+            assertEquals("details\nprogress\n", standardOutput.toString())
+            assertEquals("caution\nfailure\n", errorOutput.toString())
+        } finally {
+            outputLogger.handlers.forEach(outputLogger::removeHandler)
+            previousHandlers.forEach(outputLogger::addHandler)
+            outputLogger.level = previousLevel
+            outputLogger.useParentHandlers = previousUseParentHandlers
+            System.setOut(originalOut)
+            System.setErr(originalErr)
+        }
     }
 }

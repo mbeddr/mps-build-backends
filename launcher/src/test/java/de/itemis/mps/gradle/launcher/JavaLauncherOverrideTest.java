@@ -19,6 +19,19 @@ import static org.mockito.Mockito.when;
 public class JavaLauncherOverrideTest {
 
     @Test
+    public void configuresSynchronousIntellijLogging(@TempDir File tempDir) {
+        final Project project = ProjectBuilder.builder().withProjectDir(tempDir).build();
+        project.getPluginManager().apply(LauncherPlugin.class);
+
+        final MpsBackendLauncher launcher = project.getExtensions().getByType(MpsBackendLauncher.class);
+        final JavaExec task = project.getTasks().create("javaExec", JavaExec.class);
+
+        launcher.builder().configure(task);
+
+        Assertions.assertEquals("true", task.getSystemProperties().get("intellij.platform.log.sync"));
+    }
+
+    @Test
     public void overridesDefaultJavaLauncher(@TempDir File tempDir) {
         final Project project = ProjectBuilder.builder().withProjectDir(tempDir).build();
         project.getPluginManager().apply(LauncherPlugin.class);

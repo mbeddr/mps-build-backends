@@ -6,7 +6,7 @@ import jetbrains.mps.project.Project
 import java.io.File
 import java.util.logging.Logger
 
-val logger = Logger.getLogger("de.itemis.mps.gradle.migrate")
+val logger = Logger.getLogger("de.itemis.mps.gradle.output.remigrate")
 
 fun remigrate(args: RemigrateArgs) {
     val loader = args.buildLoader()

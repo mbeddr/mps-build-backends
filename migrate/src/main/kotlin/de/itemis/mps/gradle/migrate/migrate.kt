@@ -8,7 +8,7 @@ import java.io.File
 import java.util.logging.Level
 import java.util.logging.Logger
 
-val logger = Logger.getLogger("de.itemis.mps.gradle.migrate")
+val logger = Logger.getLogger("de.itemis.mps.gradle.output.migrate")
 
 fun migrate(args: MigrateArgs) {
     val loader = args.buildLoader()
