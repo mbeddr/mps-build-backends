@@ -54,6 +54,14 @@ fun printError(msg: String) {
     outputLogger.severe(msg)
 }
 
+private val findingOutput = FindingOutput { severity, message ->
+    when (severity) {
+        MessageStatus.OK -> printInfo(message)
+        MessageStatus.WARNING -> printWarn(message)
+        MessageStatus.ERROR -> printError(message)
+    }
+}
+
 fun getCurrentTimeStamp(): String {
     val df = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
     return df.format(Date())
@@ -71,33 +79,17 @@ fun IssueKindReportItem.PathObject.asModel(project: Project): SModel? =
 fun IssueKindReportItem.PathObject.asNode(project: Project): SNode? =
     (this as? IssueKindReportItem.PathObject.NodePathObject)?.resolve(project.repository)
 
-fun printResult(item: IssueKindReportItem, project: Project, args: ModelCheckArgs) {
-    val info = ::printInfo
-    val warn = if (args.warningAsError) {
-        ::printError
-    } else {
-        ::printWarn
-    }
-
-    val err = ::printError
-
-    val print = fun(severity: MessageStatus, msg: String) {
-        when (severity) {
-            MessageStatus.OK -> info(msg)
-            MessageStatus.WARNING -> warn(msg)
-            MessageStatus.ERROR -> err(msg)
-        }
-    }
-
-    when (val path = item.path) {
+private fun reportResult(item: IssueKindReportItem, project: Project, reporter: ConsoleFindingReporter) {
+    val message = when (val path = item.path) {
         is IssueKindReportItem.PathObject.ModulePathObject ->
-            print(item.severity, "${item.message} [${path.asModule(project)?.moduleName}]")
+            "${item.message} [${path.asModule(project)?.moduleName}]"
         is IssueKindReportItem.PathObject.ModelPathObject ->
-            print(item.severity, "${item.message} [${path.asModel(project)?.name?.value}]")
+            "${item.message} [${path.asModel(project)?.name?.value}]"
         is IssueKindReportItem.PathObject.NodePathObject ->
-            print(item.severity, "${item.message} [${path.asNode(project)?.url}]")
-        else -> print(item.severity, item.message)
+            "${item.message} [${path.asNode(project)?.url}]"
+        else -> item.message
     }
+    reporter.report(item.severity, message)
 }
 
 fun writeJunitXml(modules: Iterable<SModule>,
@@ -365,7 +357,9 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
             // We need read access here to resolve the node pointers in the report items
             val collectedIssues = issueCollector.result()
             collectedIssuesRef.set(collectedIssues)
-            collectedIssues.forEach { printResult(it, project, args) }
+            val consoleReporter = ConsoleFindingReporter(args.verbose, args.warningAsError, findingOutput)
+            collectedIssues.forEach { reportResult(it, project, consoleReporter) }
+            consoleReporter.finish()
 
             if (args.xmlFile != null) {
                 val allCheckedModules = itemsToCheck.modules

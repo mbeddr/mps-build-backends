@@ -20,6 +20,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `--log-level`.
 - Quiet-mode console records contain only their message. Warnings and errors are written to standard error; lower
   levels are written to standard output.
+- Model checking suppresses successful findings in quiet mode and reports at most 50 errors and warnings on the
+  console, prioritizing errors. XML reports still contain all findings.
 
 ### Dependencies
 
