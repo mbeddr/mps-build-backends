@@ -7,9 +7,9 @@ report file.
 
 The tool is JVM-based and needs on its classpath:
 
-* The MPS libraries (`${mps_home}/lib/**/*.jar`).
-* The `mps-httpsupport` plugin (`${mps_home}/plugins/mps-httpsupport/**/*.jar`).
-* The `mps-modelchecker` plugin (`${mps_home}/plugins/mps-modelchecker/**/*.jar`).
+- The MPS libraries (`${mps_home}/lib/**/*.jar`).
+- The `mps-httpsupport` plugin (`${mps_home}/plugins/mps-httpsupport/**/*.jar`).
+- The `mps-modelchecker` plugin (`${mps_home}/plugins/mps-modelchecker/**/*.jar`).
 
 The simplest way to run it is by using Gradle's `JavaExec` task. See below for an example.
 
@@ -67,7 +67,7 @@ optional arguments:
 
   --parallel                          run model checker in parallel
 
-  --warning-as-error                  treat model checker warning as errors
+  --warning-as-error                  treat model checker warnings as errors
 
   --error-no-fail                     report errors but don't fail the build
 
