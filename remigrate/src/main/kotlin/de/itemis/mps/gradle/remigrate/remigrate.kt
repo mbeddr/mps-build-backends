@@ -2,12 +2,11 @@ package de.itemis.mps.gradle.remigrate
 
 import com.intellij.ide.plugins.PluginManager
 import com.intellij.openapi.extensions.PluginId
-import de.itemis.mps.gradle.logging.detectLogging
 import jetbrains.mps.project.Project
 import java.io.File
+import java.util.logging.Logger
 
-val logging = detectLogging()
-val logger = logging.getLogger("de.itemis.mps.gradle.migrate")
+val logger = Logger.getLogger("de.itemis.mps.gradle.migrate")
 
 fun remigrate(args: RemigrateArgs) {
     val loader = args.buildLoader()

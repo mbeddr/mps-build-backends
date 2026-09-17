@@ -1,12 +1,12 @@
 package de.itemis.mps.gradle.migration
 
 import com.xenomachina.argparser.ArgParser
-import de.itemis.mps.gradle.logging.detectLogging
 import de.itemis.mps.gradle.project.loader.EnvironmentArgs
 import de.itemis.mps.gradle.project.loader.Plugin
 import de.itemis.mps.gradle.project.loader.ProjectLoader
+import java.util.logging.Logger
 
-private val logger = detectLogging().getLogger("de.itemis.mps.gradle.migration")
+private val logger = Logger.getLogger("de.itemis.mps.gradle.migration")
 
 /**
  * Command line arguments and environment setup shared by the `remigrate` and `migrate` backends: both operate on
@@ -27,7 +27,7 @@ abstract class MigrationBackendArgs(parser: ArgParser) : EnvironmentArgs(parser)
         super.configureProjectLoader(builder)
 
         if (!builder.environmentConfigBuilder.plugins.any { it.id == backendPluginId }) {
-            logger.warn(
+            logger.warning(
                 "Plugin $backendPluginId is missing, the process will likely fail. " +
                         "Specify the plugin location using --plugin=$backendPluginId::<backend jar path>"
             )

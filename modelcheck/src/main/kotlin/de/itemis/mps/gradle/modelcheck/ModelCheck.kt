@@ -3,7 +3,6 @@ package de.itemis.mps.gradle.modelcheck
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import de.itemis.mps.gradle.junit.*
-import de.itemis.mps.gradle.logging.detectLogging
 import de.itemis.mps.gradle.project.loader.ModuleAndModelMatcher
 import jetbrains.mps.checkers.ModelCheckerBuilder
 import jetbrains.mps.errors.CheckerRegistry
@@ -25,11 +24,12 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
+import java.util.logging.Level
+import java.util.logging.Logger
 import kotlin.math.min
 
 
-val logging = detectLogging()
-val logger = logging.getLogger("de.itemis.mps.gradle.modelcheck")
+val logger = Logger.getLogger("de.itemis.mps.gradle.modelcheck")
 
 enum class ReportFormat {
     @Deprecated(
@@ -46,11 +46,11 @@ fun printInfo(msg: String) {
 }
 
 fun printWarn(msg: String) {
-    logger.warn(msg)
+    logger.warning(msg)
 }
 
 fun printError(msg: String) {
-    logger.error(msg)
+    logger.severe(msg)
 }
 
 fun getCurrentTimeStamp(): String {
@@ -283,7 +283,7 @@ private fun ModelCheckerBuilder.setParallelTaskScheduler(project: Project) {
             try {
                 setParallelTaskSchedulerV1(project)
             } catch (e: LinkageError) {
-                logger.warn("Parallel model checking is not supported in this version of MPS", e)
+                logger.log(Level.WARNING, "Parallel model checking is not supported in this version of MPS", e)
             }
         }
     }
@@ -306,7 +306,7 @@ private fun ModelCheckerBuilder.setParallelTaskSchedulerV1(project: Project) {
 fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: Project): Boolean {
     val checkers = environment.platform.findComponent(CheckerRegistry::class.java)!!.checkers
 
-    if (logger.isInfoEnabled) {
+    if (logger.isLoggable(Level.INFO)) {
         logger.info(checkers.joinToString(prefix = "Found the following checkers in CheckerRegistry: "))
     }
 

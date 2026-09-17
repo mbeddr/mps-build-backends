@@ -2,7 +2,6 @@ package de.itemis.mps.gradle.generate
 
 
 import com.intellij.openapi.util.IconLoader
-import de.itemis.mps.gradle.logging.detectLogging
 import de.itemis.mps.gradle.project.loader.EnvironmentKind
 import de.itemis.mps.gradle.project.loader.ModuleAndModelMatcher
 import jetbrains.mps.generator.GenerationSettingsProvider
@@ -29,6 +28,8 @@ import jetbrains.mps.util.Computable
 import org.jetbrains.mps.openapi.language.SLanguage
 import org.jetbrains.mps.openapi.model.SModel
 import java.util.*
+import java.util.logging.Level
+import java.util.logging.Logger
 
 enum class GenerationResult(val exitCode: Int) {
     Success(0),
@@ -38,22 +39,21 @@ enum class GenerationResult(val exitCode: Int) {
     fun isFailure() = this != Success
 }
 
-val logging = detectLogging()
-val logger = logging.getLogger("de.itemis.mps.gradle.generate")
+val logger = Logger.getLogger("de.itemis.mps.gradle.generate")
 
 private class MsgHandler : IMessageHandler {
-    val logger = logging.getLogger("de.itemis.mps.gradle.generate.messages")
+    val logger = Logger.getLogger("de.itemis.mps.gradle.generate.messages")
     // explicitly store error occurrence, since MPS generation IResult is not reliable enough (might be successful despite errors)
     var errorOccurred = false
     override fun handle(msg: IMessage) {
         when (msg.kind) {
-            MessageKind.INFORMATION -> logger.info(msg.text, msg.exception)
-            MessageKind.WARNING -> logger.warn(msg.text, msg.exception)
+            MessageKind.INFORMATION -> logger.log(Level.INFO, msg.text, msg.exception)
+            MessageKind.WARNING -> logger.log(Level.WARNING, msg.text, msg.exception)
             MessageKind.ERROR -> {
                 errorOccurred = true
-                logger.error(msg.text, msg.exception)
+                logger.log(Level.SEVERE, msg.text, msg.exception)
             }
-            null -> logger.error(msg.text, msg.exception)
+            null -> logger.log(Level.SEVERE, msg.text, msg.exception)
         }
     }
 
@@ -120,10 +120,10 @@ private fun createScript(proj: Project, models: List<SModel>): IScript {
     val allFacets = mutableListOf<IFacet.Name>()
 
     when {
-        allUsedLanguages == null -> logger.error("failed to retrieve used languages")
-        allUsedLanguages.isEmpty() -> logger.warn("no used language is given")
+        allUsedLanguages == null -> logger.severe("failed to retrieve used languages")
+        allUsedLanguages.isEmpty() -> logger.warning("no used language is given")
         else -> {
-            if (logger.isInfoEnabled) {
+            if (logger.isLoggable(Level.INFO)) {
                 logger.info("All languages used by the models: $allUsedLanguages")
             }
 
@@ -133,7 +133,7 @@ private fun createScript(proj: Project, models: List<SModel>): IScript {
                 .flatMap { it.manifest.facets() }
                 .map { it.name }
 
-            if (logger.isInfoEnabled) {
+            if (logger.isLoggable(Level.INFO)) {
                 logger.info("Additional facets found in make aspects of used languages: $facetNamesFromMakeAspect")
             }
             allFacets.addAll(facetNamesFromMakeAspect)
@@ -141,7 +141,7 @@ private fun createScript(proj: Project, models: List<SModel>): IScript {
             val facetsFromRegistry = getFacetsForLanguages(facetRegistry, allUsedLanguages)
             val facetNamesFromRegistry = facetsFromRegistry.map { it.name }
 
-            if (logger.isInfoEnabled) {
+            if (logger.isLoggable(Level.INFO)) {
                 logger.info("Additional facets found in FacetRegistry for used languages: $facetNamesFromRegistry")
             }
 
@@ -174,7 +174,7 @@ private fun makeModels(proj: Project, models: List<SModel>): GenerationResult {
     val makeService = BuildMakeService()
 
     if (res.isEmpty()) {
-        logger.warn("nothing to generate")
+        logger.warning("nothing to generate")
         return GenerationResult.NothingToGenerate
     }
     logger.info("starting generation")
@@ -188,17 +188,17 @@ private fun makeModels(proj: Project, models: List<SModel>): GenerationResult {
                 GenerationResult.Success
             }
             result.isSucessful && msgHandler.errorOccurred -> {
-                logger.error("generation result: successful, but errors were reported")
+                logger.severe("generation result: successful, but errors were reported")
                 GenerationResult.Error
             }
             else -> {
-                logger.error("generation result: failed")
-                logger.error(result)
+                logger.severe("generation result: failed")
+                logger.severe(result.toString())
                 GenerationResult.Error
             }
         }
     } catch (ex: Exception) {
-        logger.error("failed to generate", ex)
+        logger.log(Level.SEVERE, "failed to generate", ex)
     }
     return GenerationResult.Error
 }
@@ -210,7 +210,7 @@ fun generateProject(parsed: GenerateArgs, project: Project): GenerationResult {
         when {
             it == 0 -> generationSettings.isParallelGenerator = false
             it > 0 -> {
-                logger.warn("Using parallel generation with $it threads")
+                logger.warning("Using parallel generation with $it threads")
                 generationSettings.isParallelGenerator = true
                 generationSettings.numberOfParallelThreads = it
             }
@@ -232,7 +232,7 @@ fun generateProject(parsed: GenerateArgs, project: Project): GenerationResult {
         modules to models
     })
 
-    if (logger.isInfoEnabled &&
+    if (logger.isLoggable(Level.INFO) &&
         (parsed.models.isNotEmpty() || parsed.excludeModels.isNotEmpty()
                 || parsed.modules.isNotEmpty() || parsed.excludeModules.isNotEmpty())) {
         logger.info("Modules included in generation: $modulesToInclude")

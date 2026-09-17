@@ -4,8 +4,7 @@ import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.project.impl.P3SupportInstaller
 import com.intellij.openapi.util.BuildNumber
 import com.intellij.serviceContainer.AlreadyDisposedException
-import de.itemis.mps.gradle.logging.LogLevel
-import de.itemis.mps.gradle.logging.detectLogging
+import de.itemis.mps.gradle.logging.configureLogging
 import jetbrains.mps.project.MPSProject
 import jetbrains.mps.project.Project
 import jetbrains.mps.tool.environment.Environment
@@ -13,6 +12,8 @@ import jetbrains.mps.tool.environment.EnvironmentConfig
 import jetbrains.mps.tool.environment.IdeaEnvironment
 import jetbrains.mps.tool.environment.MpsEnvironment
 import java.io.File
+import java.util.logging.Level
+import java.util.logging.Logger
 
 /**
  * Executes an action in the context of an MPS or IDEA environment.
@@ -22,10 +23,10 @@ public class ProjectLoader private constructor(
     private val environmentKind: EnvironmentKind,
     private val pluginLocation: File?,
     private val buildNumber: String?,
-    private val logLevel: LogLevel,
+    private val logLevel: Level,
     private val forceIndexing: Boolean?
 ) {
-    private val logger = detectLogging().getLogger("de.itemis.mps.gradle.project.loader")
+    private val logger = Logger.getLogger("de.itemis.mps.gradle.project.loader")
 
     public class Builder {
         /**
@@ -44,7 +45,7 @@ public class ProjectLoader private constructor(
          */
         public var buildNumber: String? = null
 
-        public var logLevel: LogLevel = LogLevel.WARN
+        public var logLevel: Level = Level.WARNING
 
         /**
          * Whether to wait for indexing to complete after opening the project. Only has an effect in IDEA environments.
@@ -77,8 +78,6 @@ public class ProjectLoader private constructor(
      * the environment after the action finishes, even if it throws an exception.
      */
     public fun <T> execute(action: (Environment) -> T): T {
-        val logging = detectLogging()
-
         /**
          *  The Idea platform reads this property first to determine where additional plugins are loaded from.
          */
@@ -137,7 +136,7 @@ public class ProjectLoader private constructor(
             }
 
             // Configure logging again in case opening the environment has reset it.
-            logging.configure(logLevel)
+            configureLogging(logLevel)
 
             try {
                 logger.info("flushing events")
@@ -152,7 +151,11 @@ public class ProjectLoader private constructor(
                     environment.dispose()
                     logger.info("environment disposed")
                 } catch (e: Exception) {
-                    logger.info("an exception was caught while disposing environment, it will be logged here and ignored", e)
+                    logger.log(
+                        Level.INFO,
+                        "an exception was caught while disposing environment, it will be logged here and ignored",
+                        e
+                    )
                 }
             }
 

@@ -1,12 +1,12 @@
 package de.itemis.mps.gradle.migration
 
 import com.intellij.openapi.application.ex.ApplicationManagerEx
-import de.itemis.mps.gradle.logging.detectLogging
 import jetbrains.mps.project.AbstractModule
 import jetbrains.mps.project.MPSProject
 import jetbrains.mps.project.Project
+import java.util.logging.Logger
 
-private val logger = detectLogging().getLogger("de.itemis.mps.gradle.migration")
+private val logger = Logger.getLogger("de.itemis.mps.gradle.migration")
 
 /**
  * Shared code used by the `remigrate` and `migrate` backends' `WorkFromIdeaPlugin.work()` implementations, which run

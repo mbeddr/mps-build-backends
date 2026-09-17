@@ -7,6 +7,7 @@ import de.itemis.mps.gradle.migration.getProjectName
 import de.itemis.mps.gradle.migration.saveProject
 import jetbrains.mps.ide.migration.AntTaskExecutionUtil
 import jetbrains.mps.project.Project
+import java.util.logging.Level
 
 /**
  * Entry point called by reflection from this JAR loaded as an IDEA plugin.
@@ -43,7 +44,7 @@ object WorkFromIdeaPlugin {
                     saveProject(project)
                 }
             } catch (e: Exception) {
-                logger.error("Exception while running migration assistant on $projectName", e)
+                logger.log(Level.SEVERE, "Exception while running migration assistant on $projectName", e)
             }
         }, ModalityState.defaultModalityState())
 

@@ -1,9 +1,9 @@
 package de.itemis.mps.gradle.project.loader
 
-import de.itemis.mps.gradle.logging.detectLogging
 import java.io.File
+import java.util.logging.Logger
 
-private val logger = detectLogging().getLogger("de.itemis.mps.gradle.project.loader.ProjectLibraries")
+private val logger = Logger.getLogger("de.itemis.mps.gradle.project.loader.ProjectLibraries")
 
 internal fun findProjectLibraries(projectLocation: File, macros: List<Macro>, onFound: (Collection<String>) -> Unit) {
     val librariesXml = projectLocation.resolve(".mps/libraries.xml")
@@ -38,7 +38,7 @@ private fun expandMacros(macros: Map<String, String>, projectLocation: File, inp
     val macroValue = macros[macroKey]
 
     if (macroValue == null) {
-        logger.warn("Unknown macro: $macroKey")
+        logger.warning("Unknown macro: $macroKey")
         return input
     }
 
