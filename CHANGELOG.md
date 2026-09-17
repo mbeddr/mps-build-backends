@@ -7,14 +7,23 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## 1.27.0
 
+### Added
+
+- Backends print the `idea.log` location when they fail.
+- The `--verbose` option restores MPS and IntelliJ Platform console logging.
+
 ### Changed
 
 - Backends now use `java.util.logging` directly instead of Apache Commons Logging.
+- Backends now run quietly by default. MPS and IntelliJ Platform records are written only to `idea.log`, while
+  operation results such as generation messages and model-check findings remain on the console according to
+  `--log-level`.
+- Quiet-mode console records contain only their message. Warnings and errors are written to standard error; lower
+  levels are written to standard output.
 
 ### Dependencies
 
 - Upgrade to project-loader 6.0.0.
-
 ## 1.26.2
 
 ### Fixed

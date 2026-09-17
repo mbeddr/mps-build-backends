@@ -21,8 +21,8 @@ value, and if an exception is thrown, the exit code will be 255.
 ```
 usage: execute [-h] [--plugin PLUGIN]... [--macro MACRO]... [--plugin-location PLUGIN_LOCATION]
                [--plugin-root PLUGIN_ROOT]... [--build-number BUILD_NUMBER] [--test-mode]
-               [--environment ENVIRONMENT] [--log-level LOG_LEVEL] [--no-libraries]
-               --project PROJECT [--force-indexing FORCE_INDEXING] --module MODULE --class CLASS
+               [--environment ENVIRONMENT] [--log-level LOG_LEVEL] [--verbose] [--no-libraries]
+               [--force-indexing FORCE_INDEXING] --project PROJECT --module MODULE --class CLASS
                --method METHOD [--arg ARG]...
 
 required arguments:
@@ -56,8 +56,9 @@ optional arguments:
   --environment ENVIRONMENT           kind of environment to initialize, supported values are
                                       'idea' (default), 'mps'
 
-  --log-level LOG_LEVEL               console log level. Supported values: info, warn, error, off.
-                                      Default: warn.
+  --log-level LOG_LEVEL               console log level. Supported values: all, info, warn, error, off. Default: warn.
+
+  --verbose                           show MPS and IntelliJ Platform log messages on the console
 
   --no-libraries                      do not load project libraries under MPS environment
 

@@ -62,6 +62,11 @@ public open class EnvironmentArgs(parser: ArgParser) {
         }
     }.default(Level.WARNING)
 
+    public val verbose: Boolean by parser.flagging(
+        "--verbose",
+        help = "show MPS and IntelliJ Platform log messages on the console"
+    )
+
     public val skipLibraries: Boolean by parser.flagging("--no-libraries",
         help = "do not load project libraries under MPS environment")
 
@@ -87,6 +92,7 @@ public open class EnvironmentArgs(parser: ArgParser) {
         builder.environmentKind = environmentKind
         builder.buildNumber = buildNumber
         builder.logLevel = logLevel
+        builder.verbose = verbose
 
         builder.forceIndexing = forceIndexing
     }

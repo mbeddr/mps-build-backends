@@ -8,7 +8,7 @@ import java.lang.reflect.Method
 import java.util.logging.Logger
 import kotlin.reflect.KClass
 
-val logger = Logger.getLogger("de.itemis.mps.gradle.execute")
+val logger = Logger.getLogger("de.itemis.mps.gradle.output.execute")
 
 private fun Project.getModuleReference(moduleName: String): SModuleReference {
     lateinit var moduleReference: SModuleReference

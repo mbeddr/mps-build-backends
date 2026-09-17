@@ -8,10 +8,13 @@ contain breaking changes.
 
 ## 0.2.0
 
+### Added
+
+- The backend is quiet by default, supports `--verbose`, and reports the `idea.log` location on failure.
+
 ### Dependencies
 
 - Upgrade to project-loader 6.0.0 and migration-common 1.1.0.
-
 # 0.1.0
 
 - Initial version: runs the full MPS migration assistant (project migrations, cleanup migrations, module/language

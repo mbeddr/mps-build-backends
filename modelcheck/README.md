@@ -18,11 +18,11 @@ The simplest way to run it is by using Gradle's `JavaExec` task. See below for a
 ```
 usage: modelcheck [-h] [--plugin PLUGIN]... [--macro MACRO]... [--plugin-location PLUGIN_LOCATION]
                   [--plugin-root PLUGIN_ROOT]... [--build-number BUILD_NUMBER] [--test-mode]
-                  [--environment ENVIRONMENT] [--log-level LOG_LEVEL] [--no-libraries]
-                  --project PROJECT [--model MODEL]... [--module MODULE]...
+                  [--environment ENVIRONMENT] [--log-level LOG_LEVEL] [--verbose] [--no-libraries]
+                  [--force-indexing FORCE_INDEXING] --project PROJECT [--model MODEL]... [--module MODULE]...
                   [--exclude-model EXCLUDE_MODEL]... [--exclude-module EXCLUDE_MODULE]...
                   [--parallel] [--warning-as-error] [--error-no-fail] [--result-file RESULT_FILE]
-                  [--result-format RESULT_FORMAT] [--force-indexing FORCE_INDEXING]
+                  [--result-format RESULT_FORMAT]
 
 required arguments:
   --project PROJECT                   project to generate from
@@ -47,10 +47,15 @@ optional arguments:
   --environment ENVIRONMENT           kind of environment to initialize, supported values are
                                       'idea' (default), 'mps'
 
-  --log-level LOG_LEVEL               console log level. Supported values: info, warn, error, off.
-                                      Default: warn.
+  --log-level LOG_LEVEL               console log level. Supported values: all, info, warn, error, off. Default: warn.
+
+  --verbose                           show MPS and IntelliJ Platform log messages on the console
 
   --no-libraries                      do not load project libraries under MPS environment
+
+  --force-indexing FORCE_INDEXING     whether to force full indexing at startup to work around
+                                      MPS-37926. Supported values: always, never, auto. Default:
+                                      auto.
 
   --model MODEL                       list of models to check (regexes)
 
@@ -70,9 +75,6 @@ optional arguments:
 
   --result-format RESULT_FORMAT       reporting format for the JUnit file
 
-  --force-indexing FORCE_INDEXING     whether to force full indexing at startup to work around
-                                      MPS-37926. Supported values: always, never, auto. Default:
-                                      auto.
 ```
 
 The `--result-format` option takes one of three values: `model` produces one test per tested model (the default,

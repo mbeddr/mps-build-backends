@@ -6,7 +6,7 @@ import de.itemis.mps.gradle.project.loader.Plugin
 import de.itemis.mps.gradle.project.loader.ProjectLoader
 import java.util.logging.Logger
 
-private val logger = Logger.getLogger("de.itemis.mps.gradle.migration")
+private val logger = Logger.getLogger("de.itemis.mps.gradle.output.migration")
 
 /**
  * Command line arguments and environment setup shared by the `remigrate` and `migrate` backends: both operate on
