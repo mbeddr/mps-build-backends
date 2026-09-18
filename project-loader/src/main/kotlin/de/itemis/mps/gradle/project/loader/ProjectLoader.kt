@@ -4,8 +4,8 @@ import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.project.impl.P3SupportInstaller
 import com.intellij.openapi.util.BuildNumber
 import com.intellij.serviceContainer.AlreadyDisposedException
-import de.itemis.mps.gradle.logging.LogLevel
-import de.itemis.mps.gradle.logging.detectLogging
+import de.itemis.mps.gradle.logging.ConsoleOutput
+import de.itemis.mps.gradle.logging.consoleOutput
 import jetbrains.mps.project.MPSProject
 import jetbrains.mps.project.Project
 import jetbrains.mps.tool.environment.Environment
@@ -13,6 +13,8 @@ import jetbrains.mps.tool.environment.EnvironmentConfig
 import jetbrains.mps.tool.environment.IdeaEnvironment
 import jetbrains.mps.tool.environment.MpsEnvironment
 import java.io.File
+import java.util.logging.Level
+import java.util.logging.Logger
 
 /**
  * Executes an action in the context of an MPS or IDEA environment.
@@ -22,10 +24,11 @@ public class ProjectLoader private constructor(
     private val environmentKind: EnvironmentKind,
     private val pluginLocation: File?,
     private val buildNumber: String?,
-    private val logLevel: LogLevel,
+    private val logLevel: Level,
+    private val verbose: Boolean,
     private val forceIndexing: Boolean?
 ) {
-    private val logger = detectLogging().getLogger("de.itemis.mps.gradle.project.loader")
+    private val logger = Logger.getLogger("de.itemis.mps.gradle.project.loader")
 
     public class Builder {
         /**
@@ -44,7 +47,13 @@ public class ProjectLoader private constructor(
          */
         public var buildNumber: String? = null
 
-        public var logLevel: LogLevel = LogLevel.WARN
+        public var logLevel: Level = Level.WARNING
+
+        /**
+         * Whether MPS and IntelliJ Platform log messages are written to the console. This is enabled by default for
+         * programmatic clients; backend command lines configure it from `--verbose`.
+         */
+        public var verbose: Boolean = true
 
         /**
          * Whether to wait for indexing to complete after opening the project. Only has an effect in IDEA environments.
@@ -58,6 +67,7 @@ public class ProjectLoader private constructor(
             environmentConfigBuilder.pluginLocation,
             buildNumber,
             logLevel,
+            verbose,
             forceIndexing
         )
 
@@ -76,8 +86,12 @@ public class ProjectLoader private constructor(
      * Executes [action] in the context of an MPS/IDEA environment, initialized according to this instance. Shuts down
      * the environment after the action finishes, even if it throws an exception.
      */
-    public fun <T> execute(action: (Environment) -> T): T {
-        val logging = detectLogging()
+    public fun <T> execute(action: (Environment) -> T): T = execute { environment, output ->
+        output.showBackendOutput { action(environment) }
+    }
+
+    private fun <T> execute(action: (Environment, ConsoleOutput) -> T): T {
+        val output = consoleOutput(verbose, environmentKind, logLevel)
 
         /**
          *  The Idea platform reads this property first to determine where additional plugins are loaded from.
@@ -111,39 +125,15 @@ public class ProjectLoader private constructor(
                 System.setProperty(pluginsCompatibleBuildProperty, buildNumber)
             }
 
-            logger.info("creating $environmentKind environment")
-
-            val environment: Environment = when (environmentKind) {
-                EnvironmentKind.IDEA -> IdeaEnvironment(environmentConfig).apply {
-                    logger.info("initializing IDEA environment")
-                    try {
-                        // We only need to call seal() for MPS 2025.1, other versions either don't need it or call it
-                        // themselves. However, we cannot use ApplicationInfo.getInstance() here to check the build
-                        // number because the application hasn't been initialized yet. At the same time, calling seal()
-                        // after init() is too late. So we just call it and catch any exceptions, since it appears that
-                        // calling it multiple times should do no harm.
-                        P3SupportInstaller.seal()
-                    } catch (_: NoClassDefFoundError) {
-                        // Ignore if no P3SupportInstaller present
-                    }
-
-                    init()
-                }
-
-                EnvironmentKind.MPS -> MpsEnvironment(environmentConfig).apply {
-                    logger.info("initializing MPS environment")
-                    init()
-                }
-            }
-
-            // Configure logging again in case opening the environment has reset it.
-            logging.configure(logLevel)
+            output.beforeEnvironmentCreated()
+            val environment = createEnvironment()
+            output.environmentCreated()
 
             try {
                 logger.info("flushing events")
                 environment.flushAllEvents()
 
-                return action(environment)
+                return action(environment, output)
             } finally {
                 logger.info("flushing events before environment disposal")
                 environment.flushAllEvents()
@@ -152,11 +142,17 @@ public class ProjectLoader private constructor(
                     environment.dispose()
                     logger.info("environment disposed")
                 } catch (e: Exception) {
-                    logger.info("an exception was caught while disposing environment, it will be logged here and ignored", e)
+                    logger.log(
+                        Level.INFO,
+                        "an exception was caught while disposing environment, it will be logged here and ignored",
+                        e
+                    )
                 }
             }
 
         } finally {
+            output.close()
+
             // cleanup overridden property values to the state that they were before.
             propertyOverrides.forEach {
                 // if a property wasn't set before the value is "null"
@@ -166,6 +162,33 @@ public class ProjectLoader private constructor(
                 } else {
                     System.clearProperty(it.first)
                 }
+            }
+        }
+    }
+
+    private fun createEnvironment(): Environment {
+        logger.info("creating $environmentKind environment")
+
+        return when (environmentKind) {
+            EnvironmentKind.IDEA -> IdeaEnvironment(environmentConfig).apply {
+                logger.info("initializing IDEA environment")
+                try {
+                    // We only need to call seal() for MPS 2025.1, other versions either don't need it or call it
+                    // themselves. However, we cannot use ApplicationInfo.getInstance() here to check the build
+                    // number because the application hasn't been initialized yet. At the same time, calling seal()
+                    // after init() is too late. So we just call it and catch any exceptions, since it appears that
+                    // calling it multiple times should do no harm.
+                    P3SupportInstaller.seal()
+                } catch (_: NoClassDefFoundError) {
+                    // Ignore if no P3SupportInstaller present
+                }
+
+                init()
+            }
+
+            EnvironmentKind.MPS -> MpsEnvironment(environmentConfig).apply {
+                logger.info("initializing MPS environment")
+                init()
             }
         }
     }
@@ -181,7 +204,7 @@ public class ProjectLoader private constructor(
      * @param action action to execute.
      */
     public fun <T> executeWithProject(projectDir: File, action: (Environment, Project) -> T): T =
-        execute { env -> withOpenProject(env, projectDir, action) }
+        execute { env, output -> withOpenProject(env, projectDir, output, action) }
 
     /**
      * Execute [action] in the manner of [executeWithProject] for each project in [projectDirs]. The environment is
@@ -194,15 +217,20 @@ public class ProjectLoader private constructor(
      * @param action action to execute.
      */
     public fun <T> executeForEachProject(projectDirs: List<File>, action: (Environment, Project) -> T): List<T> =
-        execute { env ->
-            projectDirs.map { withOpenProject(env, it, action) }
+        execute { env, output ->
+            projectDirs.map { withOpenProject(env, it, output, action) }
         }
 
     /**
      * Opens the project in [projectDir], executes [action] and disposes of the project regardless of whether [action]
      * succeeds or throws an exception.
      */
-    private fun<T> withOpenProject(environment: Environment, projectDir: File, action: (Environment, Project) -> T): T {
+    private fun<T> withOpenProject(
+        environment: Environment,
+        projectDir: File,
+        output: ConsoleOutput,
+        action: (Environment, Project) -> T
+    ): T {
         logger.info("opening project: ${projectDir.absolutePath}")
 
         val project = environment.openProject(projectDir)
@@ -218,7 +246,7 @@ public class ProjectLoader private constructor(
                 }
             }
 
-            return action(environment, project)
+            return output.showBackendOutput { action(environment, project) }
         } finally {
             logger.info("disposing project")
             try {

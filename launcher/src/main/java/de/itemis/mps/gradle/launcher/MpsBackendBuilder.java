@@ -158,6 +158,8 @@ public class MpsBackendBuilder {
 
     private void configureCommonProperties(JavaForkOptions options) {
         options.systemProperty("idea.max.intellisense.filesize", "100000");
+        // Avoid late writes to IntelliJ's closed asynchronous log queue during shutdown.
+        options.systemProperty("intellij.platform.log.sync", "true");
     }
 
     private void configureVersionSpecificProperties(JavaForkOptions options) {

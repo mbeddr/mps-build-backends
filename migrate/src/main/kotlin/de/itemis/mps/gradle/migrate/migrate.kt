@@ -2,13 +2,13 @@ package de.itemis.mps.gradle.migrate
 
 import com.intellij.ide.plugins.PluginManager
 import com.intellij.openapi.extensions.PluginId
-import de.itemis.mps.gradle.logging.detectLogging
 import de.itemis.mps.gradle.migration.getProjectName
 import jetbrains.mps.project.Project
 import java.io.File
+import java.util.logging.Level
+import java.util.logging.Logger
 
-val logging = detectLogging()
-val logger = logging.getLogger("de.itemis.mps.gradle.migrate")
+val logger = Logger.getLogger("de.itemis.mps.gradle.output.migrate")
 
 fun migrate(args: MigrateArgs) {
     val loader = args.buildLoader()
@@ -40,7 +40,11 @@ fun migrate(args: MigrateArgs) {
             }
 
             anyFailures = true
-            logger.error("Migration failed for project ${getProjectName(project)}, continuing with remaining projects", e)
+            logger.log(
+                Level.SEVERE,
+                "Migration failed for project ${getProjectName(project)}, continuing with remaining projects",
+                e
+            )
         }
 
         environment.flushAllEvents()

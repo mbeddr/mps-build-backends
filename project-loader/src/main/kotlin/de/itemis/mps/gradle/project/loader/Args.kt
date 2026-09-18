@@ -3,9 +3,9 @@ package de.itemis.mps.gradle.project.loader
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.InvalidArgumentException
 import com.xenomachina.argparser.default
-import de.itemis.mps.gradle.logging.LogLevel
 import java.io.File
 import java.nio.file.Path
+import java.util.logging.Level
 
 private fun <T> splitAndCreate(str: String, creator: (String, String) -> T): T {
     val split = str.split("::", limit = 2)
@@ -48,10 +48,24 @@ public open class EnvironmentArgs(parser: ArgParser) {
         EnvironmentKind.valueOf(uppercase())
     }.default(EnvironmentKind.IDEA)
 
-    public val logLevel: LogLevel by parser.storing("--log-level",
-        help = "console log level. Supported values: info, warn, error, off. Default: warn.") {
-        LogLevel.valueOf(uppercase())
-    }.default(LogLevel.WARN)
+    public val logLevel: Level by parser.storing("--log-level",
+        help = "console log level. Supported values: all, info, warn, error, off. Default: warn.") {
+        when (lowercase()) {
+            "all" -> Level.ALL
+            "info" -> Level.INFO
+            "warn" -> Level.WARNING
+            "error" -> Level.SEVERE
+            "off" -> Level.OFF
+            else -> throw InvalidArgumentException(
+                "Unsupported log level '$this'. Supported values are all, info, warn, error, off"
+            )
+        }
+    }.default(Level.WARNING)
+
+    public val verbose: Boolean by parser.flagging(
+        "--verbose",
+        help = "show MPS and IntelliJ Platform log messages on the console"
+    )
 
     public val skipLibraries: Boolean by parser.flagging("--no-libraries",
         help = "do not load project libraries under MPS environment")
@@ -77,7 +91,8 @@ public open class EnvironmentArgs(parser: ArgParser) {
         }
         builder.environmentKind = environmentKind
         builder.buildNumber = buildNumber
-        builder.logLevel = de.itemis.mps.gradle.logging.LogLevel.valueOf(logLevel.toString())
+        builder.logLevel = logLevel
+        builder.verbose = verbose
 
         builder.forceIndexing = forceIndexing
     }

@@ -3,7 +3,6 @@ package de.itemis.mps.gradle.modelcheck
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import de.itemis.mps.gradle.junit.*
-import de.itemis.mps.gradle.logging.detectLogging
 import de.itemis.mps.gradle.project.loader.ModuleAndModelMatcher
 import jetbrains.mps.checkers.ModelCheckerBuilder
 import jetbrains.mps.errors.CheckerRegistry
@@ -25,11 +24,13 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
+import java.util.logging.Level
+import java.util.logging.Logger
 import kotlin.math.min
 
 
-val logging = detectLogging()
-val logger = logging.getLogger("de.itemis.mps.gradle.modelcheck")
+val logger = Logger.getLogger("de.itemis.mps.gradle.modelcheck")
+val outputLogger = Logger.getLogger("de.itemis.mps.gradle.output.modelcheck")
 
 enum class ReportFormat {
     @Deprecated(
@@ -42,15 +43,23 @@ enum class ReportFormat {
 }
 
 fun printInfo(msg: String) {
-    logger.info(msg)
+    outputLogger.info(msg)
 }
 
 fun printWarn(msg: String) {
-    logger.warn(msg)
+    outputLogger.warning(msg)
 }
 
 fun printError(msg: String) {
-    logger.error(msg)
+    outputLogger.severe(msg)
+}
+
+private val findingOutput = FindingOutput { severity, message ->
+    when (severity) {
+        MessageStatus.OK -> printInfo(message)
+        MessageStatus.WARNING -> printWarn(message)
+        MessageStatus.ERROR -> printError(message)
+    }
 }
 
 fun getCurrentTimeStamp(): String {
@@ -70,33 +79,17 @@ fun IssueKindReportItem.PathObject.asModel(project: Project): SModel? =
 fun IssueKindReportItem.PathObject.asNode(project: Project): SNode? =
     (this as? IssueKindReportItem.PathObject.NodePathObject)?.resolve(project.repository)
 
-fun printResult(item: IssueKindReportItem, project: Project, args: ModelCheckArgs) {
-    val info = ::printInfo
-    val warn = if (args.warningAsError) {
-        ::printError
-    } else {
-        ::printWarn
-    }
-
-    val err = ::printError
-
-    val print = fun(severity: MessageStatus, msg: String) {
-        when (severity) {
-            MessageStatus.OK -> info(msg)
-            MessageStatus.WARNING -> warn(msg)
-            MessageStatus.ERROR -> err(msg)
-        }
-    }
-
-    when (val path = item.path) {
+private fun reportResult(item: IssueKindReportItem, project: Project, reporter: ConsoleFindingReporter) {
+    val message = when (val path = item.path) {
         is IssueKindReportItem.PathObject.ModulePathObject ->
-            print(item.severity, "${item.message} [${path.asModule(project)?.moduleName}]")
+            "${item.message} [${path.asModule(project)?.moduleName}]"
         is IssueKindReportItem.PathObject.ModelPathObject ->
-            print(item.severity, "${item.message} [${path.asModel(project)?.name?.value}]")
+            "${item.message} [${path.asModel(project)?.name?.value}]"
         is IssueKindReportItem.PathObject.NodePathObject ->
-            print(item.severity, "${item.message} [${path.asNode(project)?.url}]")
-        else -> print(item.severity, item.message)
+            "${item.message} [${path.asNode(project)?.url}]"
+        else -> item.message
     }
+    reporter.report(item.severity, message)
 }
 
 fun writeJunitXml(modules: Iterable<SModule>,
@@ -283,7 +276,7 @@ private fun ModelCheckerBuilder.setParallelTaskScheduler(project: Project) {
             try {
                 setParallelTaskSchedulerV1(project)
             } catch (e: LinkageError) {
-                logger.warn("Parallel model checking is not supported in this version of MPS", e)
+                logger.log(Level.WARNING, "Parallel model checking is not supported in this version of MPS", e)
             }
         }
     }
@@ -306,7 +299,7 @@ private fun ModelCheckerBuilder.setParallelTaskSchedulerV1(project: Project) {
 fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: Project): Boolean {
     val checkers = environment.platform.findComponent(CheckerRegistry::class.java)!!.checkers
 
-    if (logger.isInfoEnabled) {
+    if (logger.isLoggable(Level.INFO)) {
         logger.info(checkers.joinToString(prefix = "Found the following checkers in CheckerRegistry: "))
     }
 
@@ -364,7 +357,9 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
             // We need read access here to resolve the node pointers in the report items
             val collectedIssues = issueCollector.result()
             collectedIssuesRef.set(collectedIssues)
-            collectedIssues.forEach { printResult(it, project, args) }
+            val consoleReporter = ConsoleFindingReporter(args.verbose, args.warningAsError, findingOutput)
+            collectedIssues.forEach { reportResult(it, project, consoleReporter) }
+            consoleReporter.finish()
 
             if (args.xmlFile != null) {
                 val allCheckedModules = itemsToCheck.modules

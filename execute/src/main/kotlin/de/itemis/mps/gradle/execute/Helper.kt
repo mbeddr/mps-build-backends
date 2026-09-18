@@ -1,15 +1,14 @@
 package de.itemis.mps.gradle.execute
 
-import de.itemis.mps.gradle.logging.detectLogging
 import jetbrains.mps.project.Project
 import jetbrains.mps.tool.environment.Environment
 import jetbrains.mps.tool.run.ModuleClassCode
 import org.jetbrains.mps.openapi.module.SModuleReference
 import java.lang.reflect.Method
+import java.util.logging.Logger
 import kotlin.reflect.KClass
 
-val logging = detectLogging()
-val logger = logging.getLogger("de.itemis.mps.gradle.execute")
+val logger = Logger.getLogger("de.itemis.mps.gradle.output.execute")
 
 private fun Project.getModuleReference(moduleName: String): SModuleReference {
     lateinit var moduleReference: SModuleReference

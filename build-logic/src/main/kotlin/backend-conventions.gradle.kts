@@ -14,11 +14,12 @@ val libs: VersionCatalog = extensions.getByType<VersionCatalogsExtension>().name
 val mpsZips = extensions.create("mpsZips", PatternSet::class)
 
 dependencies {
-    compileOnly(libs.findLibrary("commons.logging").get())
     mpsZip(libs.findLibrary("mps").get())
     implementation(project(":project-loader"))
 
-    addProvider("compileOnly", provider { zipTree(mpsZip.singleFile).matching(mpsZips) })
+    val matchingZips = provider { zipTree(mpsZip.singleFile).matching(mpsZips) }
+    addProvider("compileOnly", matchingZips)
+    addProvider("testImplementation", matchingZips)
 }
 
 publishing {
