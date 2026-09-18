@@ -23,6 +23,9 @@ internal abstract class QuietConsoleOutput(private val logLevel: Level) : Consol
     private val originalOut: PrintStream = System.out
     private val originalErr: PrintStream = System.err
     private val sink = PrintStream(OutputStream.nullOutputStream())
+    private val rootLogger = Logger.getLogger("")
+    private val rootLoggerConfiguration = LoggerConfiguration.capture(rootLogger)
+    private val outputLoggerConfiguration = LoggerConfiguration.capture(outputLogger)
 
     init {
         // Install the backend handler before replacing System.out and System.err so it retains the real console streams.
@@ -32,7 +35,7 @@ internal abstract class QuietConsoleOutput(private val logLevel: Level) : Consol
         // It captures the current System.err and can emit startup warnings before environmentCreated() removes it.
         // Redirect both streams during initialization to suppress that handler and any direct platform output.
         quietProperties.forEach(System::setProperty)
-        removeRootConsoleHandlers()
+        removeRootConsoleHandlers(close = false)
         System.setOut(sink)
         System.setErr(sink)
     }
@@ -64,6 +67,8 @@ internal abstract class QuietConsoleOutput(private val logLevel: Level) : Consol
 
     override fun close() {
         removeRootConsoleHandlers()
+        rootLoggerConfiguration.restore()
+        outputLoggerConfiguration.restore()
         System.setOut(originalOut)
         System.setErr(originalErr)
         sink.close()
@@ -77,11 +82,10 @@ internal abstract class QuietConsoleOutput(private val logLevel: Level) : Consol
         }
     }
 
-    private fun removeRootConsoleHandlers() {
-        val rootLogger = Logger.getLogger("")
+    private fun removeRootConsoleHandlers(close: Boolean = true) {
         rootLogger.handlers.filterIsInstance<ConsoleHandler>().forEach {
             rootLogger.removeHandler(it)
-            it.close()
+            if (close) it.close()
         }
     }
 
