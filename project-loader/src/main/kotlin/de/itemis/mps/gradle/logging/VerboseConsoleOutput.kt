@@ -10,6 +10,8 @@ import java.util.logging.Logger
 private val mpsLogger = Logger.getLogger("de.itemis.mps")
 
 internal class VerboseConsoleOutput(private val logLevel: Level) : ConsoleOutput {
+    private val loggerConfiguration = LoggerConfiguration.capture(mpsLogger)
+
     init {
         // Enable logging before environment creation so startup diagnostics are visible.
         configureLogging(logLevel)
@@ -24,7 +26,7 @@ internal class VerboseConsoleOutput(private val logLevel: Level) : ConsoleOutput
 
     override fun <T> showBackendOutput(action: () -> T): T = action()
 
-    override fun close() = Unit
+    override fun close() = loggerConfiguration.restore()
 
     companion object {
         internal fun configureLogging(level: Level) {
