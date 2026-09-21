@@ -20,11 +20,3 @@ include("migrate")
 include("integration-tests")
 
 includeBuild("launcher")
-
-dependencyResolutionManagement {
-    versionCatalogs {
-        create("libs") {
-            library("mps", "com.jetbrains:mps:2024.3.1")
-        }
-    }
-}

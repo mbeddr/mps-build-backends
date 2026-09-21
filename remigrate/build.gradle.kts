@@ -4,7 +4,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 buildscript {
     dependencies {
-        classpath("commons-io:commons-io:2.19.0")
+        classpath(libs.commons.io.buildscript)
     }
 }
 

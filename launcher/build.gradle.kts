@@ -15,12 +15,12 @@ repositories {
 }
 
 dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
-    testImplementation("commons-io:commons-io:2.13.0")
-    testImplementation("org.mockito:mockito-core:[4.11.0,5)") {
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.commons.io)
+    testImplementation(libs.mockito.core) {
         because("does not support Java 8 from version 5")
     }
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
+    testRuntimeOnly(libs.junit.jupiter.engine)
 }
 
 java {
