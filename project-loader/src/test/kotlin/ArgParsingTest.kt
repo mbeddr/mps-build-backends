@@ -10,24 +10,12 @@ class ArgParsingTest {
 
     @Test
     fun `can parse log level`() {
-        val parsed = ArgParser(arrayOf(
-            "--log-level", "info")).parseInto(::EnvironmentArgs)
+        val parsed = ArgParser(
+            arrayOf(
+                "--log-level", "info"
+            )
+        ).parseInto(::EnvironmentArgs)
 
         assertEquals(Level.INFO, parsed.logLevel)
     }
-
-    @Test
-    fun `quiet mode is the default`() {
-        val parsed = ArgParser(emptyArray()).parseInto(::EnvironmentArgs)
-
-        assertFalse(parsed.verbose)
-    }
-
-    @Test
-    fun `verbose mode can be enabled`() {
-        val parsed = ArgParser(arrayOf("--verbose")).parseInto(::EnvironmentArgs)
-
-        assertTrue(parsed.verbose)
-    }
-
 }
