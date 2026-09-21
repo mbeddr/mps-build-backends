@@ -1,10 +1,10 @@
 package de.itemis.mps.gradle.logging
 
-import org.junit.After
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertSame
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertSame
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import java.util.logging.Handler
@@ -20,7 +20,7 @@ class LoggingTest {
     private var previousLevel: Level? = null
     private var previousUseParentHandlers: Boolean = true
 
-    @Before
+    @BeforeEach
     fun saveLoggerConfiguration() {
         previousHandlers = logger.handlers
         previousLevel = logger.level
@@ -28,7 +28,7 @@ class LoggingTest {
         previousHandlers.forEach(logger::removeHandler)
     }
 
-    @After
+    @AfterEach
     fun restoreLoggerConfiguration() {
         logger.handlers.forEach(logger::removeHandler)
         previousHandlers.forEach(logger::addHandler)

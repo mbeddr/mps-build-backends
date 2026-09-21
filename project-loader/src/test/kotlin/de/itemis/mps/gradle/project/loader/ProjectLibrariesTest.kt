@@ -1,9 +1,9 @@
 package de.itemis.mps.gradle.project.loader
 
-import org.junit.Assert.assertEquals
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.TemporaryFolder
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import java.io.File
 
 private const val Macro1 = "\${macro.path1}"
 private const val Macro2 = "\${macro.path2}"
@@ -14,8 +14,8 @@ private val AllMacros = listOf(
 
 class ProjectLibrariesTest {
 
-    @JvmField @Rule
-    val folder = TemporaryFolder()
+    @field:TempDir
+    lateinit var folder: File
 
     @Test
     fun noLibrariesXml() {
@@ -103,7 +103,7 @@ class ProjectLibrariesTest {
             </Library>
         </map>""")
 
-        assertEquals(listOf(folder.root.resolve("deps").path), getLibraries())
+        assertEquals(listOf(folder.resolve("deps").path), getLibraries())
     }
 
     @Test
@@ -116,17 +116,17 @@ class ProjectLibrariesTest {
             </Library>
         </map>""")
 
-        assertEquals(listOf(folder.root.path), getLibraries())
+        assertEquals(listOf(folder.path), getLibraries())
     }
 
     private fun getLibraries(macros: List<Macro> = emptyList()): List<String> {
         var result: List<String> = emptyList()
-        findProjectLibraries(folder.root, macros) { result = it.toList() }
+        findProjectLibraries(folder, macros) { result = it.toList() }
         return result
     }
 
     private fun writeFile(filePath: String = ".mps/libraries.xml", text: String) {
-        val fullPath = folder.root.resolve(filePath)
+        val fullPath = folder.resolve(filePath)
         fullPath.parentFile.mkdirs()
         fullPath.writeText(text)
     }

@@ -1,11 +1,11 @@
 package de.itemis.mps.gradle.logging
 
 import de.itemis.mps.gradle.project.loader.EnvironmentKind
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotSame
-import org.junit.Assert.assertSame
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotSame
+import org.junit.jupiter.api.Assertions.assertSame
+import org.junit.jupiter.api.Test
 import java.util.logging.ConsoleHandler
 import java.util.logging.Filter
 import java.util.logging.Level
