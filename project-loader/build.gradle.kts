@@ -27,7 +27,7 @@ configurations {
 }
 
 dependencies {
-    api("com.xenomachina:kotlin-argparser:2.0.7")
+    api(libs.kotlin.argparser)
 
     mpsRuntime(zipTree({ mpsZip.singleFile }).matching {
         include("lib/mps-core.jar")
@@ -44,9 +44,9 @@ dependencies {
 
     mpsZip(libs.mps)
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 java {

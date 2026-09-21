@@ -20,11 +20,11 @@ mpsZips {
 }
 
 dependencies {
-    testImplementation("org.xmlunit:xmlunit-core:2.6.+")
+    testImplementation(libs.xmlunit.core)
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testRuntimeOnly(libs.junit.platform.launcher)
 }
 
 tasks.test {

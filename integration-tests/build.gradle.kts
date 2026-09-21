@@ -16,7 +16,7 @@ plugins {
 
 buildscript {
     dependencies {
-        classpath("com.google.guava:guava:33.4.0-jre")
+        classpath(libs.guava)
     }
 }
 

@@ -5,7 +5,7 @@ import org.gradle.kotlin.dsl.support.serviceOf
 
 buildscript {
     dependencies {
-        classpath("commons-io:commons-io:2.19.0")
+        classpath(libs.commons.io.buildscript)
     }
 }
 
