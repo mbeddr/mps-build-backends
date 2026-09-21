@@ -44,7 +44,9 @@ dependencies {
 
     mpsZip(libs.mps)
 
-    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 java {
@@ -73,6 +75,9 @@ publishing {
 tasks {
     val mpsHome = ArtifactTransforms.getMpsRoot(mpsZip)
     test {
+        useJUnitPlatform()
+        // These tests dispose the IntelliJ application themselves; the suite listener must not dispose it again.
+        systemProperty("intellij.build.test.ignoreFirstAndLastTests", "true")
         classpath += fileTree(mpsHome) { include("lib/*.jar", "lib/modules/*.jar") }
         mpsBackendLauncher.forMpsHome(mpsHome).configure(this)
     }

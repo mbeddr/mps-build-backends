@@ -3,8 +3,8 @@ import de.itemis.mps.gradle.project.loader.ProjectLoader
 import jetbrains.mps.tool.environment.Environment
 import jetbrains.mps.tool.environment.IdeaEnvironment
 import jetbrains.mps.tool.environment.MpsEnvironment
-import org.junit.Assert
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
 class EnvironmentKindTest {
 
@@ -15,10 +15,9 @@ class EnvironmentKindTest {
             .build { }
             .execute { environment -> environmentClass = environment.javaClass }
 
-        Assert.assertTrue(
-            "Environment should be IDEA but was $environmentClass",
-            IdeaEnvironment::class.java.isAssignableFrom(environmentClass)
-        )
+        assertTrue(IdeaEnvironment::class.java.isAssignableFrom(environmentClass)) {
+            "Environment should be IDEA but was $environmentClass"
+        }
     }
 
     @Test
@@ -28,9 +27,8 @@ class EnvironmentKindTest {
             .build { environmentKind = EnvironmentKind.MPS }
             .execute { environment -> environmentClass = environment.javaClass }
 
-        Assert.assertTrue(
-            "Environment should be MPS but was $environmentClass",
-            MpsEnvironment::class.java.isAssignableFrom(environmentClass)
-        )
+        assertTrue(MpsEnvironment::class.java.isAssignableFrom(environmentClass)) {
+            "Environment should be MPS but was $environmentClass"
+        }
     }
 }
