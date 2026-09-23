@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.27.1
+
+- `modelcheck` no longer uses an incorrect scheduler for parallel model checking. Using an incorrect scheduler caused
+  model checks to run outside of IDEA read action which caused errors in advanced scenarios such as invoking 'find
+  usages' from a checking rule.
+
 ## 1.27.0
 
 ### Added
