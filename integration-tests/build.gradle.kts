@@ -306,8 +306,6 @@ fun tasksForMpsPlatform(mpsPlatform: MpsPlatform): Multimap<TestKind, TaskProvid
             group = LifecycleBasePlugin.VERIFICATION_GROUP
             classpath(fileTree(mpsPlatform.mpsHome) {
                 include("lib/**/*.jar")
-                // modelcheck uses HttpSupportUtil#getURL()
-                include("plugins/mps-httpsupport/**/*.jar")
             })
             classpath(modelcheck)
 
