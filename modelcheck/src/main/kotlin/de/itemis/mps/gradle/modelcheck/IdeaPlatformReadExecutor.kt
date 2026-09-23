@@ -1,14 +1,10 @@
 package de.itemis.mps.gradle.modelcheck
 
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ex.ApplicationEx
-import com.intellij.openapi.progress.util.ProgressIndicatorBase
-import com.intellij.openapi.progress.util.ProgressIndicatorUtils
+import com.intellij.openapi.application.ReadAction
 import jetbrains.mps.smodel.ModelAccessBase
 import org.jetbrains.mps.openapi.module.ModelAccess
 import java.util.concurrent.Executor
 import java.util.concurrent.RejectedExecutionException
-import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Adapted to Kotlin from JetBrains MPS's IdeaPlatformReadExecutor (Apache License 2.0):
@@ -16,15 +12,12 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 internal class IdeaPlatformReadExecutor(private val modelAccess: ModelAccess) : Executor {
     override fun execute(runnable: Runnable) {
-        val acquiredRead = AtomicBoolean(false)
-        val indicator = ProgressIndicatorBase(false, false)
-        ProgressIndicatorUtils.runWithWriteActionPriority({
-            acquiredRead.set((ApplicationManager.getApplication() as ApplicationEx).tryRunReadAction {
+        try {
+            ReadAction.computeCancellable<Unit, RuntimeException> {
                 (modelAccess as ModelAccessBase).runReadAction(runnable)
-            })
-        }, indicator)
-        if (!acquiredRead.get()) {
-            throw RejectedExecutionException("failed to acquire read lock")
+            }
+        } catch (e: ReadAction.CannotReadException) {
+            throw RejectedExecutionException("failed to acquire or retain read lock", e)
         }
     }
 }
