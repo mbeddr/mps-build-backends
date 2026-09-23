@@ -15,8 +15,6 @@ mpsZips {
     include("lib/app.jar")
 
     include("lib/mpsant/mps-tool.jar")
-
-    include("plugins/mps-modelchecker/lib/modelchecker.jar")
 }
 
 dependencies {

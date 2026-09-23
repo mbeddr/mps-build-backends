@@ -8,15 +8,12 @@ import jetbrains.mps.checkers.ModelCheckerBuilder
 import jetbrains.mps.errors.CheckerRegistry
 import jetbrains.mps.errors.MessageStatus
 import jetbrains.mps.errors.item.IssueKindReportItem
-import jetbrains.mps.ide.modelchecker.platform.actions.IdeaPlatformReadExecutor
 import jetbrains.mps.progress.EmptyProgressMonitor
 import jetbrains.mps.project.Project
-import jetbrains.mps.smodel.ModelAccessBase
 import jetbrains.mps.smodel.SModelStereotype
 import jetbrains.mps.tool.environment.Environment
 import jetbrains.mps.tool.environment.IdeaEnvironment
 import jetbrains.mps.workbench.progress.IdeaPlatformTaskScheduler
-import jetbrains.mps.workbench.progress.SystemBackgroundTaskScheduler
 import org.jetbrains.mps.openapi.model.SModel
 import org.jetbrains.mps.openapi.model.SNode
 import org.jetbrains.mps.openapi.module.SModule
@@ -266,36 +263,6 @@ private fun oneTestCasePerModule(modules: Iterable<SModule>, errorsPerModule: Ma
     }
 }
 
-private fun ModelCheckerBuilder.setParallelTaskScheduler(project: Project) {
-    try {
-        setParallelTaskSchedulerV3(project)
-    } catch (_: LinkageError) {
-        try {
-            setParallelTaskSchedulerV2(project)
-        } catch (_: LinkageError) {
-            try {
-                setParallelTaskSchedulerV1(project)
-            } catch (e: LinkageError) {
-                logger.log(Level.WARNING, "Parallel model checking is not supported in this version of MPS", e)
-            }
-        }
-    }
-}
-
-private fun ModelCheckerBuilder.setParallelTaskSchedulerV3(project: Project) {
-    val executor = IdeaPlatformReadExecutor(project.repository.modelAccess)
-    withTaskScheduler(IdeaPlatformTaskScheduler(project, executor))
-}
-
-private fun ModelCheckerBuilder.setParallelTaskSchedulerV2(project: Project) {
-    val executor = (project.repository.modelAccess as ModelAccessBase).shareRead()
-    withTaskScheduler(SystemBackgroundTaskScheduler(project, executor))
-}
-
-private fun ModelCheckerBuilder.setParallelTaskSchedulerV1(project: Project) {
-    withTaskScheduler(SystemBackgroundTaskScheduler(project))
-}
-
 fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: Project): Boolean {
     val checkers = environment.platform.findComponent(CheckerRegistry::class.java)!!.checkers
 
@@ -347,7 +314,12 @@ fun modelCheckProject(args: ModelCheckArgs, environment: Environment, project: P
             val checker = ModelCheckerBuilder(modelExtractor)
                 .also {
                     if (args.parallel) {
-                        it.setParallelTaskScheduler(project)
+                        it.withTaskScheduler(
+                            IdeaPlatformTaskScheduler(
+                                project,
+                                IdeaPlatformReadExecutor(project.repository.modelAccess)
+                            )
+                        )
                     }
                 }
                 .createChecker(checkers)
