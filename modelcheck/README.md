@@ -5,10 +5,7 @@ report file.
 
 ## Usage
 
-The tool is JVM-based and needs on its classpath:
-
-- The MPS libraries (`${mps_home}/lib/**/*.jar`).
-- The `mps-httpsupport` plugin (`${mps_home}/plugins/mps-httpsupport/**/*.jar`).
+The tool is JVM-based and needs MPS libraries on its classpath (`${mps_home}/lib/**/*.jar`).
 
 The simplest way to run it is by using Gradle's `JavaExec` task. See below for an example.
 
@@ -117,8 +114,6 @@ val runModelCheck by tasks.registering(JavaExec::class) {
     classpath(modelcheck)
     classpath(fileTree(mpsHome) {
         include("lib/**/*.jar")
-        // modelcheck uses HttpSupportUtil#getURL()
-        include("plugins/mps-httpsupport/**/*.jar")
     })
 
     mainClass.set("de.itemis.mps.gradle.modelcheck.MainKt")
