@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.27.2
+
+### Dependencies
+
+- Upgrade to project-loader 6.0.1 to suppress IntelliJ Platform shutdown logging in quiet mode.
+
 ## 1.27.1
 
 - `modelcheck` no longer uses an incorrect scheduler for parallel model checking. Using an incorrect scheduler caused

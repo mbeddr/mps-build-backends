@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 6.0.1
+
+### Fixed
+
+- Quiet IDEA mode suppresses IntelliJ Platform console logging during JVM shutdown.
+
 ## 6.0.0
 
 ### Added
