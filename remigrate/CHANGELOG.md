@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+# 1.1.1
+
+## Dependencies
+
+- Upgrade to project-loader 6.0.1 and migration-common 1.1.1 to suppress IntelliJ Platform shutdown logging in quiet mode.
+
 # 1.1.0
 
 ## Added
