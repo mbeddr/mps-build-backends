@@ -49,6 +49,7 @@ public final class de/itemis/mps/gradle/project/loader/EnvironmentConfigBuilder 
 public final class de/itemis/mps/gradle/project/loader/EnvironmentKind : java/lang/Enum {
 	public static final field IDEA Lde/itemis/mps/gradle/project/loader/EnvironmentKind;
 	public static final field MPS Lde/itemis/mps/gradle/project/loader/EnvironmentKind;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lde/itemis/mps/gradle/project/loader/EnvironmentKind;
 	public static fun values ()[Lde/itemis/mps/gradle/project/loader/EnvironmentKind;
 }
