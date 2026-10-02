@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) after reaching version 1.0.0. Until then any version may
 contain breaking changes.
 
+## 0.3.0
+
+### Changed
+
+- Raise the Java source and bytecode target from 11 to 17.
+- Raise the Kotlin language and API compatibility baseline from 1.6 to 1.9.
+
+### Dependencies
+
+- Upgrade to project-loader 6.1.0 and migration-common 1.2.0.
+
 ## 0.2.2
 
 ### Dependencies

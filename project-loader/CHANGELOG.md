@@ -7,6 +7,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 6.1.0
+
+### Changed
+
+- Raise the Java source and bytecode target from 11 to 17.
+- Raise the Kotlin language and API compatibility baseline from 1.6 to 1.9.
+
 ## 6.0.2
 
 ### Fixed
