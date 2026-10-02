@@ -7,27 +7,28 @@ plugins {
     id("com.specificlanguages.mps.artifact-transforms")
 }
 
+fun createMpsPlatform(mpsVersion: String, dependencyNotation: String): MpsPlatform {
+    val mpsConfig = configurations.create("mps$mpsVersion")
+    dependencies.add(mpsConfig.name, dependencyNotation)
+
+    val testTask = tasks.register("testMps$mpsVersion") {
+        group = LifecycleBasePlugin.VERIFICATION_GROUP
+        description = "Run all tests with MPS $mpsVersion"
+    }
+
+    return MpsPlatform(mpsVersion, ArtifactTransforms.getMpsRoot(mpsConfig), testTask)
+}
+
 fun createMpsPlatforms(): List<MpsPlatform> {
     val supportedMpsVersions = project.findProperty("supportedMpsVersions")?.let { (it as String).split(',') }
         ?: throw GradleException("Property 'supportedMpsVersions' not found")
+    val mpsPrereleaseVersion: String by project
 
-    return supportedMpsVersions.map { mpsVersion ->
-        val mpsConfig = configurations.create("mps$mpsVersion")
-
-        fun mpsDependency(version: String) =
-            if (version.length < 4) throw IllegalArgumentException("MPS version must be at least four characters long")
-            else if (version[3] == '.') "com.jetbrains.mps:mps-prerelease:$version"
-            else "com.jetbrains:mps:$version"
-
-        dependencies.add(mpsConfig.name, mpsDependency(mpsVersion))
-
-        val testTask = tasks.register("testMps$mpsVersion") {
-            group = LifecycleBasePlugin.VERIFICATION_GROUP
-            description = "Run all tests with MPS $mpsVersion"
-        }
-
-        MpsPlatform(mpsVersion, ArtifactTransforms.getMpsRoot(mpsConfig), testTask)
-    }
+    return supportedMpsVersions.map { createMpsPlatform(it, "com.jetbrains:mps:$it") } +
+        createMpsPlatform(
+            mpsPrereleaseVersion,
+            "com.jetbrains.mps:mps-prerelease:$mpsPrereleaseVersion",
+        )
 }
 
 val backendTesting = extensions.create("backendTesting", BackendTesting::class.java, createMpsPlatforms())
