@@ -9,14 +9,14 @@ plugins {
 
 java {
     withSourcesJar()
-    targetCompatibility = JavaVersion.VERSION_11
-    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_17
 }
 
 kotlin {
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_11
-        apiVersion = KotlinVersion.KOTLIN_1_6
-        languageVersion = KotlinVersion.KOTLIN_1_6
+        jvmTarget = JvmTarget.JVM_17
+        apiVersion = KotlinVersion.KOTLIN_1_9
+        languageVersion = KotlinVersion.KOTLIN_1_9
     }
 }
