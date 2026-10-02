@@ -7,6 +7,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 6.0.2
+
+### Fixed
+
+- Request a full roots rescan before waiting for indexing on MPS 2025.2 and newer to prevent instance searches from
+  missing existing model nodes after initial indexing completes
+  ([MPS-40233](https://youtrack.jetbrains.com/issue/MPS-40233)).
+
 ## 6.0.1
 
 ### Fixed
