@@ -1,0 +1,20 @@
+{
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:best-practices',
+    'schedule:monthly',
+  ],
+
+  packageRules: [
+    {
+      // Kotlin 2.4 drops language and API compatibility modes for Kotlin 1.9. The published
+      // libraries use these modes so they can run with the Kotlin version bundled in MPS 2023.2.
+      matchPackageNames: ['org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin'],
+      allowedVersions: '<2.4.0',
+    },
+    {
+      matchManagers: ['github-actions'],
+      groupName: 'GitHub Actions',
+    },
+  ],
+}
