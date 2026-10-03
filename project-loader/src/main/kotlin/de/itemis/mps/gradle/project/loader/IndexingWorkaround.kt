@@ -12,23 +12,28 @@ import jetbrains.mps.project.MPSProject
  * Indicates whether the given MPS version has the indexing bug.
  */
 internal fun hasIndexingBug(buildNumber: BuildNumber): Boolean {
-    // For 2023.2 we need to force indexing, for 2024.1 we only wait for indexing to complete using IndexingTestUtils.
+    // MPS 2023.2 and 2025.2+ need a full rescan; intermediate versions only need to wait for indexing.
     return buildNumber.baselineVersion >= 232
 }
 
 /**
  * Force full indexing as a workaround for https://youtrack.jetbrains.com/issue/MPS-37926/Indices-not-built-properly-in-IdeaEnvironment
  */
-internal fun forceIndexing(project: MPSProject, @Suppress("UNUSED_PARAMETER") buildNumber: BuildNumber) {
+internal fun forceIndexing(project: MPSProject, buildNumber: BuildNumber) {
     try {
-        forceIndexing241(project)
+        if (buildNumber.baselineVersion >= 252) {
+            // MPS-40233: initial indexing can finish without indexing the model roots. Request a full rescan
+            // before waiting for readiness: https://youtrack.jetbrains.com/issue/MPS-40233
+            requestFullRescan(project)
+        }
+        waitUntilIndexesAreReady(project)
     } catch (e: NoClassDefFoundError) {
         // We're probably on an earlier version
-        forceIndexing232(project)
+        requestFullRescan(project)
     }
 }
 
-private fun forceIndexing232(project: MPSProject) {
+private fun requestFullRescan(project: MPSProject) {
     val application = ApplicationManager.getApplication()
     application.invokeAndWait({
         application.runWriteAction {
@@ -38,6 +43,6 @@ private fun forceIndexing232(project: MPSProject) {
     }, ModalityState.defaultModalityState())
 }
 
-private fun forceIndexing241(project: MPSProject) {
+private fun waitUntilIndexesAreReady(project: MPSProject) {
     IndexingTestUtil.waitUntilIndexesAreReady(project.project)
 }
