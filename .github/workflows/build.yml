@@ -24,7 +24,11 @@ jobs:
       - name: Output MPS versions
         id: mps_versions
         run: |
-          mps_versions=$(jq <gradle.properties --compact-output --raw-input 'select(startswith("supportedMpsVersions=")) | split("=") | .[1] | split(",")')
+          mps_versions=$(jq <gradle.properties --compact-output --raw-input --slurp '
+            split("\n")
+            | map(select(startswith("supportedMpsVersions=") or startswith("mpsPrereleaseVersion=")) | split("=")[1])
+            | (.[0] | split(",")) + [.[1]]
+          ')
           echo "mps_versions=$mps_versions" >> "$GITHUB_OUTPUT"
 
   test:
