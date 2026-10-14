@@ -7,6 +7,15 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 6.0.3
+
+### Fixed
+
+- Wait until the platform's index roots cover the project directory before requesting the full rescan on MPS 2025.2
+  and newer. MPS adds a project's model files to the index roots on a background thread after module load, so a rescan
+  requested immediately after opening could run before those roots existed and leave the project unindexed, which
+  index-backed searches report as no matches rather than as an error.
+
 ## 6.0.2
 
 ### Fixed
