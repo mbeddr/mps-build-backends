@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.27.4
+
+### Dependencies
+
+- Upgrade to project-loader 6.0.3 to wait for the project's index roots before the full rescan on MPS 2025.2 and
+  newer, fixing searches that returned no matches when the rescan ran before the project's files were indexable.
+
 ## 1.27.3
 
 ### Dependencies
