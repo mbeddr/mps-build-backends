@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) after reaching version 1.0.0. Until then any version may
 contain breaking changes.
 
+## 0.2.3
+
+### Dependencies
+
+- Upgrade to project-loader 6.0.3 and migration-common 1.1.3 to wait for the project's index roots before the full
+  rescan on MPS 2025.2 and newer, fixing searches that returned no matches when the rescan ran before the project's
+  files were indexable.
+
 ## 0.2.2
 
 ### Dependencies
