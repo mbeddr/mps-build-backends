@@ -7,6 +7,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Changes in versions before 2.0.0 are documented in the [root changelog](../CHANGELOG.md).
 
+## 6.1.0
+
+### Added
+
+- `ProjectLoader#openProject` and `ProjectLoader#closeProject` open and close a project separately, for use inside
+  `ProjectLoader#execute`. They prepare and dispose of the project in the same way as `executeWithProject`.
+
 ## 6.0.3
 
 ### Fixed
