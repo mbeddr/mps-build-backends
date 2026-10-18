@@ -231,8 +231,23 @@ public class ProjectLoader private constructor(
         output: ConsoleOutput,
         action: (Environment, Project) -> T
     ): T {
-        logger.info("opening project: ${projectDir.absolutePath}")
+        val project = openProject(environment, projectDir)
 
+        try {
+            return output.showBackendOutput { action(environment, project) }
+        } finally {
+            closeProject(environment, project)
+        }
+    }
+
+    /**
+     * Opens the project in [projectDir] within [environment] and prepares it in the same way as [executeWithProject]
+     * does, including forced indexing if configured. Closes the project again if preparation fails.
+     *
+     * The caller is responsible for closing the returned project with [closeProject].
+     */
+    public fun openProject(environment: Environment, projectDir: File): Project {
+        logger.info("opening project: ${projectDir.absolutePath}")
         val project = environment.openProject(projectDir)
 
         try {
@@ -245,25 +260,37 @@ public class ProjectLoader private constructor(
                     logger.info("Full indexing complete")
                 }
             }
-
-            return output.showBackendOutput { action(environment, project) }
-        } finally {
-            logger.info("disposing project")
+            return project
+        } catch (failure: Throwable) {
             try {
-                environment.closeProject(project)
-            } catch (re: RuntimeException) {
-                if (re.cause is AlreadyDisposedException) {
-                    // do nothing
-                } else {
-                    throw re
-                }
+                closeProject(environment, project)
+            } catch (closeFailure: Throwable) {
+                failure.addSuppressed(closeFailure)
             }
-            logger.info("project disposed")
-
-            // Process pending IDEA event-queue work scheduled while closing the project before continuing.
-            logger.info("flushing events after project disposal")
-            environment.flushAllEvents()
+            throw failure
         }
+    }
+
+    /**
+     * Closes [project] previously opened with [openProject] and flushes pending events. A project that is already
+     * disposed is ignored.
+     */
+    public fun closeProject(environment: Environment, project: Project) {
+        logger.info("disposing project")
+        try {
+            environment.closeProject(project)
+        } catch (closeFailure: Throwable) {
+            if (closeFailure.cause is AlreadyDisposedException) {
+                // do nothing
+            } else {
+                throw closeFailure
+            }
+        }
+        logger.info("project disposed")
+
+        // Process pending IDEA event-queue work scheduled while closing the project before continuing.
+        logger.info("flushing events after project disposal")
+        environment.flushAllEvents()
     }
 
     private fun shouldForceIndexing(buildNumber: BuildNumber): Boolean {
