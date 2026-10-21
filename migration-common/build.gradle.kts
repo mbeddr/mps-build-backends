@@ -1,10 +1,8 @@
-import de.itemis.mps.buildbackends.computeVersionSuffix
-
 plugins {
     id("kotlin-conventions")
 }
 
-version = "${project.extra["version.migration-common"]}${computeVersionSuffix()}"
+version = "${project.extra["version.migration-common"]}"
 
 val mpsZip: Configuration by configurations.creating
 

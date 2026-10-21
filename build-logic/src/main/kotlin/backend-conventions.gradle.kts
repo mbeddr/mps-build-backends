@@ -1,11 +1,9 @@
-import de.itemis.mps.buildbackends.computeVersionSuffix
-
 plugins {
     id("kotlin-conventions")
     id("application")
 }
 
-version = "${project.extra["version.backend"]}${computeVersionSuffix()}"
+version = "${project.extra["version.backend"]}"
 
 val mpsZip: Configuration by configurations.creating
 

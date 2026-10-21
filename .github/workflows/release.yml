@@ -1,0 +1,97 @@
+name: Release
+
+# Publishes one release unit when its tag `<unit>-<version>` is pushed. See RELEASING.md.
+on:
+  push:
+    tags: ['*-[0-9]*.[0-9]*.[0-9]*']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  check:
+    name: Check ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    outputs:
+      projects: ${{ steps.unit.outputs.projects }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Set up JDK
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+        with:
+          cache-disabled: true
+      - name: Select projects
+        id: unit
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          if [[ ! $TAG =~ ^(.+)-([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "::error::Tag '$TAG' does not match <unit>-<major>.<minor>.<patch>"
+            exit 1
+          fi
+          unit="${BASH_REMATCH[1]}"
+          case "$unit" in
+            backends) projects=":execute-generators :modelcheck :execute" ;;
+            launcher|project-loader|migration-common|migrate|remigrate) projects=":$unit" ;;
+            *) echo "::error::Unknown release unit '$unit'"; exit 1 ;;
+          esac
+          echo "version=${BASH_REMATCH[2]}" >> "$GITHUB_OUTPUT"
+          echo "projects=$projects" >> "$GITHUB_OUTPUT"
+      - name: Check release
+        env:
+          PROJECTS: ${{ steps.unit.outputs.projects }}
+          VERSION: ${{ steps.unit.outputs.version }}
+        run: |
+          read -ra projects <<< "$PROJECTS"
+          ./gradlew --no-daemon "${projects[@]/%/:checkRelease}" -PreleaseVersion="$VERSION"
+
+  # One job per repository, so that a failed upload to one repository can be re-run without publishing to the other
+  # one again.
+  publish:
+    name: Publish to ${{ matrix.repository }}
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        repository: [Itemis, GitHubPackages]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Set up JDK
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+        with:
+          cache-disabled: true
+      - name: Publish
+        env:
+          PROJECTS: ${{ needs.check.outputs.projects }}
+          REPOSITORY: ${{ matrix.repository }}
+          ARTIFACTS_ITEMIS_CLOUD_USER: ${{ secrets.ARTIFACTS_ITEMIS_CLOUD_USER }}
+          ARTIFACTS_ITEMIS_CLOUD_PW: ${{ secrets.ARTIFACTS_ITEMIS_CLOUD_PW }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          read -ra projects <<< "$PROJECTS"
+          ./gradlew --no-daemon "${projects[@]/%/:publishAllPublicationsTo${REPOSITORY}Repository}"
