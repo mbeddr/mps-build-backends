@@ -61,6 +61,9 @@
       groupName: 'MPS test versions',
       // The prerelease moves to the newest build, whatever the update type, in the same PR as the release patches.
       separateMajorMinor: false,
+      // Prerelease builds are deleted from the repository after a few weeks, so the prerelease is updated as soon as a
+      // new build appears.
+      schedule: ['at any time'],
     },
   ],
 }
