@@ -260,7 +260,7 @@ fun tasksForMpsPlatform(mpsPlatform: MpsPlatform): Multimap<TestKind, TaskProvid
     }
 
     val generateTasks = GENERATION_TESTS.map { testCase ->
-        tasks.register("generate${testCase.name.capitalize()}WithMps${mpsPlatform.mpsVersion}", JavaExec::class) {
+        tasks.register("generate${testCase.name.capitalize()}WithMps${mpsPlatform.name}", JavaExec::class) {
             dependsOn(executeGenerators)
             val projectDir = temporaryDir.resolve("project")
 
@@ -289,7 +289,7 @@ fun tasksForMpsPlatform(mpsPlatform: MpsPlatform): Multimap<TestKind, TaskProvid
     }
 
     val modelcheckTasks = MODELCHECK_TESTS.map { testCase ->
-        tasks.register("modelcheckTest${testCase.name.capitalize()}WithMps${mpsPlatform.mpsVersion}", JavaExec::class) {
+        tasks.register("modelcheckTest${testCase.name.capitalize()}WithMps${mpsPlatform.name}", JavaExec::class) {
             dependsOn(modelcheck)
             val projectDir = temporaryDir.resolve("project")
             doFirst {
@@ -332,7 +332,7 @@ fun tasksForMpsPlatform(mpsPlatform: MpsPlatform): Multimap<TestKind, TaskProvid
     }
 
     val executeTasks: List<TaskProvider<out Task>> = EXECUTE_TESTS.map { testCase ->
-        tasks.register("executeTest${testCase.name.capitalize()}WithMps${mpsPlatform.mpsVersion}") {
+        tasks.register("executeTest${testCase.name.capitalize()}WithMps${mpsPlatform.name}") {
             dependsOn(execute, executeGenerators)
 
             doLast {

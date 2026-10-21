@@ -37,8 +37,8 @@ jobs:
         run: |
           mps_versions=$(jq <gradle.properties --compact-output --raw-input --slurp '
             split("\n")
-            | map(select(startswith("supportedMpsVersions=") or startswith("mpsPrereleaseVersion=")) | split("=")[1])
-            | (.[0] | split(",")) + [.[1]]
+            | (map(select(startswith("supportedMpsVersion.")) | split("=")[0] | ltrimstr("supportedMpsVersion.")) | sort)
+              + map(select(startswith("mpsPrereleaseVersion=")) | split("=")[1])
           ')
           echo "mps_versions=$mps_versions" >> "$GITHUB_OUTPUT"
 

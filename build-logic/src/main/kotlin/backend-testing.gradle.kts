@@ -7,25 +7,31 @@ plugins {
     id("com.specificlanguages.mps.artifact-transforms")
 }
 
-fun createMpsPlatform(mpsVersion: String, dependencyNotation: String): MpsPlatform {
-    val mpsConfig = configurations.create("mps$mpsVersion")
+fun createMpsPlatform(name: String, mpsVersion: String, dependencyNotation: String): MpsPlatform {
+    val mpsConfig = configurations.create("mps$name")
     dependencies.add(mpsConfig.name, dependencyNotation)
 
-    val testTask = tasks.register("testMps$mpsVersion") {
+    val testTask = tasks.register("testMps$name") {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
         description = "Run all tests with MPS $mpsVersion"
     }
 
-    return MpsPlatform(mpsVersion, ArtifactTransforms.getMpsRoot(mpsConfig), testTask)
+    return MpsPlatform(name, mpsVersion, ArtifactTransforms.getMpsRoot(mpsConfig), testTask)
 }
 
 fun createMpsPlatforms(): List<MpsPlatform> {
-    val supportedMpsVersions = project.findProperty("supportedMpsVersions")?.let { (it as String).split(',') }
-        ?: throw GradleException("Property 'supportedMpsVersions' not found")
+    val prefix = "supportedMpsVersion."
+    val supportedMpsVersions = providers.gradlePropertiesPrefixedBy(prefix).get()
+        .mapKeys { it.key.removePrefix(prefix) }
+        .toSortedMap()
+    if (supportedMpsVersions.isEmpty()) {
+        throw GradleException("No '$prefix<line>' properties found")
+    }
     val mpsPrereleaseVersion: String by project
 
-    return supportedMpsVersions.map { createMpsPlatform(it, "com.jetbrains:mps:$it") } +
+    return supportedMpsVersions.map { (line, version) -> createMpsPlatform(line, version, "com.jetbrains:mps:$version") } +
         createMpsPlatform(
+            mpsPrereleaseVersion,
             mpsPrereleaseVersion,
             "com.jetbrains.mps:mps-prerelease:$mpsPrereleaseVersion",
         )
