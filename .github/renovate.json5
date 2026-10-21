@@ -5,6 +5,25 @@
     'schedule:monthly',
   ],
 
+  // The repository has no lock files.
+  lockFileMaintenance: {
+    enabled: false,
+  },
+
+  customManagers: [
+    {
+      // The supportedMpsVersion.<line> properties. The compatibility group keeps each property on its own release
+      // line, so only patch updates are proposed. EAP and RC builds don't match the versioning pattern.
+      customType: 'regex',
+      managerFilePatterns: ['/(^|/)gradle\\.properties$/'],
+      matchStrings: ['supportedMpsVersion\\.[\\d.]+=(?<currentValue>\\S+)'],
+      datasourceTemplate: 'maven',
+      depNameTemplate: 'com.jetbrains:mps',
+      registryUrlTemplate: 'https://artifacts.itemis.cloud/repository/maven-mps',
+      versioningTemplate: 'regex:^(?<compatibility>\\d{4}\\.\\d+)(?:\\.(?<patch>\\d+))?$',
+    },
+  ],
+
   packageRules: [
     {
       // Kotlin 2.4 drops language and API compatibility modes for Kotlin 1.9. The published
@@ -13,8 +32,40 @@
       allowedVersions: '<2.4.0',
     },
     {
+      matchManagers: ['gradle', 'gradle-wrapper'],
+      matchUpdateTypes: ['minor', 'patch'],
+      groupName: 'non-major dependencies',
+    },
+    {
+      matchDepNames: ['gradle', 'org.gradle.toolchains.foojay-resolver-convention'],
+      matchUpdateTypes: ['major'],
+      groupName: 'Gradle',
+    },
+    {
+      matchPackageNames: ['org.junit{/,}**', 'org.mockito{/,}**'],
+      matchUpdateTypes: ['major'],
+      groupName: 'test frameworks',
+    },
+    {
       matchManagers: ['github-actions'],
       groupName: 'GitHub Actions',
+      separateMajorMinor: false,
+    },
+
+    // MPS rules come last so that they override the groups above.
+    {
+      // The MPS version the code is compiled against. A major update previews what a newer MPS breaks.
+      matchPackageNames: ['com.jetbrains:mps'],
+      matchFileNames: ['gradle/libs.versions.toml'],
+      groupName: 'MPS',
+    },
+    {
+      // The MPS versions the tests run against.
+      matchPackageNames: ['com.jetbrains:mps', 'com.jetbrains.mps:mps-prerelease'],
+      matchFileNames: ['gradle.properties'],
+      groupName: 'MPS test versions',
+      // The prerelease moves to the newest build, whatever the update type, in the same PR as the release patches.
+      separateMajorMinor: false,
     },
   ],
 }
