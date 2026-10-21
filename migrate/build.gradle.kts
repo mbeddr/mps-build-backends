@@ -44,7 +44,7 @@ tasks.processResources {
 val jarsOnlyRuntimeClasspath = tasks.jar.zip(configurations.runtimeClasspath) { jar, runtimeClasspath -> jar.outputs.files.plus(runtimeClasspath) }
 
 for (mpsPlatform in backendTesting.mpsPlatforms) {
-    val testSimple = tasks.register("testMigrateForMps${mpsPlatform.mpsVersion}", JavaExec::class) {
+    val testSimple = tasks.register("testMigrateForMps${mpsPlatform.name}", JavaExec::class) {
         // executeGenerators is only referenced from inside the nested javaexec {} below, which Gradle can't see at
         // configuration time, so it wouldn't otherwise know to build it first.
         dependsOn(executeGenerators)

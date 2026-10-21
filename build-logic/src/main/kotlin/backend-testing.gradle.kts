@@ -7,27 +7,38 @@ plugins {
     id("com.specificlanguages.mps.artifact-transforms")
 }
 
-fun createMpsPlatform(mpsVersion: String, dependencyNotation: String): MpsPlatform {
-    val mpsConfig = configurations.create("mps$mpsVersion")
+fun createMpsPlatform(name: String, mpsVersion: String, dependencyNotation: String): MpsPlatform {
+    val mpsConfig = configurations.create("mps$name")
     dependencies.add(mpsConfig.name, dependencyNotation)
 
-    val testTask = tasks.register("testMps$mpsVersion") {
+    val testTask = tasks.register("testMps$name") {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
         description = "Run all tests with MPS $mpsVersion"
     }
 
-    return MpsPlatform(mpsVersion, ArtifactTransforms.getMpsRoot(mpsConfig), testTask)
+    return MpsPlatform(name, mpsVersion, ArtifactTransforms.getMpsRoot(mpsConfig), testTask)
 }
 
 fun createMpsPlatforms(): List<MpsPlatform> {
-    val supportedMpsVersions = project.findProperty("supportedMpsVersions")?.let { (it as String).split(',') }
-        ?: throw GradleException("Property 'supportedMpsVersions' not found")
-    val mpsPrereleaseVersion: String by project
+    val prefix = "supportedMpsVersion."
+    val supportedMpsVersions = providers.gradlePropertiesPrefixedBy(prefix).get()
+        .mapKeys { it.key.removePrefix(prefix) }
+        .toSortedMap()
+    if (supportedMpsVersions.isEmpty()) {
+        throw GradleException("No '$prefix<line>' properties found")
+    }
+    for ((line, version) in supportedMpsVersions) {
+        if (version != line && !version.startsWith("$line.")) {
+            throw GradleException("MPS version $version in property '$prefix$line' is not from release line $line")
+        }
+    }
+    val supportedMpsPrereleaseVersion: String by project
 
-    return supportedMpsVersions.map { createMpsPlatform(it, "com.jetbrains:mps:$it") } +
+    return supportedMpsVersions.map { (line, version) -> createMpsPlatform(line, version, "com.jetbrains:mps:$version") } +
         createMpsPlatform(
-            mpsPrereleaseVersion,
-            "com.jetbrains.mps:mps-prerelease:$mpsPrereleaseVersion",
+            "Prerelease",
+            supportedMpsPrereleaseVersion,
+            "com.jetbrains.mps:mps-prerelease:$supportedMpsPrereleaseVersion",
         )
 }
 

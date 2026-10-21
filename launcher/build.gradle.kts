@@ -15,9 +15,7 @@ repositories {
 dependencies {
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.commons.io)
-    testImplementation(libs.mockito.core) {
-        because("does not support Java 8 from version 5")
-    }
+    testImplementation(libs.mockito.core)
     testRuntimeOnly(libs.junit.jupiter.engine)
 }
 

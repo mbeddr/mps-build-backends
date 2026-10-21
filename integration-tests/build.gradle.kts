@@ -260,7 +260,7 @@ fun tasksForMpsPlatform(mpsPlatform: MpsPlatform): Multimap<TestKind, TaskProvid
     }
 
     val generateTasks = GENERATION_TESTS.map { testCase ->
-        tasks.register("generate${testCase.name.capitalize()}WithMps${mpsPlatform.mpsVersion}", JavaExec::class) {
+        tasks.register("generate${testCase.name.capitalize()}WithMps${mpsPlatform.name}", JavaExec::class) {
             dependsOn(executeGenerators)
             val projectDir = temporaryDir.resolve("project")
 
@@ -289,7 +289,7 @@ fun tasksForMpsPlatform(mpsPlatform: MpsPlatform): Multimap<TestKind, TaskProvid
     }
 
     val modelcheckTasks = MODELCHECK_TESTS.map { testCase ->
-        tasks.register("modelcheckTest${testCase.name.capitalize()}WithMps${mpsPlatform.mpsVersion}", JavaExec::class) {
+        tasks.register("modelcheckTest${testCase.name.capitalize()}WithMps${mpsPlatform.name}", JavaExec::class) {
             dependsOn(modelcheck)
             val projectDir = temporaryDir.resolve("project")
             doFirst {
@@ -332,7 +332,7 @@ fun tasksForMpsPlatform(mpsPlatform: MpsPlatform): Multimap<TestKind, TaskProvid
     }
 
     val executeTasks: List<TaskProvider<out Task>> = EXECUTE_TESTS.map { testCase ->
-        tasks.register("executeTest${testCase.name.capitalize()}WithMps${mpsPlatform.mpsVersion}") {
+        tasks.register("executeTest${testCase.name.capitalize()}WithMps${mpsPlatform.name}") {
             dependsOn(execute, executeGenerators)
 
             doLast {
@@ -389,7 +389,7 @@ fun tasksForMpsPlatform(mpsPlatform: MpsPlatform): Multimap<TestKind, TaskProvid
         .build()
 }
 
-data class Key(val kind: TestKind, val mpsVersion: String)
+data class Key(val kind: TestKind, val mpsPlatformName: String)
 
 fun buildTestMatrix(): Multimap<Key, TaskProvider<out Task>> {
     val builder = ImmutableMultimap.builder<Key, TaskProvider<out Task>>()
@@ -397,7 +397,7 @@ fun buildTestMatrix(): Multimap<Key, TaskProvider<out Task>> {
     for (mpsPlatform in backendTesting.mpsPlatforms) {
         val tasksForThisPlatform = tasksForMpsPlatform(mpsPlatform)
         for (entry in tasksForThisPlatform.entries()) {
-            builder.put(Key(entry.key, mpsPlatform.mpsVersion), entry.value)
+            builder.put(Key(entry.key, mpsPlatform.name), entry.value)
         }
     }
 
@@ -420,6 +420,6 @@ for (kind in TestKind.values()) {
 
 for (mpsPlatform in backendTesting.mpsPlatforms) {
     mpsPlatform.testTask {
-        dependsOn(Multimaps.filterKeys(testMatrix) { it!!.mpsVersion == mpsPlatform.mpsVersion }.values())
+        dependsOn(Multimaps.filterKeys(testMatrix) { it!!.mpsPlatformName == mpsPlatform.name }.values())
     }
 }

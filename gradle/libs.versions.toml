@@ -7,7 +7,7 @@ junit-jupiter = "5.10.0"
 junit-platform = "1.10.0"
 kotlin = "2.1.20"
 kotlin-argparser = "2.0.7"
-mockito = "[4.11.0,5)"
+mockito = "4.11.0"
 mps = "2024.3.1"
 xmlunit = "2.6.+"
 

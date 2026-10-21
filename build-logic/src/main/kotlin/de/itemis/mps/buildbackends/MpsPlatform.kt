@@ -5,4 +5,15 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 import java.io.File
 
-data class MpsPlatform(val mpsVersion: String, val mpsHome: Provider<File>, val testTask: TaskProvider<out Task>)
+/**
+ * An MPS distribution to run tests with.
+ *
+ * @param name identifies the platform in task and configuration names, such as the MPS release line (`2025.1`) or `Prerelease`.
+ * @param mpsVersion the full MPS version (`2025.1.4`).
+ */
+data class MpsPlatform(
+    val name: String,
+    val mpsVersion: String,
+    val mpsHome: Provider<File>,
+    val testTask: TaskProvider<out Task>,
+)

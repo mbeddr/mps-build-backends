@@ -40,7 +40,7 @@ tasks.processResources {
 val jarsOnlyRuntimeClasspath = tasks.jar.zip(configurations.runtimeClasspath) { jar, runtimeClasspath -> jar.outputs.files.plus(runtimeClasspath) }
 
 for (mpsPlatform in backendTesting.mpsPlatforms) {
-    val testSimple = tasks.register("testRemigrateForMps${mpsPlatform.mpsVersion}", JavaExec::class) {
+    val testSimple = tasks.register("testRemigrateForMps${mpsPlatform.name}", JavaExec::class) {
         val projectDir = temporaryDir.resolve("project")
 
         doFirst {
