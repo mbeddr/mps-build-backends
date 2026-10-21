@@ -1,5 +1,3 @@
-import de.itemis.mps.buildbackends.computeVersionSuffix
-
 plugins {
     `java-gradle-plugin`
     id("base-conventions")
@@ -7,7 +5,7 @@ plugins {
 }
 
 group = "de.itemis.mps.build-backends"
-version = "${project.extra["version.launcher"]}${computeVersionSuffix()}"
+version = "${project.extra["version.launcher"]}"
 
 repositories {
     gradlePluginPortal()

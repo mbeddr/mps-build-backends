@@ -32,7 +32,8 @@ using [`git-filter-repo`](https://github.com/newren/git-filter-repo) to keep Git
 
 ## Versioning
 
-This project strives to support multiple MPS versions from one code base and uses semantic versioning.
+This project strives to support multiple MPS versions from one code base and uses semantic versioning. See
+[RELEASING.md](RELEASING.md) for how versions are managed and released.
 
 ## Supported MPS versions
 

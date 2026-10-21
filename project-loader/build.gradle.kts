@@ -1,5 +1,4 @@
 import com.specificlanguages.mps.ArtifactTransforms
-import de.itemis.mps.buildbackends.computeVersionSuffix
 
 buildscript {
     configurations.classpath {
@@ -14,7 +13,7 @@ plugins {
     id("com.specificlanguages.mps.artifact-transforms")
 }
 
-version = "${project.extra["version.project-loader"]}${computeVersionSuffix()}"
+version = "${project.extra["version.project-loader"]}"
 
 // MPS runtime JARs should be available for compiling code and tests but not propagated to consumers.
 val mpsRuntime: Configuration by configurations.creating
