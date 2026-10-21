@@ -20,10 +20,18 @@ internal class QuietIdeaConsoleOutput(logLevel: Level) : QuietConsoleOutput(logL
         // Cache shutdown tasks run before ordinary shutdown tasks, in reverse registration order.
         // Register after disposal so console logging is disabled before the platform's shutdown diagnostics.
         val rootLogger = java.util.logging.Logger.getLogger("")
-        ShutDownTracker.getInstance().registerCacheShutdownTask {
+        val task = Runnable {
             rootLogger.handlers.filterIsInstance<ConsoleHandler>().forEach {
                 rootLogger.removeHandler(it)
             }
+        }
+        val tracker = ShutDownTracker.getInstance()
+        try {
+            tracker.registerCacheShutdownTask(task)
+        } catch (e: NoSuchMethodError) {
+            // MPS 2023.1 and older have no cache shutdown tasks. They run all shutdown tasks in reverse registration
+            // order, so a task registered after disposal still runs before the platform's own tasks.
+            tracker.registerShutdownTask(task)
         }
     }
 }

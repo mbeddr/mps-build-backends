@@ -14,6 +14,12 @@ Changes in versions before 2.0.0 are documented in the [root changelog](../CHANG
 - Raise the Java source and bytecode target from 11 to 17.
 - Raise the Kotlin language and API compatibility baseline from 1.6 to 1.9.
 
+### Fixed
+
+- Quiet IDEA mode no longer fails with `NoSuchMethodError` on MPS 2023.1 and older, which lack
+  `ShutDownTracker.registerCacheShutdownTask`. On these versions the shutdown task that disables console logging is
+  registered as an ordinary shutdown task instead.
+
 ## 6.1.0
 
 ### Added

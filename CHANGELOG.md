@@ -12,6 +12,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Raise the Java source and bytecode target from 11 to 17.
 - Raise the Kotlin language and API compatibility baseline from 1.6 to 1.9.
 
+### Fixed
+
+- Quiet output no longer fails with `NoSuchMethodError` at shutdown on MPS 2023.1 and older.
+
 ### Dependencies
 
 - Upgrade project-loader.
