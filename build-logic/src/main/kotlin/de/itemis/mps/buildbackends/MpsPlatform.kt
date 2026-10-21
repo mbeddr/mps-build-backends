@@ -8,7 +8,7 @@ import java.io.File
 /**
  * An MPS distribution to run tests with.
  *
- * @param name identifies the platform in task and configuration names, such as the MPS release line (`2025.1`).
+ * @param name identifies the platform in task and configuration names, such as the MPS release line (`2025.1`) or `Prerelease`.
  * @param mpsVersion the full MPS version (`2025.1.4`).
  */
 data class MpsPlatform(

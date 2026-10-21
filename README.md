@@ -38,4 +38,4 @@ This project strives to support multiple MPS versions from one code base and use
 ## Supported MPS versions
 
 See the `supportedMpsVersion.<line>` properties and `supportedMpsPrereleaseVersion` in
-[gradle.properties](gradle.properties#L7) for a list of supported MPS versions.
+[gradle.properties](gradle.properties#L6) for a list of supported MPS versions.

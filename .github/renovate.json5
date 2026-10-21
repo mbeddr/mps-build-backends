@@ -5,11 +5,6 @@
     'schedule:monthly',
   ],
 
-  // The repository has no lock files.
-  lockFileMaintenance: {
-    enabled: false,
-  },
-
   customManagers: [
     {
       // The supportedMpsVersion.<line> properties. The compatibility group keeps each property on its own release

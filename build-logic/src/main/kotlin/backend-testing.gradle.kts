@@ -27,11 +27,16 @@ fun createMpsPlatforms(): List<MpsPlatform> {
     if (supportedMpsVersions.isEmpty()) {
         throw GradleException("No '$prefix<line>' properties found")
     }
+    for ((line, version) in supportedMpsVersions) {
+        if (version != line && !version.startsWith("$line.")) {
+            throw GradleException("MPS version $version in property '$prefix$line' is not from release line $line")
+        }
+    }
     val supportedMpsPrereleaseVersion: String by project
 
     return supportedMpsVersions.map { (line, version) -> createMpsPlatform(line, version, "com.jetbrains:mps:$version") } +
         createMpsPlatform(
-            supportedMpsPrereleaseVersion,
+            "Prerelease",
             supportedMpsPrereleaseVersion,
             "com.jetbrains.mps:mps-prerelease:$supportedMpsPrereleaseVersion",
         )

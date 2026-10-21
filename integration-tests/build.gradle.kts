@@ -389,7 +389,7 @@ fun tasksForMpsPlatform(mpsPlatform: MpsPlatform): Multimap<TestKind, TaskProvid
         .build()
 }
 
-data class Key(val kind: TestKind, val mpsVersion: String)
+data class Key(val kind: TestKind, val mpsPlatformName: String)
 
 fun buildTestMatrix(): Multimap<Key, TaskProvider<out Task>> {
     val builder = ImmutableMultimap.builder<Key, TaskProvider<out Task>>()
@@ -397,7 +397,7 @@ fun buildTestMatrix(): Multimap<Key, TaskProvider<out Task>> {
     for (mpsPlatform in backendTesting.mpsPlatforms) {
         val tasksForThisPlatform = tasksForMpsPlatform(mpsPlatform)
         for (entry in tasksForThisPlatform.entries()) {
-            builder.put(Key(entry.key, mpsPlatform.mpsVersion), entry.value)
+            builder.put(Key(entry.key, mpsPlatform.name), entry.value)
         }
     }
 
@@ -420,6 +420,6 @@ for (kind in TestKind.values()) {
 
 for (mpsPlatform in backendTesting.mpsPlatforms) {
     mpsPlatform.testTask {
-        dependsOn(Multimaps.filterKeys(testMatrix) { it!!.mpsVersion == mpsPlatform.mpsVersion }.values())
+        dependsOn(Multimaps.filterKeys(testMatrix) { it!!.mpsPlatformName == mpsPlatform.name }.values())
     }
 }
