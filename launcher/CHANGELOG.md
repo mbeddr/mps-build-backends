@@ -12,6 +12,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Raise the Java compilation toolchain and bytecode target from 11 to 17. The launcher requires Java 17 or newer
   in the JVM running Gradle.
 
+### Fixed
+
+- Pass `--enable-native-access=ALL-UNNAMED` and `--sun-misc-unsafe-memory-access=allow` to the JVM for MPS 2026.1
+  and newer. This removes the JVM's console warnings about restricted native access and `sun.misc.Unsafe` memory
+  access.
+
 ## 2.9.2
 
 ### Fixed
