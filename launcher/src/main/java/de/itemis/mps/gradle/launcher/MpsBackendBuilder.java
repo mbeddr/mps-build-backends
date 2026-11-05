@@ -185,6 +185,12 @@ public class MpsBackendBuilder {
                     Directory jnaLibPath = (jnaLibBaseDir.getAsFile().exists() && !jnaLibPlatformSpecificDir.getAsFile().exists()) ? jnaLibBaseDir : jnaLibPlatformSpecificDir;
                     result.add("-Djna.boot.library.path=" + jnaLibPath.getAsFile());
                 }
+                if (mpsVersionValue.compareTo("2026.1") >= 0) {
+                    // MPS 2026.1 runs on Java 25, which warns on the console when JNA loads native libraries and when
+                    // Netty uses sun.misc.Unsafe memory access.
+                    result.add("--enable-native-access=ALL-UNNAMED");
+                    result.add("--sun-misc-unsafe-memory-access=allow");
+                }
 
                 return result;
             }
