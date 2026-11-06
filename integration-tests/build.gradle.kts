@@ -226,9 +226,7 @@ fun copyTestProjectTo(project: String, copiedProjectDir: File) {
 
 fun Task.mpsTmpDir() = temporaryDir.resolve("mps-tmp")
 
-fun Task.recreateTempDirs() {
-    temporaryDir.deleteRecursively()
-    temporaryDir.toPath().createDirectories()
+fun Task.createMpsTmpDir() {
     mpsTmpDir().toPath().createDirectories()
 }
 
@@ -271,7 +269,7 @@ fun tasksForMpsPlatform(mpsPlatform: MpsPlatform): Multimap<TestKind, TaskProvid
             args(testCase.args)
 
             doFirst {
-                recreateTempDirs()
+                createMpsTmpDir()
                 copyTestProjectTo(testCase.project, projectDir)
             }
 
@@ -293,7 +291,7 @@ fun tasksForMpsPlatform(mpsPlatform: MpsPlatform): Multimap<TestKind, TaskProvid
             dependsOn(modelcheck)
             val projectDir = temporaryDir.resolve("project")
             doFirst {
-                recreateTempDirs()
+                createMpsTmpDir()
                 copyTestProjectTo(testCase.project, projectDir)
             }
 
@@ -337,7 +335,7 @@ fun tasksForMpsPlatform(mpsPlatform: MpsPlatform): Multimap<TestKind, TaskProvid
 
             doLast {
                 val projectDir = temporaryDir.resolve("project")
-                recreateTempDirs()
+                createMpsTmpDir()
                 copyTestProjectTo(testCase.project, projectDir)
 
                 val execOperations = serviceOf<ExecOperations>()
