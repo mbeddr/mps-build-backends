@@ -45,6 +45,7 @@ public class MpsBackendBuilder {
     private final Property<JavaLauncher> javaLauncher;
 
     private File temporaryDirectory;
+    private boolean ideaDirectoriesCleanup = true;
 
     @Inject
     public MpsBackendBuilder(JavaToolchainService javaToolchainService, ProjectLayout layout, ProviderFactory providers, ObjectFactory objects, PropertyFactory propertyFactory) {
@@ -262,13 +263,15 @@ public class MpsBackendBuilder {
 
         // Start each run with empty IntelliJ config and system directories. Otherwise MPS reuses the VFS and caches
         // of the previous run, which may not match the files on disk if they changed in between.
-        DeleteDirectories deleteDirectories = new DeleteDirectories(configDir, systemDir);
-        if (options instanceof Task) {
-            ((Task) options).doFirst(deleteDirectories);
-        } else {
-            // Options that are not a task, such as the spec of project.javaexec, are usually configured right before
-            // the process starts.
-            deleteDirectories.run();
+        if (ideaDirectoriesCleanup) {
+            DeleteDirectories deleteDirectories = new DeleteDirectories(configDir, systemDir);
+            if (options instanceof Task) {
+                ((Task) options).doFirst(deleteDirectories);
+            } else {
+                // Options that are not a task, such as the spec of project.javaexec, are usually configured right
+                // before the process starts.
+                deleteDirectories.run();
+            }
         }
 
         // MPS versions up to and including 2021.x create logs under their working directory so set it to a temporary
@@ -342,6 +345,15 @@ public class MpsBackendBuilder {
 
     public MpsBackendBuilder withTemporaryDirectory(File temporaryDirectory) {
         this.temporaryDirectory = temporaryDirectory;
+        return this;
+    }
+
+    /**
+     * Sets whether the IntelliJ config and system directories in the temporary directory are deleted before MPS
+     * starts. Enabled by default.
+     */
+    public MpsBackendBuilder withIdeaDirectoriesCleanup(boolean enabled) {
+        this.ideaDirectoriesCleanup = enabled;
         return this;
     }
 }

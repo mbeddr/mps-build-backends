@@ -67,6 +67,46 @@ public class WorkspaceCleanupTest {
         Assertions.assertTrue(otherFile.exists(), "other files in the temporary directory should be kept");
     }
 
+    @Test
+    public void taskKeepsConfigAndSystemDirectoriesWhenCleanupIsDisabled(@TempDir File tempDir) throws IOException {
+        final Project project = ProjectBuilder.builder().withProjectDir(new File(tempDir, "project")).build();
+        project.getPluginManager().apply(LauncherPlugin.class);
+
+        final JavaExec task = project.getTasks().create("javaExec", JavaExec.class);
+        final File mpsTmpDir = new File(tempDir, "mps-tmp");
+        project.getExtensions().getByType(MpsBackendLauncher.class).builder()
+                .withTemporaryDirectory(mpsTmpDir)
+                .withIdeaDirectoriesCleanup(false)
+                .configure(task);
+
+        final File configFile = createFile(new File(mpsTmpDir, "config/options/kept.xml"));
+        final File systemFile = createFile(new File(mpsTmpDir, "system/caches/kept.dat"));
+
+        runActionsBeforeTaskAction(task);
+
+        Assertions.assertTrue(configFile.exists(), "config directory should be kept");
+        Assertions.assertTrue(systemFile.exists(), "system directory should be kept");
+    }
+
+    @Test
+    public void nonTaskOptionsKeepConfigAndSystemDirectoriesWhenCleanupIsDisabled(@TempDir File tempDir) throws IOException {
+        final Project project = ProjectBuilder.builder().withProjectDir(new File(tempDir, "project")).build();
+        project.getPluginManager().apply(LauncherPlugin.class);
+
+        final File mpsTmpDir = new File(tempDir, "mps-tmp");
+        final File configFile = createFile(new File(mpsTmpDir, "config/options/kept.xml"));
+        final File systemFile = createFile(new File(mpsTmpDir, "system/caches/kept.dat"));
+
+        final JavaForkOptions options = mock(JavaForkOptions.class, RETURNS_DEEP_STUBS);
+        project.getExtensions().getByType(MpsBackendLauncher.class).builder()
+                .withTemporaryDirectory(mpsTmpDir)
+                .withIdeaDirectoriesCleanup(false)
+                .configure(options);
+
+        Assertions.assertTrue(configFile.exists(), "config directory should be kept");
+        Assertions.assertTrue(systemFile.exists(), "system directory should be kept");
+    }
+
     /**
      * Runs the actions added before the task's own action (such as {@code doFirst} actions), without starting the
      * forked JVM. In a fresh task, the task's own action is the last one.

@@ -17,6 +17,7 @@ tasks.register("myBackendTask", JavaExec::class.java) {
       .withMpsVersion(mpsVersion) // Optionally specify the MPS version explicitly
       .withJetBrainsJvm() // Optionally request a JetBrains JBR (and fail if it's not available)
       .withTemporaryDirectory(mpsTempDir) // Optionally override the directory where MPS will place its logs and caches.
+      .withIdeaDirectoriesCleanup(false) // Optionally keep the IntelliJ config and system directories between runs.
       .configure(this)
 
     // Further configuration goes here
@@ -43,7 +44,7 @@ For all versions of MPS:
    previous run. For a task, they are deleted by a `doFirst` action. For other options, such as `project.javaexec`,
    they are deleted when `configure()` is called. Other files in the temporary directory are kept. A `doFirst` action
    that you add to the task after calling `configure()` runs before the deletion, so it cannot put files into these
-   directories.
+   directories. To keep the directories between runs, call `withIdeaDirectoriesCleanup(false)`.
 
 These changes help isolate individual tasks from each other, potentially enabling parallel execution of tasks.
 
