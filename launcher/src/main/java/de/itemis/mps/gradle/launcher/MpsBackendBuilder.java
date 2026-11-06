@@ -1,5 +1,6 @@
 package de.itemis.mps.gradle.launcher;
 
+import org.gradle.api.Action;
 import org.gradle.api.Task;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
@@ -23,8 +24,15 @@ import org.gradle.process.JavaForkOptions;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class MpsBackendBuilder {
     private final PropertyFactory propertyFactory;
@@ -249,6 +257,19 @@ public class MpsBackendBuilder {
 
     private void configureWorkspace(JavaForkOptions options) {
         File tmpDir = getTemporaryDirectory(options);
+        File configDir = new File(tmpDir, "config");
+        File systemDir = new File(tmpDir, "system");
+
+        // Start each run with empty IntelliJ config and system directories. Otherwise MPS reuses the VFS and caches
+        // of the previous run, which may not match the files on disk if they changed in between.
+        DeleteDirectories deleteDirectories = new DeleteDirectories(configDir, systemDir);
+        if (options instanceof Task) {
+            ((Task) options).doFirst(deleteDirectories);
+        } else {
+            // Options that are not a task, such as the spec of project.javaexec, are usually configured right before
+            // the process starts.
+            deleteDirectories.run();
+        }
 
         // MPS versions up to and including 2021.x create logs under their working directory so set it to a temporary
         // directory to avoid polluting the checkout directory or MPS home.
@@ -262,11 +283,47 @@ public class MpsBackendBuilder {
                 // Add system properties from a CommandLineArgumentProvider to avoid breaking cacheability.
                 // See https://docs.gradle.org/current/userguide/caching_java_projects.html#dealing_with_file_paths
                 return List.of(
-                        "-Didea.config.path=" + new File(tmpDir, "config"),
-                        "-Didea.system.path=" + new File(tmpDir, "system")
+                        "-Didea.config.path=" + configDir,
+                        "-Didea.system.path=" + systemDir
                 );
             }
         });
+    }
+
+    // A named class rather than a lambda because a lambda task action makes the task non-cacheable.
+    private static class DeleteDirectories implements Action<Task> {
+        // An array rather than List.of() because the configuration cache of Gradle 8.13 fails to restore a List.of()
+        // field.
+        private final File[] directories;
+
+        DeleteDirectories(File... directories) {
+            this.directories = directories;
+        }
+
+        @Override
+        public void execute(@Nonnull Task task) {
+            run();
+        }
+
+        void run() {
+            for (File directory : directories) {
+                deleteRecursively(directory.toPath());
+            }
+        }
+
+        private static void deleteRecursively(Path directory) {
+            if (!Files.exists(directory, LinkOption.NOFOLLOW_LINKS)) {
+                return;
+            }
+            try (Stream<Path> paths = Files.walk(directory)) {
+                // Delete children before their parents.
+                for (Path path : (Iterable<Path>) paths.sorted(Comparator.reverseOrder())::iterator) {
+                    Files.delete(path);
+                }
+            } catch (IOException e) {
+                throw new UncheckedIOException("Could not delete " + directory, e);
+            }
+        }
     }
 
     @Nonnull
