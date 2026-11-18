@@ -17,6 +17,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Pass `--enable-native-access=ALL-UNNAMED` and `--sun-misc-unsafe-memory-access=allow` to the JVM for MPS 2026.1
   and newer. This removes the JVM's console warnings about restricted native access and `sun.misc.Unsafe` memory
   access.
+- Pass `-Djava.system.class.loader=com.intellij.util.lang.PathClassLoader` to the JVM for MPS 2023.2 and newer, as
+  the MPS start scripts do. With the JDK's default system class loader, the IntelliJ Platform cannot create own class
+  loaders for core content modules whose classes are on the application class path, so these modules do not see the
+  plugins they depend on. MPS 2026.1 and newer have such modules.
 
 ## 2.9.2
 

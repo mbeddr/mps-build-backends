@@ -174,6 +174,12 @@ public class MpsBackendBuilder {
                 if (mpsVersionValue.compareTo("2025.2") >= 0) {
                     result.add("-Didea.platform.prefix=MPS");
                 }
+                if (mpsVersionValue.compareTo("2023.2") >= 0) {
+                    // Use the system class loader that the MPS start scripts use. With the JDK's default class
+                    // loader, the platform cannot create class loaders for core content modules whose classes are on
+                    // the application class path, and such modules do not see the plugins they depend on.
+                    result.add("-Djava.system.class.loader=com.intellij.util.lang.PathClassLoader");
+                }
                 if (mpsVersionValue.compareTo("2023.3") >= 0) {
                     result.add("-Dintellij.platform.load.app.info.from.resources=true");
                 }
