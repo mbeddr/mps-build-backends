@@ -5,6 +5,7 @@ import org.gradle.api.Project;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.internal.jvm.Jvm;
 import org.gradle.jvm.toolchain.JavaLauncher;
+import org.gradle.process.CommandLineArgumentProvider;
 import org.gradle.testfixtures.ProjectBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
@@ -12,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -29,6 +32,34 @@ public class JavaLauncherOverrideTest {
         launcher.builder().configure(task);
 
         Assertions.assertEquals("true", task.getSystemProperties().get("intellij.platform.log.sync"));
+    }
+
+    @Test
+    public void usesIntellijSystemClassLoaderForMps20232AndNewer(@TempDir File tempDir) {
+        Assertions.assertTrue(jvmArgumentsForMpsVersion(tempDir, "2023.2")
+                .contains("-Djava.system.class.loader=com.intellij.util.lang.PathClassLoader"));
+    }
+
+    @Test
+    public void keepsJdkSystemClassLoaderForOlderMps(@TempDir File tempDir) {
+        Assertions.assertTrue(jvmArgumentsForMpsVersion(tempDir, "2023.1").stream()
+                .noneMatch(arg -> arg.startsWith("-Djava.system.class.loader=")));
+    }
+
+    private static List<String> jvmArgumentsForMpsVersion(File tempDir, String mpsVersion) {
+        final Project project = ProjectBuilder.builder().withProjectDir(tempDir).build();
+        project.getPluginManager().apply(LauncherPlugin.class);
+
+        final MpsBackendLauncher launcher = project.getExtensions().getByType(MpsBackendLauncher.class);
+        final JavaExec task = project.getTasks().create("javaExec", JavaExec.class);
+
+        launcher.forMpsHome(tempDir).withMpsVersion(mpsVersion).configure(task);
+
+        final List<String> result = new ArrayList<>();
+        for (CommandLineArgumentProvider provider : task.getJvmArgumentProviders()) {
+            provider.asArguments().forEach(result::add);
+        }
+        return result;
     }
 
     @Test
