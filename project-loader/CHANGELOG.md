@@ -14,6 +14,14 @@ Changes in versions before 2.0.0 are documented in the [root changelog](../CHANG
 - Raise the Java source and bytecode target from 11 to 17.
 - Raise the Kotlin language and API compatibility baseline from 1.6 to 1.9.
 
+### Fixed
+
+- Set `idea.force.use.core.classloader` to `false` unless it is already set. MPS sets it to `true` otherwise, which
+  makes the platform load plugin classes through the application class loader. That loader cannot see classes of
+  other plugins, so indexing on MPS 2025.1 failed with
+  `ClassNotFoundException: org.intellij.images.fileTypes.impl.SvgLanguage`. Usually this was only logged, but when
+  IDE caches from a previous run were reused, the backend failed.
+
 ## 6.1.0
 
 ### Added

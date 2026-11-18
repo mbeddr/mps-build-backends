@@ -105,9 +105,24 @@ public class ProjectLoader private constructor(
          */
         val pluginsCompatibleBuildProperty = "idea.plugins.compatible.build"
 
+        /**
+         * When this property is unset, `IdeaEnvironment` sets it to `true`, which makes the platform load plugin
+         * classes through the application class loader. With a flat classpath that contains all of MPS's `lib`
+         * directory, this loader cannot see classes of other plugins. For example, on MPS 2025.1 indexing fails with
+         * `ClassNotFoundException: org.intellij.images.fileTypes.impl.SvgLanguage`. `false` makes the platform use
+         * plugin class loaders, as in the IDE.
+         */
+        val forceUseCoreClassLoaderProperty = "idea.force.use.core.classloader"
+
         val propertyOverrides = mutableListOf<Pair<String, String?>>()
 
         try {
+            if (System.getProperty(forceUseCoreClassLoaderProperty) == null) {
+                logger.info("setting $forceUseCoreClassLoaderProperty to false")
+                propertyOverrides.add(Pair(forceUseCoreClassLoaderProperty, null))
+                System.setProperty(forceUseCoreClassLoaderProperty, "false")
+            }
+
             if (pluginLocation != null) {
                 logger.info("overriding plugin location with: ${pluginLocation.absolutePath}")
                 propertyOverrides.add(Pair(pluginsPathProperty, System.getProperty(pluginsPathProperty)))
