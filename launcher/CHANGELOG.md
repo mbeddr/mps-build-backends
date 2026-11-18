@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Unreleased
 
+### Added
+
+- `MpsBackendBuilder.withIdeaDirectoriesCleanup(boolean)` to keep the IntelliJ config and system directories between
+  runs.
+
 ### Changed
 
 - Raise the Java compilation toolchain and bytecode target from 11 to 17. The launcher requires Java 17 or newer
@@ -14,6 +19,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Delete the IntelliJ config and system directories in the temporary directory before MPS starts. Before, each run
+  reused the VFS and caches of the previous run, and MPS could see an old state of files that changed on disk in
+  between (for example, after `git checkout`).
 - Pass `--enable-native-access=ALL-UNNAMED` and `--sun-misc-unsafe-memory-access=allow` to the JVM for MPS 2026.1
   and newer. This removes the JVM's console warnings about restricted native access and `sun.misc.Unsafe` memory
   access.
