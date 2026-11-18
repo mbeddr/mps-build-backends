@@ -13,7 +13,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Dependencies
 
-- Upgrade project-loader and migration-common.
+- Upgrade project-loader and migration-common to load plugin classes with plugin class loaders, fixing
+  `ClassNotFoundException: org.intellij.images.fileTypes.impl.SvgLanguage` during indexing on MPS 2025.1.
 
 # 1.1.3
 

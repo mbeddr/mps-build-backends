@@ -14,7 +14,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Dependencies
 
-- Upgrade project-loader.
+- Upgrade project-loader to load plugin classes with plugin class loaders, fixing
+  `ClassNotFoundException: org.intellij.images.fileTypes.impl.SvgLanguage` during indexing on MPS 2025.1.
 
 ## 1.1.3
 

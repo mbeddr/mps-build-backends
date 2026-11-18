@@ -15,7 +15,8 @@ contain breaking changes.
 
 ### Dependencies
 
-- Upgrade project-loader and migration-common.
+- Upgrade project-loader and migration-common to load plugin classes with plugin class loaders, fixing
+  `ClassNotFoundException: org.intellij.images.fileTypes.impl.SvgLanguage` during indexing on MPS 2025.1.
 
 ## 0.2.3
 
